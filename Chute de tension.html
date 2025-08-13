@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculatrice – Chute de tension</title>
+  <style>
+    :root { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background:#0f172a; color:#e2e8f0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px; }
+    h1 { font-size: 1.5rem; margin-bottom: 20px; }
+    .card { background:#1e293b; border-radius:10px; padding:20px; display:flex; gap:20px; flex-wrap:wrap; }
+    .form-section { flex:1; min-width: 300px; }
+    .results-section { flex:1; min-width: 300px; background:#0f172a; border-radius:10px; padding:20px; }
+    label { display:block; font-size:0.9rem; margin-bottom:4px; }
+    input, select { width:100%; padding:8px; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#e2e8f0; }
+    button { background:#334155; color:#fff; padding:8px 16px; border:none; border-radius:6px; cursor:pointer; }
+    .results-box { background:#1e293b; border-radius:8px; padding:12px; margin-top:10px; }
+    .results-box h2 { margin:0; font-size:1rem; color:#94a3b8; }
+    .results-box .val { font-size:1.4rem; color:#fff; }
+    .muted { font-size:0.8rem; color:#94a3b8; margin-top:10px; }
+    .warn { color:#f59e0b; }
+    .ok { color:#10b981; }
+    .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .address-section { margin-top: 20px; background: #1e293b; padding: 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculatrice – Chute de tension</h1>
+    <div class="address-section">
+      <label for="adresse">Adresse + N°</label>
+      <input type="text" id="adresse" placeholder="Rue et numéro" />
+      <label for="localite">Localité</label>
+      <input type="text" id="localite" placeholder="Code postal et ville" />
+    </div>
+    <div class="card">
+      <div class="form-section">
+        <label for="i">Courant transporté I (A)</label>
+        <input type="number" id="i" min="0" step="0.1" value="250" />
+        <label for="u">Tension de service U (V)</label>
+        <input type="number" id="u" min="1" step="1" value="400" />
+        <label for="l">Longueur du câble L (m)</label>
+        <input type="number" id="l" min="0" step="1" value="50" />
+        <label for="s">Section S (mm²)</label>
+        <input type="number" id="s" min="1" step="1" value="240" />
+        <label for="mat">Matériau du conducteur</label>
+        <select id="mat"><option value="cu">Cuivre</option><option value="al">Aluminium</option></select>
+        <label for="temp">Température de service du conducteur</label>
+        <select id="temp"><option value="60">60 °C</option><option value="90">90 °C</option></select>
+        <div style="margin-top:10px;"><button id="reset">Réinitialiser</button></div>
+      </div>
+      <div class="results-section">
+        <div class="results-box">
+          <h2>Perte de tension</h2>
+          <div class="val" id="du">– V</div>
+        </div>
+        <div class="results-box">
+          <h2>Chute de tension</h2>
+          <div class="val" id="pct">– %</div>
+        </div>
+        <div class="muted">R utilisé: <span id="rline">–</span> Ω (par phase)</div>
+        <div class="muted" id="limits"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button onclick="window.location.href='index.html'">Retour à l'accueil</button>
+      <button onclick="window.print()">Imprimer</button>
+    </div>
+  </div>
+
+  <script>
+    const RHO20 = { cu: 0.017241, al: 0.028264 };
+    const ALPHA = { cu: 0.00393,  al: 0.00403  };
+    const els = { i:document.getElementById('i'),u:document.getElementById('u'),l:document.getElementById('l'),s:document.getElementById('s'),mat:document.getElementById('mat'),temp:document.getElementById('temp'),du:document.getElementById('du'),pct:document.getElementById('pct'),rline:document.getElementById('rline'),limits:document.getElementById('limits'),reset:document.getElementById('reset')};
+    function clampNumber(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+    function format(v,d=2){if(!Number.isFinite(v))return '–';return v.toLocaleString('fr-CH',{maximumFractionDigits:d,minimumFractionDigits:d});}
+    function compute(){
+      const I=clampNumber(els.i.value),U=clampNumber(els.u.value),L=clampNumber(els.l.value),S=clampNumber(els.s.value),mat=els.mat.value,T=clampNumber(els.temp.value);
+      if(I<0||U<=0||L<0||S<=0){els.du.textContent='–';els.pct.textContent='–';els.rline.textContent='–';els.limits.textContent='';return;}
+      const rho20=RHO20[mat],alpha=ALPHA[mat],rhoT=rho20*(1+alpha*(T-20));
+      const R_phase=rhoT*(L/S);
+      const dU=Math.sqrt(3)*I*R_phase;
+      const pct=(dU/U)*100;
+      els.du.textContent=format(dU,2)+" V";
+      els.pct.textContent=format(pct,2)+" %";
+      els.rline.textContent=format(R_phase,6);
+      els.limits.innerHTML=`<span class="${pct>5?'warn':'ok'}">${pct>5?`Attention: ${format(pct,2)} % dépasse 5 %`:`OK: ${format(pct,2)} % ≤ 5 %`}</span>`;
+    }
+    ['i','u','l','s','mat','temp'].forEach(id=>{els[id].addEventListener('input',compute);els[id].addEventListener('change',compute);});
+    els.reset.addEventListener('click',()=>{els.i.value=250;els.u.value=400;els.l.value=50;els.s.value=240;els.mat.value='cu';els.temp.value='60';compute();});
+    compute();
+  </script>
+</body>
+</html>

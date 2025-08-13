@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conversion kVA ↔ A</title>
+  <!-- Vos fichiers locaux (facultatifs si déjà présents) -->
+  <link rel="stylesheet" href="H:/Distribution/07_COMMUN/STEPHANE/Calculatrice/style.css">
+  <script src="H:/Distribution/07_COMMUN/STEPHANE/Calculatrice/menu.js" defer></script>
+  <style>
+    /* Design unifié (identique aux précédents)  */
+    :root { --bg:#0b1220; --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --accent:#2563eb; }
+    html,body{height:100%}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:linear-gradient(120deg,#0b1220,#12233c); color:var(--ink);} 
+    .wrap{max-width:1100px; margin:24px auto; padding:24px;}
+    h1{font-size:clamp(1.3rem,1vw+1rem,1.8rem); margin:.2rem 0 1rem; letter-spacing:.2px}
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;}
+    .card{background:rgba(17,24,39,.8); border:1px solid rgba(148,163,184,.22); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25);} 
+    h2{font-size:1.15rem; margin:.2rem 0 .8rem; color:#e2e8f0}
+    label{font-size:.95rem; color:var(--muted); display:block; margin:.5rem 0 .15rem}
+    input{width:100%; padding:10px 12px; background:#0b1020; color:var(--ink); border:1px solid rgba(148,163,184,.3); border-radius:12px; outline:none}
+    input:focus{border-color:#60a5fa; box-shadow:0 0 0 3px rgba(96,165,250,.25)}
+    .hint{font-size:.83rem; color:var(--muted)}
+    .out{margin-top:.6rem; font-size:1.1rem; line-height:1.5}
+    .figure{font-variant-numeric:tabular-nums}
+    .btns{margin-top:20px; display:flex; gap:10px; flex-wrap:wrap}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; background:#0b1020; border:1px solid rgba(148,163,184,.35); color:var(--ink); padding:.6rem .9rem; border-radius:12px; cursor:pointer}
+    .btn:hover{border-color:#60a5fa}
+    .btn-primary{background:#2563eb; border-color:#2563eb; color:white}
+    /* Conteneur menu (chargé par menu.js) */
+    #menu-container{margin:0 0 12px 0}
+  </style>
+</head>
+<body>
+  <!-- Menu injecté par votre script local -->
+  <div id="menu-container"></div>
+
+  <div class="wrap">
+    <h1>Conversion kVA ↔ A (3~ 400 V)</h1>
+
+    <div class="grid">
+      <!-- Carte 1 : kVA -> A -->
+      <div class="card">
+        <h2>Conversion kVA → A</h2>
+        <label for="kva">Puissance (kVA)</label>
+        <input type="number" id="kva" inputmode="decimal" placeholder="Entrez la puissance en kVA" />
+        <div class="out">
+          Intensité : <span id="ampere" class="figure">0.00</span> A
+        </div>
+        <div class="hint">Formule utilisée : I = S / (√3 × U) avec U = 400 V.</div>
+      </div>
+
+      <!-- Carte 2 : A -> kVA -->
+      <div class="card">
+        <h2>Conversion A → kVA</h2>
+        <label for="amp">Intensité (A)</label>
+        <input type="number" id="amp" inputmode="decimal" placeholder="Entrez l'intensité en A" />
+        <div class="out">
+          Puissance : <span id="kva_result" class="figure">0.00</span> kVA
+        </div>
+        <div class="hint">Formule utilisée : S = I × √3 × U avec U = 400 V.</div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="btn" onclick="window.location.href='index.html'">Retour à l'accueil</button>
+      <button class="btn" onclick="window.print()">Imprimer</button>
+    </div>
+
+    <p class="hint" style="margin-top:14px">Hypothèses : réseau <strong>triphasé</strong> 400 V. Les résultats sont indicatifs.</p>
+  </div>
+
+  <script>
+    // Calcul instantané (comme dans votre code fourni)
+    const fmt = (x)=> (isFinite(x)? Number(x).toFixed(2) : '0.00');
+
+    const elKVA = document.getElementById('kva');
+    const elA = document.getElementById('amp');
+    const outI = document.getElementById('ampere');
+    const outS = document.getElementById('kva_result');
+
+    const U = 400; // V
+    const RT3 = Math.sqrt(3);
+
+    elKVA.addEventListener('input', function(){
+      const kva = parseFloat(this.value) || 0;
+      const I = (kva * 1000) / (U * RT3);
+      outI.textContent = fmt(I);
+    });
+
+    elA.addEventListener('input', function(){
+      const I = parseFloat(this.value) || 0;
+      const S_kVA = (I * U * RT3) / 1000;
+      outS.textContent = fmt(S_kVA);
+    });
+  </script>
+</body>
+</html>

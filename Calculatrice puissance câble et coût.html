@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculatrice électricité – Tarifs & augmentation de puissance</title>
+
+   <style>
+    :root{
+      --bg:#0b1220; --bg2:#12233c;
+      --card:#111827; --ink:#e5e7eb; --muted:#94a3b8;
+      --accent:#22c55e; --accent2:#16a34a; --alert:#ef4444; --line:#1f2937;
+      --chip:#0f172a; --input:#0b1020;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      color:var(--ink);
+      background:linear-gradient(120deg,var(--bg),var(--bg2));
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .wrap{
+      max-width:1100px;
+      padding:24px;
+      text-align:center;
+    }
+    h1{margin:0 0 14px; font-weight:650; letter-spacing:.2px}
+    .sub{color:var(--muted); font-size:.95rem; margin-bottom:18px}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)) , var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 6px 20px rgba(0,0,0,.35);
+      width:50%;
+    }
+    .grid{
+      display:flex;
+      gap:14px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    label{font-size:.9rem; color:var(--muted); display:block; margin:10px 0 6px}
+    input,select,button,textarea{
+      font:inherit; color:var(--ink);
+    }
+    input,select,textarea{
+      width:100%;
+      background:var(--input);
+      border:1px solid #1e293b;
+      border-radius:10px;
+      padding:10px 12px;
+      outline:none;
+      transition:border .15s ease, box-shadow .15s ease;
+    }
+    input::placeholder{color:#64748b}
+    input:focus,select:focus,textarea:focus{
+      border-color:#334155; box-shadow:0 0 0 3px rgba(34,197,94,.15);
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      background:linear-gradient(180deg,var(--accent),var(--accent2));
+      color:#04140a;
+      border:none; border-radius:12px;
+      padding:10px 14px; cursor:pointer; font-weight:600;
+      box-shadow:0 6px 16px rgba(34,197,94,.25);
+      transition:transform .06s ease, filter .2s ease;
+      margin-top:10px;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.sec{
+      background:#0b1628; color:var(--ink); border:1px solid #1f2a44; box-shadow:none;
+    }
+
+    .title{font-size:1.05rem; font-weight:640; margin:4px 0 10px}
+    .muted{color:var(--muted); font-size:.88rem}
+
+    .result-box{
+      min-height:140px;
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)) , #0d1323;
+      border:1px dashed #263044;
+      border-radius:14px;
+      padding:12px;
+      white-space:pre-line;
+    }
+    .kv{display:grid; grid-template-columns:auto 1fr; gap:10px 12px; align-items:center}
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      background:var(--chip);
+      border:1px solid #1f2b45;
+      color:var(--muted);
+      border-radius:999px;
+      padding:6px 10px; font-size:.85rem;
+    }
+    .hr{height:1px; background:#1d263a; margin:14px 0}
+
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; justify-content:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Calculatrice électricité – Tarifs & augmentation de puissance</h1>
+    <div class="sub">Identique au style de la calculatrice transfo: fond sombre, cartes, champs arrondis, boutons verts.</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="title">Augmentation de puissance</div>
+        <div class="muted">Tarif par ampère et TVA appliquée.</div>
+        <div class="kv" style="margin-top:8px">
+          <label for="amp" class="muted">Nombre d’ampères</label>
+          <input id="amp" type="number" inputmode="decimal" min="1" placeholder="ex: 80" />
+        </div>
+        <div class="kv">
+          <label for="tarifA" class="muted">Tarif par ampère (CHF)</label>
+          <input id="tarifA" type="number" inputmode="decimal" min="0" step="0.01" value="195" />
+        </div>
+        <div class="kv">
+          <label for="tva" class="muted">TVA</label>
+          <select id="tva">
+            <option value="0.081">8.1 %</option>
+            <option value="0.077">7.7 %</option>
+            <option value="0">0 %</option>
+          </select>
+        </div>
+        <button class="btn" id="btnPuissance">Calculer</button>
+        <div class="hr"></div>
+        <div id="resPuissance" class="result-box muted">Remplis les champs puis clique sur Calculer.</div>
+      </div>
+
+      <div class="card">
+        <div class="title">Calculateur de tarifs pour câbles</div>
+        <div class="muted">Sélectionne un câble et sa longueur.</div>
+
+        <label for="cableType" style="margin-top:8px">Type de câble</label>
+        <select id="cableType">
+          <option value="">— Sélectionne —</option>
+          <option value="GKN 3x6/6" data-prix="3.7023" data-revente="14.285128">GKN 3x6/6</option>
+          <option value="GKN 3x10/10" data-prix="5.2612" data-revente="16.405232">GKN 3x10/10</option>
+          <option value="GKN 3x16/16" data-prix="7.565" data-revente="19.5384">GKN 3x16/16</option>
+          <option value="GKN 3x25/25" data-prix="11.728" data-revente="24.825872">GKN 3x25/25</option>
+          <option value="GKN 3x50/50" data-prix="20.4264" data-revente="39.909668">GKN 3x50/50</option>
+          <option value="GKN 3x95/95" data-prix="36.048" data-revente="63.11528">GKN 3x95/95</option>
+          <option value="GKN 3x150/150" data-prix="56.3537" data-revente="98.031032">GKN 3x150/150</option>
+          <option value="GKN 3x240/240" data-prix="77.7525" data-revente="135.2534">GKN 3x240/240</option>
+          <option value="GKN 1x150/50" data-prix="20.4404" data-revente="39.909656">GKN 1x150/50</option>
+          <option value="GKN 1x240/80" data-prix="28.138" data-revente="55.077816">GKN 1x240/80</option>
+          <option value="GKN 1x300/100" data-prix="35.9839" data-revente="70.209328">GKN 1x300/100</option>
+          <option value="GKN 4x6/6 Cure 3LN" data-prix="5.88" data-revente="17.2468">GKN 4x6/6 Cure 3LN</option>
+          <option value="GKN 3 x 240 Al rm / 150 mm2 Cu K" data-prix="32.65131" data-revente="73.915831">GKN 3 x 240 Al rm / 150 mm2 Cu K</option>
+          <option value="Trafoflex 1x240" data-prix="56.8" data-revente="56.8">Trafoflex 1x240</option>
+          <option value="Trafoflex 1x300" data-prix="35.8516" data-revente="64.758176">Trafoflex 1x300</option>
+          <option value="XKDT 1x50/16 cu" data-prix="9.7837" data-revente="29.865832">XKDT 1x50/16 cu</option>
+          <option value="XKDT 1x95/25 cu" data-prix="12" data-revente="33.88">XKDT 1x95/25 cu</option>
+          <option value="XKDT 1x150/35 cu" data-prix="19.8089" data-revente="43.500094">XKDT 1x150/35 cu</option>
+          <option value="XKDT 1x240/35 cu" data-prix="29.7512" data-revente="61.169382">XKDT 1x240/35 cu</option>
+          <option value="XKDT-YT 3x1x50/16 cu" data-prix="32.0926" data-revente="64.24696">XKDT-YT 3x1x50/16 cu</option>
+          <option value="XKDT-YT 3x1x95/25 cu" data-prix="44.4584" data-revente="88.844586">XKDT-YT 3x1x95/25 cu</option>
+          <option value="XKDT-YT 3x1x150/35 cu" data-prix="54.4534" data-revente="108.644312">XKDT-YT 3x1x150/35 cu</option>
+          <option value="XKDT-YT 3x1x50/25 al" data-prix="14.5734" data-revente="30.119232">XKDT-YT 3x1x50/25 al</option>
+          <option value="XKDT-YT 3x1x95/35 al" data-prix="22.8978" data-revente="44.421472">XKDT-YT 3x1x95/35 al</option>
+          <option value="XKDT-YT 3x1x120/35 al" data-prix="27.097" data-revente="51.7437">XKDT-YT 3x1x120/35 al</option>
+          <option value="XKDT-YT 3x1x240/35 al" data-prix="38.1123" data-revente="76.90192">XKDT-YT 3x1x240/35 al</option>
+          <option value="XKDT-YT 3x1x400/35 al" data-prix="46.1992" data-revente="84.845129">XKDT-YT 3x1x400/35 al</option>
+        </select>
+
+        <label for="length">Longueur (m)</label>
+        <input type="number" id="length" inputmode="decimal" placeholder="ex: 125" min="0" step="0.1" />
+
+        <div class="actions">
+          <button class="btn" id="btnCables">Calculer</button>
+          <button class="btn sec" id="btnReset">Réinitialiser</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="kv">
+          <div class="muted">Tarif de revente</div>
+          <div class="pill"><span id="revente">0 CHF</span></div>
+        </div>
+        <div class="kv" style="margin-top:6px">
+          <div class="muted">Tarif d’achat</div>
+          <div class="pill"><span id="achat">0 CHF</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fmtCHF = new Intl.NumberFormat('fr-CH', { style:'currency', currency:'CHF', maximumFractionDigits:2 });
+
+    document.getElementById('btnPuissance').addEventListener('click', () => {
+      const amp = parseFloat(document.getElementById('amp').value);
+      const tarif = parseFloat(document.getElementById('tarifA').value);
+      const tva = parseFloat(document.getElementById('tva').value);
+
+      if (!amp || amp <= 0 || !tarif || tarif < 0 || isNaN(tva)) {
+        alert("Entre des valeurs valides pour les ampères, le tarif et la TVA.");
+        return;
+      }
+
+      const montantHT = amp * tarif;
+      const montantTVA = montantHT * tva;
+      const total = montantHT + montantTVA;
+
+      const res = 
+        "Montant HT : " + fmtCHF.format(montantHT) + "\n" +
+        "TVA : " + fmtCHF.format(montantTVA) + "\n" +
+        "Total TTC : " + fmtCHF.format(total);
+
+      document.getElementById('resPuissance').textContent = res;
+    });
+
+    document.getElementById('btnCables').addEventListener('click', () => {
+      const sel = document.getElementById('cableType');
+      const opt = sel.options[sel.selectedIndex];
+      const pricePerMeter = parseFloat(opt?.getAttribute('data-prix')) || 0;
+      const reventeBase = parseFloat(opt?.getAttribute('data-revente')) || 0;
+      const length = parseFloat(document.getElementById('length').value) || 0;
+
+      if (sel.value === "" || pricePerMeter <= 0 || length <= 0) {
+        alert("Sélectionne un type de câble et une longueur valide.");
+        return;
+      }
+
+      const reventePrice = reventeBase * length;
+      const achatPrice = pricePerMeter * length;
+
+      document.getElementById('revente').textContent = fmtCHF.format(reventePrice);
+      document.getElementById('achat').textContent   = fmtCHF.format(achatPrice);
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      document.getElementById('cableType').selectedIndex = 0;
+      document.getElementById('length').value = '';
+      document.getElementById('revente').textContent = '0 CHF';
+      document.getElementById('achat').textContent   = '0 CHF';
+    });
+  </script>
+</body>
+</html>

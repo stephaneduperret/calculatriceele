@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Identique</title>
+<script src="H:/Distribution/07_COMMUN/STEPHANE/Calculatrice/menu.js" defer></script>
+<link rel="stylesheet" href="H:\Distribution\07_COMMUN\STEPHANE\Calculatrice\style.css">
+    <style>
+       
+    
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+       
+        <table>
+            <thead>
+                <tr style="background-color: lightblue;">
+                    <th>Type</th>
+                    <th>Tarif/m Revente</th>
+                    <th>Tarif/m Achat</th>
+                    <th>Longueur (m)</th>
+                    <th>Total Revente</th>
+                    <th>Total Achat</th>
+                </tr>
+            </thead>
+            <tbody id="tubeTable">
+                <!-- Lignes de tableau -->
+                <tr>
+                    <td>AV Manch 72/60 5m</td>
+                    <td>5.6544</td>
+                    <td>2.99</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 92/80 5m</td>
+                    <td>7.2456</td>
+                    <td>3.8673512</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 112/100 5m</td>
+                    <td>8.5104</td>
+                    <td>4.5643</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 132/120 5m</td>
+                    <td>10.0152</td>
+                    <td>5.3738</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 163/148 5m</td>
+                    <td>15.9312</td>
+                    <td>8.634</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 72/60 10m</td>
+                    <td>5.20</td>
+                    <td>2.7431</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 92/80 10m</td>
+                    <td>6.6336</td>
+                    <td>3.53</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 112/100 10m</td>
+                    <td>7.6944</td>
+                    <td>4.1146</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 132/120 10m</td>
+                    <td>9.1584</td>
+                    <td>4.9016</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+                <tr>
+                    <td>AV Manch 163/148 10m</td>
+                    <td>14.6256</td>
+                    <td>7.9145</td>
+                    <td><input type="number" value="0" min="0" class="length"></td>
+                    <td class="totalRow">0.00 CHF</td>
+                    <td class="totalPurchase">0.00 CHF</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="total">Total</td>
+                    <td id="grandTotal" class="total">0.00 CHF</td>
+                    <td id="grandPurchaseTotal" class="total">0.00 CHF</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+        const rows = document.querySelectorAll('#tubeTable tr');
+        const grandTotal = document.getElementById('grandTotal');
+        const grandPurchaseTotal = document.getElementById('grandPurchaseTotal');
+
+        rows.forEach(row => {
+            const lengthInput = row.querySelector('.length');
+            const totalCell = row.querySelector('.totalRow');
+            const purchaseCell = row.querySelector('.totalPurchase');
+            const pricePerMeter = parseFloat(row.children[1].textContent.replace(',', '.'));
+            const purchasePricePerMeter = parseFloat(row.children[2].textContent.replace(',', '.'));
+
+            lengthInput.addEventListener('input', () => {
+                const length = parseFloat(lengthInput.value) || 0;
+                const total = (length * pricePerMeter).toFixed(2);
+                const purchaseTotal = (length * purchasePricePerMeter).toFixed(2);
+                totalCell.textContent = `${total} CHF`;
+                purchaseCell.textContent = `${purchaseTotal} CHF`;
+
+                calculateTotals();
+            });
+        });
+
+        function calculateTotals() {
+            let total = 0;
+            let totalPurchase = 0;
+
+            document.querySelectorAll('.totalRow').forEach(cell => {
+                total += parseFloat(cell.textContent.replace(' CHF', '')) || 0;
+            });
+
+            document.querySelectorAll('.totalPurchase').forEach(cell => {
+                totalPurchase += parseFloat(cell.textContent.replace(' CHF', '')) || 0;
+            });
+
+            grandTotal.textContent = `${total.toFixed(2)} CHF`;
+            grandPurchaseTotal.textContent = `${totalPurchase.toFixed(2)} CHF`;
+        }
+</script>
+</body>
+</html>

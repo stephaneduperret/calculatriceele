@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Outils Dates – Livraison & Mois</title>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --accent:#22c55e; --alert:#ef4444; }
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:linear-gradient(120deg,#0b1220,#12233c); color:var(--ink);} 
+    .wrap{max-width:1100px; margin:24px auto; padding:24px;}
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
+    .card{background:rgba(17,24,39,.7); border:1px solid rgba(148,163,184,.2); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25);} 
+    h1{font-size:1.8rem; margin:.2rem 0 1rem; letter-spacing:.2px}
+    h2{font-size:1.15rem; margin:.2rem 0 .8rem}
+    .muted{color:var(--muted)}
+    label{font-size:.95rem; color:var(--muted); display:block; margin:.5rem 0 .15rem}
+    input{width:100%; padding:10px 12px; background:#0b1020; color:var(--ink); border:1px solid rgba(148,163,184,.3); border-radius:12px; outline:none}
+    input:focus{border-color:#60a5fa; box-shadow:0 0 0 3px rgba(96,165,250,.25)}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; background:#0b1020; border:1px solid rgba(148,163,184,.35); color:var(--ink); padding:.6rem .9rem; border-radius:12px; cursor:pointer}
+    .btn:hover{border-color:#60a5fa}
+    .btns{margin-top:20px; display:flex; gap:10px; flex-wrap:wrap}
+    .btn-primary{background:#2563eb; border-color:#2563eb; color:white}
+    .out{margin-top:.6rem; font-size:1.05rem; line-height:1.5}
+    .warn{color:var(--alert)}
+    footer{margin-top:20px; color:var(--muted); font-size:.85rem}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Outils Dates – Livraison & Nombre de Mois</h1>
+
+    <div class="grid">
+      <!-- Carte 1 : Date de livraison -->
+      <div class="card">
+        <h2>Calcul de la Date de Livraison</h2>
+        <label for="start">Date de départ :</label>
+        <input id="start" type="date" placeholder="jj.mm.aaaa" />
+        <label for="weeks">Nombre de semaines :</label>
+        <input id="weeks" type="number" step="1" min="0" placeholder="ex: 6" />
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" id="btnDelivery">Calculer</button>
+        </div>
+        <div class="out" id="outDelivery">
+          <div class="muted">Saisissez une date et un nombre de semaines, puis calculez.</div>
+        </div>
+      </div>
+
+      <!-- Carte 2 : Nombre de mois entre 2 dates -->
+      <div class="card">
+        <h2>Calcul du Nombre de Mois Entre 2 Dates</h2>
+        <label for="d1">Date de début :</label>
+        <input id="d1" type="date" placeholder="jj.mm.aaaa" />
+        <label for="d2">Date de fin :</label>
+        <input id="d2" type="date" placeholder="jj.mm.aaaa" />
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" id="btnMonths">Calculer</button>
+        </div>
+        <div class="out" id="outMonths">
+          <div class="muted">Choisissez 2 dates, puis calculez.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="btn" onclick="window.location.href='index.html'">Retour à l'accueil</button>
+      <button class="btn" onclick="window.print()">Imprimer</button>
+    </div>
+
+    <footer>
+      Les résultats sont fournis à titre indicatif. Format d'affichage : jj.mm.aaaa. Les champs date utilisent le format navigateur (aaaa-mm-jj).
+    </footer>
+  </div>
+
+<script>
+(function(){
+  const outDelivery = document.getElementById('outDelivery');
+  const outMonths = document.getElementById('outMonths');
+
+  const fmtCH = (date)=>{
+    if(!(date instanceof Date) || isNaN(date)) return '-';
+    const d = String(date.getDate()).padStart(2,'0');
+    const m = String(date.getMonth()+1).padStart(2,'0');
+    const y = date.getFullYear();
+    return `${d}.${m}.${y}`;
+  };
+
+  // --- Calcul date de livraison (date + semaines*7) ---
+  document.getElementById('btnDelivery').addEventListener('click', ()=>{
+    const startStr = document.getElementById('start').value; // yyyy-mm-dd
+    const weeksStr = document.getElementById('weeks').value;
+    if(!startStr || weeksStr===""){ outDelivery.innerHTML = '<span class="warn">Merci de renseigner la date et le nombre de semaines.</span>'; return; }
+
+    const start = new Date(startStr);
+    const weeks = Number(weeksStr);
+    if(isNaN(start) || !isFinite(weeks) || weeks<0){ outDelivery.innerHTML = '<span class="warn">Valeurs invalides.</span>'; return; }
+
+    const delivery = new Date(start);
+    delivery.setDate(delivery.getDate() + weeks*7);
+
+    outDelivery.innerHTML = `
+      <div>Date de départ : <span>${fmtCH(start)}</span></div>
+      <div>Nombre de semaines : <span>${weeks}</span></div>
+      <div>Date de livraison estimée : <span>${fmtCH(delivery)}</span></div>
+    `;
+  });
+
+  // --- Calcul nombre de mois entre 2 dates ---
+  document.getElementById('btnMonths').addEventListener('click', ()=>{
+    const a = document.getElementById('d1').value;
+    const b = document.getElementById('d2').value;
+    if(!a || !b){ outMonths.innerHTML = '<span class="warn">Merci de sélectionner les deux dates.</span>'; return; }
+
+    const dA = new Date(a), dB = new Date(b);
+    if(isNaN(dA) || isNaN(dB)){ outMonths.innerHTML = '<span class="warn">Dates invalides.</span>'; return; }
+
+    // Assurer dA <= dB
+    const start = dA <= dB ? dA : dB;
+    const end = dA <= dB ? dB : dA;
+
+    // Mois entiers (diff année/mois, ajusté si jour de fin < jour de début)
+    let months = (end.getFullYear() - start.getFullYear())*12 + (end.getMonth() - start.getMonth());
+    if(end.getDate() < start.getDate()) months -= 1;
+    if(months < 0) months = 0;
+
+    // Mois décimal basé sur 30.44 jours (moyenne sur année non-bissextile)
+    const msDay = 24*60*60*1000;
+    const daysDiff = Math.round((end - start)/msDay);
+    const monthsDecimal = daysDiff / 30.44;
+
+    outMonths.innerHTML = `
+      <div>Période : <span>${fmtCH(start)}</span> → <span>${fmtCH(end)}</span></div>
+      <div>Mois entiers : <span>${months}</span></div>
+      <div>Mois exacts (≈ décimal) : <span>${monthsDecimal.toFixed(2)}</span></div>
+      <div>Jours calendaires : <span>${daysDiff}</span></div>
+    `;
+  });
+})();
+</script>
+</body>
+</html>

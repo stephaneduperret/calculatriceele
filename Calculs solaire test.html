@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur Connecté</title>
+    <link rel="stylesheet" href="H:\Distribution\07_COMMUN\STEPHANE\Calculatrice\style.css">
+    <script src="H:/Distribution/07_COMMUN/STEPHANE/Calculatrice/menu.js" defer></script>
+    <style>
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Section 1 : Surface solaire disponible -->
+        <div class="section">
+            <h2>Surface solaire disponible</h2>
+            <p>Entrez la surface du toit en m² pour estimer la puissance solaire disponible :</p>
+            <label for="surface">Surface (m²) :</label>
+            <input type="number" id="surface" name="surface" step="0.01" min="0" oninput="processInput()">
+            <p id="resultatSolaire" style="color: red; font-weight: bold;"></p>
+        </div>
+
+        <!-- Section 2 : Conversion de kVA en Ampères -->
+        <div class="section">
+            <h2>Convertir des kVA en Ampères</h2>
+            <p>Converti la puissance en ampères selon du triphasé 400v :</p>
+            <label for="powerInput">Puissance (kVA) :</label>
+            <input type="number" id="powerInput" step="0.01" oninput="processPowerInput()">
+            <p id="conversionResult" style="color: red; font-weight: bold;">Résultat : </p>
+        </div>
+
+        <!-- Section 3 : Sélection du type de câble -->
+        <div class="section">
+            <h2>Type de câble en fonction du courant (Imax)</h2>
+            <label for="imaxInput">Ampérage (Imax) :</label>
+            <input type="number" id="imaxInput" step="0.01" oninput="processCurrentInput()">
+            <label for="temperatureCable">Température du câble :</label>
+            <select id="temperatureCable" onchange="processCurrentInput()">
+                <option value="60">60°C</option>
+                <option value="90">90°C</option>
+            </select>
+            <p id="cableResult" style="color: red; font-weight: bold;">Type de câble : </p>
+        </div>
+
+        <!-- Section 4 : Calculateur de Panneaux Solaires -->
+        <div class="section">
+            <h2>Calculateur de nombre de Panneaux Solaires nécessaire</h2>
+            <label for="panelInput">Puissance solaire en kVA:</label>
+            <input type="number" id="panelInput" step="1" min="1" oninput="processPanelInput()">
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        function processInput() {
+            const surface = parseFloat(document.getElementById('surface').value);
+            if (!isNaN(surface) && surface > 0) {
+                const rendement = 0.1845; // Rendement moyen
+                const ensoleillement = 1000; // Ensoleillement moyen en W/m²
+                const puissanceW = surface * rendement * ensoleillement;
+                const puissanceKVA = puissanceW / 1000;
+                updateFromPower(puissanceKVA);
+            }
+        }
+
+        function processPowerInput() {
+            const power = parseFloat(document.getElementById('powerInput').value);
+            if (!isNaN(power) && power > 0) {
+                updateFromPower(power);
+            }
+        }
+
+        function processCurrentInput() {
+            const current = parseFloat(document.getElementById('imaxInput').value);
+            const temperature = document.getElementById('temperatureCable').value;
+            if (!isNaN(current) && current > 0) {
+                const voltage = 400; // Triphasé
+                const power = (current * Math.sqrt(3) * voltage) / 1000;
+                updateFromPower(power, temperature);
+            }
+        }
+
+        function processPanelInput() {
+            const panelCount = parseInt(document.getElementById('panelInput').value);
+            if (!isNaN(panelCount) && panelCount > 0) {
+                const panelPower = 0.5; // Supposons que chaque panneau produit 0.5 kVA
+                const puissanceKVA = panelCount * panelPower;
+                updateFromPower(puissanceKVA);
+            }
+        }
+
+        function updateFromPower(puissanceKVA, temperature = 90) {
+            document.getElementById('resultatSolaire').innerText = `Puissance disponible : ${puissanceKVA.toFixed(2)} kVA`;
+
+            const voltage = 400; // Triphasé
+            const current = (puissanceKVA * 1000) / (Math.sqrt(3) * voltage);
+            document.getElementById('conversionResult').innerText = `Résultat : ${current.toFixed(2)} A`;
+
+            const suitableCable = cables[temperature].find(cable => current <= cable.current);
+            document.getElementById('cableResult').innerText = 
+                suitableCable ? `Type de câble : ${suitableCable.cable}` : "Aucun câble trouvé.";
+
+            const panelPower = 0.5; // Supposons que chaque panneau produit 0.5 kVA
+            const panelsNeeded = Math.ceil(puissanceKVA / panelPower);
+            document.getElementById('result').innerText = `Nombre de panneaux nécessaires : ${panelsNeeded}`;
+        }
+
+        const cables = {
+            60: [
+                { current: 80, cable: "16 mm²" },
+                { current: 110, cable: "25 mm²" },
+                { current: 150, cable: "50 mm²" },
+                { current: 220, cable: "95 mm²" },
+                { current: 275, cable: "150 mm²" },
+                { current: 360, cable: "240 mm²" },
+                { current: 430, cable: "300 mm²" },
+                { current: 720, cable: "2 câbles de 240 mm²" },
+                { current: 860, cable: "2 câbles de 300 mm²" },
+                { current: 1080, cable: "3 câbles de 240 mm²" },
+                { current: 1290, cable: "3 câbles de 300 mm²" },
+                { current: 1440, cable: "4 câbles de 240 mm²" },
+                { current: 1720, cable: "4 câbles de 300 mm²" },
+                { current: 1800, cable: "5 câbles de 240 mm²" },
+                { current: 2160, cable: "5 câbles de 300 mm²" },
+                { current: 2520, cable: "6 câbles de 240 mm²" },
+                { current: 2880, cable: "6 câbles de 300 mm²" },
+                { current: 3000, cable: "7 câbles de 240 mm²" }
+            ],
+            90: [
+                { current: 100, cable: "16 mm²" },
+                { current: 135, cable: "25 mm²" },
+                { current: 195, cable: "50 mm²" },
+                { current: 280, cable: "95 mm²" },
+                { current: 360, cable: "150 mm²" },
+                { current: 470, cable: "240 mm²" },
+                { current: 560, cable: "300 mm²" },
+                { current: 900, cable: "2 câbles de 240 mm²" },
+                { current: 1120, cable: "2 câbles de 300 mm²" },
+                { current: 1400, cable: "3 câbles de 240 mm²" },
+                { current: 1680, cable: "3 câbles de 300 mm²" },
+                { current: 1800, cable: "4 câbles de 240 mm²" },
+                { current: 2240, cable: "4 câbles de 300 mm²" },
+                { current: 2520, cable: "5 câbles de 240 mm²" },
+                { current: 3000, cable: "5 câbles de 300 mm²" }
+            ]
+        };
+    </script>
+</body>
+</html>

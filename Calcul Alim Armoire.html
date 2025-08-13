@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Identique</title>
+<script src="H:/Distribution/07_COMMUN/STEPHANE/Calculatrice/menu.js" defer></script>
+<link rel="stylesheet" href="H:\Distribution\07_COMMUN\STEPHANE\Calculatrice\style.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calcul intensité d'alimentation d'armoire Électrique</h1>
+        <form id="armoireForm">
+            <label for="nomArmoire">Nom de l'Armoire</label>
+            <input type="text" id="nomArmoire" name="nomArmoire" required>
+
+            <label>Intensités des Départs (A)</label>
+            <div id="departs">
+                <input type="number" id="dep1" placeholder="Dép 1" min="0" required>
+                <input type="number" id="dep2" placeholder="Dép 2" min="0">
+                <input type="number" id="dep3" placeholder="Dép 3" min="0">
+                <input type="number" id="dep4" placeholder="Dép 4" min="0">
+                <input type="number" id="dep5" placeholder="Dép 5" min="0">
+                <input type="number" id="dep6" placeholder="Dép 6" min="0">
+                <input type="number" id="dep7" placeholder="Dép 7" min="0">
+                <input type="number" id="dep8" placeholder="Dép 8" min="0">
+                <input type="number" id="dep9" placeholder="Dép 9" min="0">
+                <input type="number" id="dep10" placeholder="Dép 10" min="0">
+                <input type="number" id="dep11" placeholder="Dép 11" min="0">
+                <input type="number" id="dep12" placeholder="Dép 12" min="0">
+                <input type="number" id="dep13" placeholder="Dép 13" min="0">
+                <input type="number" id="dep14" placeholder="Dép 14" min="0">
+            </div>
+
+            <button type="button" id="addField">+</button>
+            <button type="button" onclick="calculer()">Calculer</button>
+        </form>
+
+        <div id="results" class="results" style="display:none;">
+            <h3>Résultats</h3>
+            <p id="totalDeparts"></p>
+            <p id="ampereNecessaire"></p>
+            <p id="fusibleRecommande"></p>
+            <p id="cableRecommande"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('addField').addEventListener('click', () => {
+            const departContainer = document.getElementById('departs');
+            const newField = document.createElement('input');
+            const count = departContainer.children.length + 1;
+            newField.type = 'number';
+            newField.id = `dep${count}`;
+            newField.placeholder = `Dép ${count}`;
+            newField.min = '0';
+            departContainer.appendChild(newField);
+        });
+
+        function calculer() {
+            const departInputs = document.querySelectorAll('#departs input');
+
+            let totalDeparts = 0;
+            departInputs.forEach(input => {
+                totalDeparts += parseFloat(input.value) || 0;
+            });
+
+            const ampereNecessaire = totalDeparts * 0.4;
+
+            const fusibles = [25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000];
+            const fusibleRecommande = fusibles.find(fusible => fusible >= ampereNecessaire) || "Aucun fusible approprié";
+
+            const cables = [
+                { type: "GKN 3x16/16", max: 80 },
+                { type: "GKN 3x25/25", max: 110 },
+                { type: "GKN 3x50/50", max: 150 },
+                { type: "GKN 3x95/95", max: 220 },
+                { type: "GKN 3x150/150", max: 275 },
+                { type: "GKN 3x240/240", max: 360 },
+                { type: "GKN 1x150/50", max: 297 },
+                { type: "GKN 1x240/80", max: 400 },
+                { type: "GKN 1x300/100", max: 452 },
+                { type: "2x GKN 3x150/150", max: 550 },
+                { type: "2x GKN 3x240/240", max: 720 },
+                { type: "2x GKN 1x150/50", max: 593 },
+                { type: "2x GKN 1x240/80", max: 800 },
+                { type: "2x GKN 1x300/100", max: 904 },
+                { type: "3x GKN 3x150/150", max: 825 },
+                { type: "3x GKN 3x240/240", max: 1080 },
+                { type: "3x GKN 1x150/50", max: 891 },
+                { type: "3x GKN 1x240/80", max: 1200 },
+                { type: "3x GKN 1x300/100", max: 1356 },
+                { type: "4x GKN 3x150/150", max: 2200 },
+                { type: "4x GKN 3x240/240", max: 1440 },
+                { type: "4x GKN 1x150/50", max: 1188 },
+                { type: "4x GKN 1x240/80", max: 1600 },
+                { type: "4x GKN 1x300/100", max: 1808 }
+            ];
+
+            const cableRecommande = cables.find(cable => cable.max >= fusibleRecommande)?.type || "Aucun câble approprié";
+
+            document.getElementById('totalDeparts').textContent = `Total des départs : ${totalDeparts.toFixed(2)} A`;
+            document.getElementById('ampereNecessaire').textContent = `Ampérage nécessaire après calcul : ${ampereNecessaire.toFixed(2)} A`;
+            document.getElementById('fusibleRecommande').textContent = `Fusible recommandé : ${fusibleRecommande} A`;
+            document.getElementById('cableRecommande').textContent = `Câble recommandé : ${cableRecommande}`;
+
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
