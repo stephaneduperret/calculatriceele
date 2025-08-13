@@ -1,162 +1,164 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Identique</title>
-<link rel="stylesheet" href="H:\Distribution\07_COMMUN\STEPHANE\Calculatrice\style.css">
-<script src="H:/Distribution/07_COMMUN/STEPHANE/Calculatrice/menu.js" defer></script>
-    <style>
-       
-    
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Menu Identique</title>
+
+  <!-- Liens relatifs pour GitHub Pages -->
+  <link rel="stylesheet" href="./style.css">
+  <script src="./menu.js" defer></script>
+
+  <style>
+    /* Styles optionnels spécifiques à cette page */
+  </style>
 </head>
 <body>
 
+  <!-- Le menu sera injecté par menu.js si nécessaire -->
 
+  <div class="container">
 
- <div class="container">
-     
-    
-     <!-- Section 1 : Calculateur de puissance solaire -->
-        <div class="section">
-            <h2>Calculateur de Puissance Solaire</h2>
-            <p>Entrez la surface du toit en m² pour estimer la puissance solaire disponible :</p>
-            <label for="surface">Surface (m²) :</label>
-            <input type="number" id="surface" name="surface" step="0.01" min="0">
-            <button onclick="calculerPuissance()">Calculer</button>
-            <p id="resultatSolaire"style="color: red; font-weight: bold;"></p>
-        </div>
-      <!-- Section 2 : Conversion de kVA en Ampères -->
-        <div class="section">
-            <h2>Convertir des kVA en Ampères</h2>
-            <p>Converti la puissance en ampères selon du triphasé 400v :</p>
-            <label for="powerInput">Puissance (kVA) :</label>
-            <input type="number" id="powerInput" placeholder="Ex : 15" />
-            <button onclick="convertToAmps()">Convertir</button>
-            <p id="conversionResult" style="color: red; font-weight: bold;">Résultat : </p>
-        </div>  
-        <!-- Section 3 : Sélection du type de câble -->
-        <div class="section">
-            <h2>Type de câble en fonction du courant (Imax)</h2>
-            <label for="imaxInput">Entrez une valeur d'Imax (A) :</label>
-            <input type="number" id="imaxInput" placeholder="Ex : 275" />
-            <label for="temperatureCable">Choisissez la température :</label>
-            <select id="temperatureCable">
-              <option value="90">90°C</option>
-                <option value="60">60°C</option>
-                
-            </select>
-            <button onclick="findCable()">Rechercher</button>
-            <p id="cableResult" style="color: red; font-weight: bold;">Type de câble : </p>
-        </div>
-        
-        <!-- Section 4 : Calculateur de Panneaux Solaires -->
-        <div class="section">
-     <h2>Calculateur de Panneaux Solaires</h2>
-    <label for="solarPower">Puissance solaire en kVA :</label>
-    <input type="number" id="solarPower" placeholder="Entrez la puissance en kVA">
-    <button onclick="calculatePanels()">Calculer</button>
-    <div id="result" class="result"></div>
-</div>
-  
-    
+    <!-- Section 1 : Calculateur de puissance solaire -->
+    <div class="section">
+      <h2>Calculateur de Puissance Solaire</h2>
+      <p>Entrez la surface du toit en m² pour estimer la puissance solaire disponible :</p>
+      <label for="surface">Surface (m²) :</label>
+      <input type="number" id="surface" name="surface" step="0.01" min="0">
+      <button onclick="calculerPuissance()">Calculer</button>
+      <p id="resultatSolaire" style="color: red; font-weight: bold;"></p>
     </div>
 
+    <!-- Section 2 : Conversion de kVA en Ampères -->
+    <div class="section">
+      <h2>Convertir des kVA en Ampères</h2>
+      <p>Converti la puissance en ampères selon du triphasé 400v :</p>
+      <label for="powerInput">Puissance (kVA) :</label>
+      <input type="number" id="powerInput" placeholder="Ex : 15" />
+      <button onclick="convertToAmps()">Convertir</button>
+      <p id="conversionResult" style="color: red; font-weight: bold;">Résultat : </p>
+    </div>
+
+    <!-- Section 3 : Sélection du type de câble -->
+    <div class="section">
+      <h2>Type de câble en fonction du courant (Imax)</h2>
+      <label for="imaxInput">Entrez une valeur d'Imax (A) :</label>
+      <input type="number" id="imaxInput" placeholder="Ex : 275" />
+      <label for="temperatureCable">Choisissez la température :</label>
+      <select id="temperatureCable">
+        <option value="90">90°C</option>
+        <option value="60">60°C</option>
+      </select>
+      <button onclick="findCable()">Rechercher</button>
+      <p id="cableResult" style="color: red; font-weight: bold;">Type de câble : </p>
+    </div>
+
+    <!-- Section 4 : Calculateur de Panneaux Solaires -->
+    <div class="section">
+      <h2>Calculateur de Panneaux Solaires</h2>
+      <label for="solarPower">Puissance solaire en kVA :</label>
+      <input type="number" id="solarPower" placeholder="Entrez la puissance en kVA">
+      <button onclick="calculatePanels()">Calculer</button>
+      <div id="result" class="result"></div>
+    </div>
+
+  </div>
+
+  <script>
+    function calculerPuissance() {
+      const surface = parseFloat(document.getElementById('surface').value);
+      const rendement = 0.1845; // ~18.45 %
+      const ensoleillement = 1000; // W/m²
+
+      if (isNaN(surface) || surface <= 0) {
+        alert('Veuillez entrer une surface valide en m².');
+        return;
+      }
+
+      const puissanceW = surface * rendement * ensoleillement;
+      const puissanceKVA = puissanceW / 1000;
+      document.getElementById('resultatSolaire').innerText =
+        `Puissance disponible : ${puissanceKVA.toFixed(2)} kVA`;
+    }
+
+    function convertToAmps() {
+      const power = parseFloat(document.getElementById("powerInput").value);
+      if (isNaN(power) || power <= 0) {
+        document.getElementById("conversionResult").textContent =
+          "Veuillez entrer une puissance valide (supérieure à 0).";
+        return;
+      }
+      const voltage = 400;
+      const current = (power * 1000) / (Math.sqrt(3) * voltage);
+      document.getElementById("conversionResult").textContent =
+        `Résultat : ${current.toFixed(2)} A`;
+    }
+
+    function findCable() {
+      const imax = parseFloat(document.getElementById("imaxInput").value);
+      const temperature = document.getElementById("temperatureCable").value;
+      if (isNaN(imax) || imax <= 0) {
+        document.getElementById("cableResult").textContent =
+          "Veuillez entrer une valeur d'Imax valide (supérieure à 0).";
+        return;
+      }
+      const suitableCable = cables[temperature].find(cable => imax <= cable.current);
+      document.getElementById("cableResult").textContent =
+        suitableCable ? `Type de câble : ${suitableCable.cable}` : "Aucun câble trouvé.";
+    }
+
+    const cables = {
+      60: [
+        { current: 80, cable: "16 mm²" },
+        { current: 110, cable: "25 mm²" },
+        { current: 150, cable: "50 mm²" },
+        { current: 220, cable: "95 mm²" },
+        { current: 275, cable: "150 mm²" },
+        { current: 360, cable: "240 mm²" },
+        { current: 430, cable: "300 mm²" },
+        { current: 720, cable: "2 câbles de 240 mm²" },
+        { current: 860, cable: "2 câbles de 300 mm²" },
+        { current: 1080, cable: "3 câbles de 240 mm²" },
+        { current: 1290, cable: "3 câbles de 300 mm²" },
+        { current: 1440, cable: "4 câbles de 240 mm²" },
+        { current: 1720, cable: "4 câbles de 300 mm²" },
+        { current: 1800, cable: "5 câbles de 240 mm²" },
+        { current: 2160, cable: "5 câbles de 300 mm²" },
+        { current: 2520, cable: "6 câbles de 240 mm²" },
+        { current: 2880, cable: "6 câbles de 300 mm²" },
+        { current: 3000, cable: "7 câbles de 240 mm²" }
+      ],
+      90: [
+        { current: 100, cable: "16 mm²" },
+        { current: 135, cable: "25 mm²" },
+        { current: 195, cable: "50 mm²" },
+        { current: 280, cable: "95 mm²" },
+        { current: 360, cable: "150 mm²" },
+        { current: 470, cable: "240 mm²" },
+        { current: 560, cable: "300 mm²" },
+        { current: 900, cable: "2 câbles de 240 mm²" },
+        { current: 1120, cable: "2 câbles de 300 mm²" },
+        { current: 1400, cable: "3 câbles de 240 mm²" },
+        { current: 1680, cable: "3 câbles de 300 mm²" },
+        { current: 1800, cable: "4 câbles de 240 mm²" },
+        { current: 2240, cable: "4 câbles de 300 mm²" },
+        { current: 2520, cable: "5 câbles de 240 mm²" },
+        { current: 3000, cable: "5 câbles de 300 mm²" }
+      ]
+    };
+
+    function calculatePanels() {
+      const power = parseFloat(document.getElementById('solarPower').value);
+      const panelPower = 0.5; // 0.5 kVA par panneau
+      if (isNaN(power) || power <= 0) {
+        document.getElementById('result').textContent = "Veuillez entrer une valeur valide.";
+        return;
+      }
+      const panelsNeeded = Math.ceil(power / panelPower);
+      document.getElementById('result').textContent =
+        `Nombre de panneaux nécessaires : ${panelsNeeded}`;
+    }
+  </script>
+
 </body>
-<script>
-        
-         function calculerPuissance() {
-            const surface = parseFloat(document.getElementById('surface').value);
-            const rendement = 0.1845; // Rendement moyen (15%)
-            const ensoleillement = 1000; // Ensoleillement moyen en W/m²
-
-            if (isNaN(surface) || surface <= 0) {
-                alert('Veuillez entrer une surface valide en m².');
-                return;
-            }
-
-            // Calcul de la puissance en W
-            const puissanceW = surface * rendement * ensoleillement;
-
-            // Conversion en kVA (1 kVA = 1000 W)
-            const puissanceKVA = puissanceW / 1000;
-
-            document.getElementById('resultatSolaire').innerText = `Puissance disponible : ${puissanceKVA.toFixed(2)} kVA`;
-        }
-        function convertToAmps() {
-            const power = parseFloat(document.getElementById("powerInput").value);
-            if (isNaN(power) || power <= 0) {
-                document.getElementById("conversionResult").textContent = 
-                    "Veuillez entrer une puissance valide (supérieure à 0).";
-                return;
-            }
-            const voltage = 400;
-            const current = (power * 1000) / (Math.sqrt(3) * voltage);
-            document.getElementById("conversionResult").textContent = `Résultat : ${current.toFixed(2)} A`;
-        }
-        function findCable() {
-            const imax = parseFloat(document.getElementById("imaxInput").value);
-            const temperature = document.getElementById("temperatureCable").value;
-            if (isNaN(imax) || imax <= 0) {
-                document.getElementById("cableResult").textContent = 
-                    "Veuillez entrer une valeur d'Imax valide (supérieure à 0).";
-                return;
-            }
-            const suitableCable = cables[temperature].find(cable => imax <= cable.current);
-            document.getElementById("cableResult").textContent = 
-                suitableCable ? `Type de câble : ${suitableCable.cable}` : "Aucun câble trouvé.";
-        }
-
-        const cables = {
-            60: [
-                { current: 80, cable: "16 mm²" },
-    { current: 110, cable: "25 mm²" },
-    { current: 150, cable: "50 mm²" },
-    { current: 220, cable: "95 mm²" },
-    { current: 275, cable: "150 mm²" },
-    { current: 360, cable: "240 mm²" },
-    { current: 430, cable: "300 mm²" },
-    { current: 720, cable: "2 câbles de 240 mm²" },
-    { current: 860, cable: "2 câbles de 300 mm²" },
-    { current: 1080, cable: "3 câbles de 240 mm²" },
-    { current: 1290, cable: "3 câbles de 300 mm²" },
-    { current: 1440, cable: "4 câbles de 240 mm²" },
-    { current: 1720, cable: "4 câbles de 300 mm²" },
-    { current: 1800, cable: "5 câbles de 240 mm²" },
-    { current: 2160, cable: "5 câbles de 300 mm²" },
-    { current: 2520, cable: "6 câbles de 240 mm²" },
-    { current: 2880, cable: "6 câbles de 300 mm²" },
-    { current: 3000, cable: "7 câbles de 240 mm²" }
-            ],
-            90: [
-   { current: 100, cable: "16 mm²" },
-    { current: 135, cable: "25 mm²" },
-    { current: 195, cable: "50 mm²" },
-    { current: 280, cable: "95 mm²" },
-    { current: 360, cable: "150 mm²" },
-    { current: 470, cable: "240 mm²" },
-    { current: 560, cable: "300 mm²" },
-    { current: 900, cable: "2 câbles de 240 mm²" },
-    { current: 1120, cable: "2 câbles de 300 mm²" },
-    { current: 1400, cable: "3 câbles de 240 mm²" },
-    { current: 1680, cable: "3 câbles de 300 mm²" },
-    { current: 1800, cable: "4 câbles de 240 mm²" },
-    { current: 2240, cable: "4 câbles de 300 mm²" },
-    { current: 2520, cable: "5 câbles de 240 mm²" },
-    { current: 3000, cable: "5 câbles de 300 mm²" }
-            ]
-        };
-        function calculatePanels() {
-            const power = parseFloat(document.getElementById('solarPower').value);
-            const panelPower = 0.5; // Supposons que chaque panneau produit 0.5 kVA
-            if (isNaN(power) || power <= 0) {
-                document.getElementById('result').textContent = "Veuillez entrer une valeur valide.";
-                return;
-            }
-            const panelsNeeded = Math.ceil(power / panelPower);
-            document.getElementById('result').textContent = `Nombre de panneaux nécessaires : ${panelsNeeded}`;
-        }
-     
-    </script>
 </html>
