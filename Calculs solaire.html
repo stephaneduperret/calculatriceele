@@ -1,84 +1,178 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Menu Identique</title>
+  <title>Outils solaires & câbles</title>
 
-  <!-- Liens relatifs pour GitHub Pages -->
+  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
 
   <style>
-    /* Styles optionnels spécifiques à cette page */
+    :root{
+      --bg:#0b1220;           /* fond global */
+      --card:#111827;         /* fond cartes */
+      --ink:#e5e7eb;          /* texte principal */
+      --muted:#94a3b8;        /* texte secondaire */
+      --line:rgba(148,163,184,.22);
+      --accent:#2563eb;       /* bouton primaire */
+      --accent-2:#4b5563;     /* bouton secondaire */
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:radial-gradient(1200px 700px at 10% -10%, #12233c 0%, transparent 60%),
+                 radial-gradient(1000px 600px at 110% 10%, #0f1e34 0%, transparent 55%),
+                 linear-gradient(120deg,#0b1220,#12233c);
+      color:var(--ink);
+    }
+
+    .wrap{max-width:1100px; margin:28px auto; padding:24px}
+
+    h1{font-size:1.9rem; margin:.2rem 0 1.1rem}
+    .muted{color:var(--muted)}
+
+    /* Cartes */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:16px;
+    }
+    .card{
+      background:rgba(17,24,39,.78);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
+    }
+    .card h2{font-size:1.05rem; margin:.2rem 0 .8rem; color:#e2e8f0}
+
+    /* Champs */
+    label{display:block; font-size:.95rem; color:var(--muted); margin:.55rem 0 .2rem}
+    input, select, button{
+      font:inherit;
+    }
+    input[type="number"], select{
+      width:100%;
+      padding:10px 12px;
+      background:#0b1020;
+      color:var(--ink);
+      border:1px solid rgba(148,163,184,.30);
+      border-radius:12px;
+      outline:none;
+    }
+    input:focus, select:focus{
+      border-color:#60a5fa;
+      box-shadow:0 0 0 3px rgba(96,165,250,.25);
+    }
+
+    /* Résultats */
+    .result-line{margin-top:.55rem; font-size:1.05rem; line-height:1.5}
+    .emph{color:#93c5fd}
+
+    /* Boutons */
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+    .btn{
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:10px 14px; border-radius:10px; cursor:pointer; border:1px solid transparent;
+    }
+    .btn-primary{background:var(--accent); color:#fff; border-color:var(--accent)}
+    .btn-secondary{background:var(--accent-2); color:#fff; border-color:var(--accent-2)}
+    .btn:hover{filter:brightness(1.05)}
+
+    /* Mise en page titre des sections pour cohérence */
+    .section h2{margin-top:0}
+
+    /* Container global des sections (cartes) */
+    .stack{display:grid; gap:16px}
   </style>
 </head>
 <body>
 
-  <!-- Le menu sera injecté par menu.js si nécessaire -->
+  <!-- Menu injecté par menu.js (navbar) -->
+  <div id="menu-container"></div>
 
-  <div class="container">
+  <div class="wrap">
+    <h1>Outils solaires et choix de câbles</h1>
 
-    <!-- Section 1 : Calculateur de puissance solaire -->
-    <div class="section">
-      <h2>Calculateur de Puissance Solaire</h2>
-      <p>Entrez la surface du toit en m² pour estimer la puissance solaire disponible :</p>
-      <label for="surface">Surface (m²) :</label>
-      <input type="number" id="surface" name="surface" step="0.01" min="0">
-      <button onclick="calculerPuissance()">Calculer</button>
-      <p id="resultatSolaire" style="color: red; font-weight: bold;"></p>
+    <!-- Grille deux colonnes si large écran -->
+    <div class="grid">
+
+      <div class="card section">
+        <h2>Calculateur de puissance solaire</h2>
+        <p class="muted">Entrez la surface du toit en m² pour estimer la puissance disponible.</p>
+        <label for="surface">Surface toiture en m²</label>
+        <input type="number" id="surface" step="0.01" min="0" placeholder="ex: 42.5">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="calculerPuissance()">Calculer</button>
+        </div>
+        <div id="resultatSolaire" class="result-line"></div>
+      </div>
+
+      <div class="card section">
+        <h2>Conversion kVA → A</h2>
+        <p class="muted">Triphasé 400 V. Formule I = S / (√3 × U).</p>
+        <label for="powerInput">Puissance apparente S en kVA</label>
+        <input type="number" id="powerInput" placeholder="ex: 15">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="convertToAmps()">Convertir</button>
+        </div>
+        <div id="conversionResult" class="result-line"></div>
+      </div>
+
+      <div class="card section">
+        <h2>Type de câble selon Imax</h2>
+        <label for="imaxInput">Imax en A</label>
+        <input type="number" id="imaxInput" placeholder="ex: 275">
+
+        <label for="temperatureCable">Température de service</label>
+        <select id="temperatureCable">
+          <option value="90">90°C</option>
+          <option value="60">60°C</option>
+        </select>
+
+        <div class="btns">
+          <button class="btn btn-primary" onclick="findCable()">Rechercher</button>
+        </div>
+        <div id="cableResult" class="result-line"></div>
+      </div>
+
+      <div class="card section">
+        <h2>Calculateur de panneaux</h2>
+        <label for="solarPower">Puissance solaire visée en kVA</label>
+        <input type="number" id="solarPower" placeholder="ex: 12">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="calculatePanels()">Calculer</button>
+        </div>
+        <div id="result" class="result-line"></div>
+      </div>
+
     </div>
 
-    <!-- Section 2 : Conversion de kVA en Ampères -->
-    <div class="section">
-      <h2>Convertir des kVA en Ampères</h2>
-      <p>Converti la puissance en ampères selon du triphasé 400v :</p>
-      <label for="powerInput">Puissance (kVA) :</label>
-      <input type="number" id="powerInput" placeholder="Ex : 15" />
-      <button onclick="convertToAmps()">Convertir</button>
-      <p id="conversionResult" style="color: red; font-weight: bold;">Résultat : </p>
+    <div class="btns" style="margin-top:22px">
+      <button class="btn btn-secondary" onclick="window.location.href='./index.html'">Retour à l'accueil</button>
+      <button class="btn btn-secondary" onclick="window.print()">Imprimer</button>
     </div>
-
-    <!-- Section 3 : Sélection du type de câble -->
-    <div class="section">
-      <h2>Type de câble en fonction du courant (Imax)</h2>
-      <label for="imaxInput">Entrez une valeur d'Imax (A) :</label>
-      <input type="number" id="imaxInput" placeholder="Ex : 275" />
-      <label for="temperatureCable">Choisissez la température :</label>
-      <select id="temperatureCable">
-        <option value="90">90°C</option>
-        <option value="60">60°C</option>
-      </select>
-      <button onclick="findCable()">Rechercher</button>
-      <p id="cableResult" style="color: red; font-weight: bold;">Type de câble : </p>
-    </div>
-
-    <!-- Section 4 : Calculateur de Panneaux Solaires -->
-    <div class="section">
-      <h2>Calculateur de Panneaux Solaires</h2>
-      <label for="solarPower">Puissance solaire en kVA :</label>
-      <input type="number" id="solarPower" placeholder="Entrez la puissance en kVA">
-      <button onclick="calculatePanels()">Calculer</button>
-      <div id="result" class="result"></div>
-    </div>
-
   </div>
 
   <script>
     function calculerPuissance() {
       const surface = parseFloat(document.getElementById('surface').value);
-      const rendement = 0.1845; // ~18.45 %
+      const rendement = 0.1845;  // ~18.45 %
       const ensoleillement = 1000; // W/m²
 
       if (isNaN(surface) || surface <= 0) {
-        alert('Veuillez entrer une surface valide en m².');
+        document.getElementById('resultatSolaire').textContent =
+          "Veuillez entrer une surface valide en m².";
         return;
       }
 
       const puissanceW = surface * rendement * ensoleillement;
       const puissanceKVA = puissanceW / 1000;
-      document.getElementById('resultatSolaire').innerText =
-        `Puissance disponible : ${puissanceKVA.toFixed(2)} kVA`;
+      document.getElementById('resultatSolaire').innerHTML =
+        `Puissance disponible : <span class="emph">${puissanceKVA.toFixed(2)} kVA</span>`;
     }
 
     function convertToAmps() {
@@ -90,8 +184,8 @@
       }
       const voltage = 400;
       const current = (power * 1000) / (Math.sqrt(3) * voltage);
-      document.getElementById("conversionResult").textContent =
-        `Résultat : ${current.toFixed(2)} A`;
+      document.getElementById("conversionResult").innerHTML =
+        `Résultat : <span class="emph">${current.toFixed(2)} A</span>`;
     }
 
     function findCable() {
@@ -103,13 +197,15 @@
         return;
       }
       const suitableCable = cables[temperature].find(cable => imax <= cable.current);
-      document.getElementById("cableResult").textContent =
-        suitableCable ? `Type de câble : ${suitableCable.cable}` : "Aucun câble trouvé.";
+      document.getElementById("cableResult").innerHTML =
+        suitableCable ?
+          `Type de câble : <span class="emph">${suitableCable.cable}</span>` :
+          "Aucun câble trouvé.";
     }
 
     const cables = {
       60: [
-        { current: 80, cable: "16 mm²" },
+        { current: 80,  cable: "16 mm²" },
         { current: 110, cable: "25 mm²" },
         { current: 150, cable: "50 mm²" },
         { current: 220, cable: "95 mm²" },
@@ -149,16 +245,16 @@
 
     function calculatePanels() {
       const power = parseFloat(document.getElementById('solarPower').value);
-      const panelPower = 0.5; // 0.5 kVA par panneau
+      const panelPower = 0.5; // kVA par panneau
       if (isNaN(power) || power <= 0) {
-        document.getElementById('result').textContent = "Veuillez entrer une valeur valide.";
+        document.getElementById('result').textContent =
+          "Veuillez entrer une valeur valide.";
         return;
       }
       const panelsNeeded = Math.ceil(power / panelPower);
-      document.getElementById('result').textContent =
-        `Nombre de panneaux nécessaires : ${panelsNeeded}`;
+      document.getElementById('result').innerHTML =
+        `Nombre de panneaux nécessaires : <span class="emph">${panelsNeeded}</span>`;
     }
   </script>
-
 </body>
 </html>
