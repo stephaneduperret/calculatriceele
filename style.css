@@ -20,26 +20,38 @@ body{
   background:linear-gradient(120deg,var(--bg-1),var(--bg-2));
 }
 
-/* Barre de navigation (discrète, sombre) */
+/* Barre de navigation */
 .navbar{
   display:flex; align-items:center; justify-content:space-between;
   background:rgba(0,0,0,.25);
   backdrop-filter: blur(6px);
-  padding:10px 20px; border-bottom:1px solid var(--stroke);
+  padding:10px 20px;
+  border-bottom:1px solid var(--stroke);
 }
 .navbar .logo{display:flex; align-items:center}
 .navbar .logo img{height:28px; margin-right:10px}
-.navbar .menu{display:flex; list-style:none; margin:0; padding:0}
+.navbar .menu{
+  display:flex;
+  list-style:none;
+  margin:0;
+  padding:0;
+}
 .navbar .menu li{margin:0 12px}
 .navbar .menu li a{
-  text-decoration:none; color:var(--ink); opacity:.9;
+  text-decoration:none;
+  color:var(--ink);
+  opacity:.9;
 }
-.navbar .menu li a:hover{opacity:1; text-decoration:underline}
+.navbar .menu li a:hover{
+  opacity:1;
+  text-decoration:underline;
+}
 
 /* Bouton hamburger */
 .toggle {
   display:none;
-  align-items:center; justify-content:center;
+  align-items:center;
+  justify-content:center;
   padding:8px 12px;
   background:#0f172a;
   border:1px solid var(--stroke);
@@ -69,13 +81,18 @@ body{
 
 /* Titre */
 h1{
-  text-align:center; margin:32px 0 8px 0; font-weight:700;
+  text-align:center;
+  margin:32px 0 8px 0;
+  font-weight:700;
 }
 h1 + p.subtitle{
-  text-align:center; margin:0 0 20px 0; color:var(--muted); font-size:.95rem;
+  text-align:center;
+  margin:0 0 20px 0;
+  color:var(--muted);
+  font-size:.95rem;
 }
 
-/* Grille centrale (cartes empilées et centrées) */
+/* Grille centrale */
 .container{
   display:grid;
   grid-template-columns:1fr;
@@ -107,7 +124,6 @@ label, input, select, p{
   display:block;
 }
 label{color:var(--muted); margin-bottom:6px}
-
 input, select{
   width:100%;
   padding:10px 12px;
@@ -124,7 +140,7 @@ input:focus, select:focus{
   box-shadow:0 0 0 4px rgba(96,165,250,.15);
 }
 
-/* Boutons verts */
+/* Boutons */
 button{
   display:inline-block;
   padding:10px 18px;
@@ -140,12 +156,14 @@ button{
 button:hover{background:var(--accent-hover)}
 button:active{transform:translateY(1px)}
 button.secondary{
-  background:transparent; color:var(--ink);
-  border:1px solid var(--stroke); box-shadow:none;
+  background:transparent;
+  color:var(--ink);
+  border:1px solid var(--stroke);
+  box-shadow:none;
 }
 button.secondary:hover{border-color:#2b3a55}
 
-/* Zone de résultat (cadre discret dans la carte) */
+/* Zone de résultat */
 .result{
   margin-top:16px;
   padding:16px;
@@ -157,16 +175,24 @@ button.secondary:hover{border-color:#2b3a55}
 }
 .red{color:#ef4444}
 
-/* Tableaux en mode sombre */
+/* Tableaux */
 table{
-  width:100%; border-collapse:collapse; margin-top:10px;
-  background:#0f172a; border-radius:12px; overflow:hidden;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  background:#0f172a;
+  border-radius:12px;
+  overflow:hidden;
 }
 th, td{
   border:1px solid var(--stroke);
-  padding:10px; text-align:center;
+  padding:10px;
+  text-align:center;
 }
-th{background:rgba(255,255,255,.04); color:var(--muted)}
+th{
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+}
 .total{font-weight:700;}
 
 /* Pied de page */
@@ -175,17 +201,18 @@ th{background:rgba(255,255,255,.04); color:var(--muted)}
   border-top:1px solid var(--stroke);
   text-align:center;
   padding:12px 0;
-  position:fixed; bottom:0; width:100%;
-  font-size:14px; font-weight:600;
+  position:fixed;
+  bottom:0;
+  width:100%;
+  font-size:14px;
+  font-weight:600;
   color:var(--muted);
 }
 
 /* Responsif */
 @media (max-width: 768px){
   .container{max-width:640px}
-
-  .toggle {display:flex;}
-
+  .toggle{display:flex;}
   .navbar{flex-wrap:wrap; padding:10px 16px}
   .navbar .menu{
     flex-direction:column;
@@ -198,20 +225,19 @@ th{background:rgba(255,255,255,.04); color:var(--muted)}
     margin-top:10px;
   }
   .navbar .menu.open{
-    max-height:calc(100vh - 72px); /* toute la hauteur dispo au-dessus du footer */
+    max-height:calc(100vh - 72px);
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     padding-bottom:12px;
   }
-  .navbar .menu li{ margin:0 }
+  .navbar .menu li{margin:0}
   .navbar .menu li a{
     padding:12px 4px;
     border-bottom:1px solid var(--stroke);
     text-align:left;
   }
-  .navbar .menu li:last-child a{ border-bottom:none }
+  .navbar .menu li:last-child a{border-bottom:none}
 }
-
 @media (max-width: 480px){
   .container{max-width:560px; padding:0 14px 70px 14px}
   .section{padding:18px}
