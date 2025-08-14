@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculatrice Réseau MT – Stations & Câbles</title>
+  <style>
+    :root{
+      --bg:#0b1220; --bg2:#12233c; --card:#111827; --ink:#e5e7eb; --muted:#94a3b8;
+      --accent:#22c55e; --accent2:#16a34a; --alert:#ef4444; --line:#1f2937; --chip:#0f172a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; color:var(--ink); background:linear-gradient(120deg,var(--bg),var(--bg2));}
+    .wrap{max-width:1200px; margin:24px auto 80px; padding:16px;}
+    header{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;}
+    h1{font-size:22px; margin:0 0 6px 0}
+    .controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+    .ctrl{background:var(--card); padding:10px 12px; border-radius:12px; border:1px solid var(--line);}
+    .ctrl label{font-size:12px; color:var(--muted); display:block; margin-bottom:4px}
+    .ctrl input[type="number"], .ctrl select{width:160px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#0b1020; color:var(--ink)}
+    .btn{appearance:none; border:0; background:var(--accent); color:#00210f; padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer}
+    .btn.secondary{background:#0f172a; color:var(--ink); border:1px solid var(--line)}
+
+    .diagramCard{margin-top:16px; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:12px;}
+    .legend{display:flex; gap:12px; align-items:center; color:var(--muted); font-size:12px; padding:6px 8px}
+    .legend span{display:inline-flex; align-items:center; gap:6px}
+    .dot{width:12px; height:12px; border-radius:50%}
+
+    .stationList{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:14px}
+    .stationCard{background:#0e1627; border:1px solid var(--line); border-radius:16px; padding:12px}
+    .stationHeader{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+    .stationHeader h3{margin:0; font-size:16px}
+    .pill{padding:2px 8px; border-radius:999px; background:#0b1220; border:1px solid var(--line); color:var(--muted); font-size:12px}
+    .trList{display:flex; flex-direction:column; gap:8px}
+    .trItem{display:grid; grid-template-columns:1fr 92px 32px; gap:8px; align-items:center}
+    .trItem input{width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#0b1020; color:var(--ink)}
+    .trItem .unit{font-size:12px; color:var(--muted); text-align:right}
+    .iconBtn{appearance:none; border:1px solid var(--line); background:#0b1020; color:var(--ink); width:32px; height:32px; border-radius:10px; cursor:pointer}
+    .addBtn{width:100%; margin-top:8px}
+
+    .footNote{color:var(--muted); font-size:12px; margin-top:12px}
+
+    /* SVG sizing */
+    .svgWrap{width:100%; overflow-x:auto; padding:6px 4px}
+    svg{min-width:900px; width:100%; height:280px; display:block; background:#0b1220; border-radius:14px; border:1px dashed #1f2a44}
+    .svgtxt{font:12px system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial; fill:#cbd5e1}
+    .svgtxt.small{font-size:11px; fill:#94a3b8}
+
+    details{margin-top:12px}
+    table{width:100%; border-collapse:collapse;}
+    th, td{border:1px solid var(--line); padding:6px 8px; text-align:right}
+    th{background:#0e1627; text-align:center}
+    td:first-child, th:first-child{text-align:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Calculatrice Réseau MT – Stations, Transfos et Câbles</h1>
+        <div class="footNote">Outil simplifié pour estimer les sections de câbles MT et les courants par station. Ajustez les hypothèses si besoin.</div>
+      </div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>Tension MT</label>
+          <select id="mvVoltage">
+            <option value="13000">13 kV</option>
+            <option value="21000" selected>21 kV</option>
+          </select>
+        </div>
+        <div class="ctrl">
+          <label>Tension secondaire (fixe)</label>
+          <input type="number" id="lvVoltage" value="420" step="1" min="100" />
+        </div>
+        <div class="ctrl">
+          <label>Nombre de stations</label>
+          <input type="number" id="stationCount" value="4" min="1" max="10" />
+        </div>
+        <div class="ctrl">
+          <label>Facteur de correction câbles</label>
+          <input type="number" id="corrFactor" value="0.90" step="0.01" min="0.5" max="1.2" />
+        </div>
+        <button class="btn" id="resetBtn" title="Réinitialiser avec 1x 1000 kVA par station">Réinit. par défaut</button>
+      </div>
+    </header>
+
+    <div class="diagramCard">
+      <div class="legend">
+        <span><div class="dot" style="background:#22c55e"></div> Section câble recommandée au-dessus de chaque tronçon</span>
+        <span><div class="dot" style="background:#60a5fa"></div> Ip MT et Is total affichés au-dessus de chaque station</span>
+      </div>
+      <div class="svgWrap">
+        <svg id="networkSvg" viewBox="0 0 1200 280"></svg>
+      </div>
+    </div>
+
+    <div class="stationList" id="stationList"></div>
+
+    <details>
+      <summary class="pill">Tableau de sections cuivre MT et intensités admissibles (éditable)</summary>
+      <div class="footNote">Valeurs indicatives pour câbles Cu XLPE 12/20 kV en faisceau (conditions standard). L'intensité admissible sera multipliée par le facteur de correction.</div>
+      <table id="sectionTable"></table>
+    </details>
+
+    <div class="footNote">Avertissement: ce calculateur fournit des estimations. Confirmez toujours le choix des sections selon normes locales, conditions de pose, température du sol, regroupements, chute de tension et échauffements.</div>
+  </div>
+
+<script>
+// Etat de l'application
+const state = {
+  mvVoltage: 21000,
+  lvVoltage: 420,
+  corrFactor: 0.90,
+  stations: [], // [{transformers:[kVA,...]}]
+  // Tableau indicatif Imax par section (A) – Cu XLPE 12/20 kV, faisceau
+  sectionTable: [
+    {section:70,  imax:210},
+    {section:95,  imax:250},
+    {section:120, imax:290},
+    {section:150, imax:330},
+    {section:185, imax:375},
+    {section:240, imax:435},
+    {section:300, imax:490},
+    {section:400, imax:560},
+    {section:500, imax:630},
+    {section:630, imax:710}
+  ]
+};
+
+// Utilitaires
+const fmtA = n => isFinite(n) ? (Math.round(n*10)/10).toLocaleString('fr-CH') + ' A' : '-';
+const fmtkVA = n => isFinite(n) ? (Math.round(n*10)/10).toLocaleString('fr-CH') + ' kVA' : '-';
+const fmtmm2 = n => n ? n+ ' mm²' : 'Hors tableau';
+
+function initDefaultStations(count=4){
+  state.stations = Array.from({length:count}).map(()=>({transformers:[1000]}));
+}
+
+// Calculs
+function stationPower(i){
+  return state.stations[i].transformers.reduce((a,b)=>a+(parseFloat(b)||0),0);
+}
+function totalDownstreamPower(fromIndex){
+  let s=0; for(let i=fromIndex;i<state.stations.length;i++) s+=stationPower(i); return s; // kVA
+}
+function currentFromKVA(kva, voltage){
+  if(!kva||!voltage) return 0; return (kva*1000)/(Math.sqrt(3)*voltage); // A
+}
+function pickSection(requiredA){
+  const adj = a=>a*(parseFloat(state.corrFactor)||1);
+  const table = [...state.sectionTable].sort((a,b)=>a.imax-b.imax);
+  for(const row of table){ if(adj(row.imax) >= requiredA - 1e-6) return row.section; }
+  return null; // hors tableau
+}
+
+// Rendu du tableau de sections (éditable)
+function renderSectionTable(){
+  const el = document.getElementById('sectionTable');
+  const rows = state.sectionTable.map((r,idx)=>`
+    <tr>
+      <td><input type="number" value="${r.section}" data-row="${idx}" data-col="section" style="width:80px; padding:6px; border-radius:8px; border:1px solid #1f2937; background:#0b1020; color:#e5e7eb"></td>
+      <td><input type="number" value="${r.imax}" step="1" data-row="${idx}" data-col="imax" style="width:120px; padding:6px; border-radius:8px; border:1px solid #1f2937; background:#0b1020; color:#e5e7eb"></td>
+      <td><button class="iconBtn" title="Supprimer" onclick="deleteSectionRow(${idx})">×</button></td>
+    </tr>`).join('');
+  el.innerHTML = `
+    <thead><tr><th>Section (mm²)</th><th>Imax (A)</th><th>Action</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="3" style="text-align:left; padding:8px"><button class="btn secondary" onclick="addSectionRow()">Ajouter une ligne</button></td></tr></tfoot>
+  `;
+  el.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const i = +e.target.dataset.row; const col = e.target.dataset.col; const val = parseFloat(e.target.value)||0;
+      state.sectionTable[i][col] = val; drawAll();
+    });
+  });
+}
+function addSectionRow(){ state.sectionTable.push({section:240, imax:430}); renderSectionTable(); drawAll(); }
+function deleteSectionRow(i){ state.sectionTable.splice(i,1); renderSectionTable(); drawAll(); }
+
+// Rendu des cartes stations (saisie des transfos)
+function renderStations(){
+  const host = document.getElementById('stationList');
+  host.innerHTML = '';
+  state.stations.forEach((st,idx)=>{
+    const card = document.createElement('div'); card.className='stationCard';
+    const head = document.createElement('div'); head.className='stationHeader';
+    head.innerHTML = `<h3>Station ${idx+1}</h3><span class="pill">Puissance = ${fmtkVA(stationPower(idx))}</span>`;
+    card.appendChild(head);
+
+    const list = document.createElement('div'); list.className='trList';
+    st.transformers.forEach((kva,tIdx)=>{
+      const row = document.createElement('div'); row.className='trItem';
+      row.innerHTML = `
+        <input type="number" step="10" min="0" value="${kva}" data-station="${idx}" data-tr="${tIdx}" aria-label="Puissance transfo en kVA" />
+        <div class="unit">kVA</div>
+        <button class="iconBtn" title="Supprimer" ${st.transformers.length===1?'disabled':''} data-del-station="${idx}" data-del-tr="${tIdx}">−</button>
+      `;
+      list.appendChild(row);
+    });
+    card.appendChild(list);
+
+    const add = document.createElement('button'); add.className='btn addBtn'; add.textContent='Ajouter un transformateur';
+    add.addEventListener('click',()=>{ st.transformers.push(630); drawAll(); });
+    card.appendChild(add);
+
+    host.appendChild(card);
+  });
+
+  // bind inputs
+  host.querySelectorAll('input[type="number"]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const i = +e.target.dataset.station; const t = +e.target.dataset.tr; const v = parseFloat(e.target.value)||0; state.stations[i].transformers[t]=v; drawAll();
+    });
+  });
+  host.querySelectorAll('button[data-del-station]').forEach(btn=>{
+    btn.addEventListener('click', e=>{ const i=+btn.dataset.delStation, t=+btn.dataset.delTr; state.stations[i].transformers.splice(t,1); drawAll(); });
+  });
+}
+
+// Dessin SVG du réseau
+function drawNetwork(){
+  const svg = document.getElementById('networkSvg');
+  const W = svg.viewBox.baseVal.width; const H = svg.viewBox.baseVal.height;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const n = state.stations.length;
+  const leftPad = 80, rightPad = 30; const topY = 60; const lineY = 170; const boxW=70, boxH=90;
+  const step = (W - leftPad - rightPad - 40) / (n+1); // positions from source to last station
+
+  // Source (production)
+  const sourceX = leftPad; const sourceY = lineY-40; const srcW = 36, srcH = 80;
+  rect(sourceX, sourceY, srcW, srcH, '#b91c1c');
+  text(sourceX + srcW/2, sourceY-8, 'Production', 'middle');
+
+  // Lignes + stations
+  let prevX = sourceX + srcW;
+  for(let i=0;i<n;i++){
+    const stationX = leftPad + (i+1)*step; const stationY = lineY - boxH/2;
+
+    // cable segment from prev to this station
+    const lineStartX = prevX + 12; const lineEndX = stationX - 14; const y = lineY;
+    line(lineStartX, y, lineEndX, y, '#22c55e', 6);
+
+    // Label section du tronçon i (alimentation de la station i)
+    const kVA_down = totalDownstreamPower(i); // alimente i..n
+    const I_req = currentFromKVA(kVA_down, state.mvVoltage);
+    const section = pickSection(I_req);
+    text((lineStartX+lineEndX)/2, y-14, `IT${i+1}: ${fmtmm2(section)}  •  ${fmtA(I_req)}`, 'middle', true);
+
+    // Station rectangle
+    rect(stationX - boxW/2, stationY, boxW, boxH, '#0ea5e9');
+    text(stationX, stationY - 10, `Station ${i+1}`, 'middle');
+
+    // Courants au-dessus de la station
+    const Sst = stationPower(i);
+    const Ip = currentFromKVA(Sst, state.mvVoltage);
+    const Is = currentFromKVA(Sst, state.lvVoltage);
+    text(stationX, stationY - 28, `Ip MT: ${fmtA(Ip)}  •  Is total: ${fmtA(Is)}`, 'middle', true);
+
+    prevX = stationX + boxW/2;
+  }
+
+  // petite flèche droite
+  line(prevX + 14, lineY, W - rightPad, lineY, '#22c55e', 6);
+
+  function rect(x,y,w,h,fill){ const r = document.createElementNS('http://www.w3.org/2000/svg','rect'); r.setAttribute('x',x); r.setAttribute('y',y); r.setAttribute('width',w); r.setAttribute('height',h); r.setAttribute('rx',10); r.setAttribute('fill',fill); r.setAttribute('opacity','0.9'); svg.appendChild(r); }
+  function line(x1,y1,x2,y2,stroke,width){ const l = document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x1); l.setAttribute('y1',y1); l.setAttribute('x2',x2); l.setAttribute('y2',y2); l.setAttribute('stroke',stroke); l.setAttribute('stroke-width',width); l.setAttribute('stroke-linecap','round'); svg.appendChild(l); }
+  function text(x,y,txt,anchor='start',small=false){ const t = document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',x); t.setAttribute('y',y); t.setAttribute('text-anchor',anchor); t.setAttribute('class', small? 'svgtxt small':'svgtxt'); t.textContent = txt; svg.appendChild(t); }
+}
+
+// Dessin global
+function drawAll(){
+  // sync en-tête
+  document.getElementById('stationCount').value = state.stations.length;
+
+  renderStations();
+  renderSectionTable();
+  drawNetwork();
+}
+
+// Listeners
+function bindHeader(){
+  document.getElementById('mvVoltage').addEventListener('change', e=>{ state.mvVoltage = parseFloat(e.target.value)||21000; drawAll(); });
+  document.getElementById('lvVoltage').addEventListener('input', e=>{ state.lvVoltage = parseFloat(e.target.value)||420; drawAll(); });
+  document.getElementById('corrFactor').addEventListener('input', e=>{ state.corrFactor = parseFloat(e.target.value)||1; drawAll(); });
+  document.getElementById('stationCount').addEventListener('input', e=>{
+    let n = Math.max(1, Math.min(10, parseInt(e.target.value)||1));
+    if(n > state.stations.length){
+      for(let i=state.stations.length;i<n;i++) state.stations.push({transformers:[1000]});
+    }else if(n < state.stations.length){
+      state.stations = state.stations.slice(0,n);
+    }
+    drawAll();
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{ initDefaultStations(4); drawAll(); });
+}
+
+// Boot
+initDefaultStations(4);
+bindHeader();
+renderSectionTable();
+renderStations();
+drawNetwork();
+
+</script>
+</body>
+</html>
