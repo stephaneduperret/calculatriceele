@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BASSE TENSION – Chute de tension</title>
+  <style>
+    :root{
+      --bg1:#0b1220; --bg2:#12233c;
+      --card:#111827; --ink:#e5e7eb; --muted:#94a3b8;
+      --line:#1f2937; --accent:#22c55e; --danger:#ef4444;
+      --chip:#0f172a; --input:#0b1020;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      color:var(--ink);
+      background:linear-gradient(120deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1100px; margin:24px auto; padding:24px;
+    }
+    .title{
+      text-align:center; font-size:28px; font-weight:700; letter-spacing:.02em; margin-bottom:16px;
+    }
+    .panel{
+      background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+    }
+    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:20px}
+    .row{display:grid; grid-template-columns: 240px 1fr; align-items:center; gap:12px; margin:4px 0}
+    label{font-size:14px; color:#cbd5e1}
+    input[type="number"], input[type="text"], select{
+      width:100%; padding:12px 14px; border:1px solid #334155; border-radius:10px; background:var(--input);
+      color:var(--ink); font-size:14px; outline:none;
+    }
+    input:focus, select:focus{border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+    .sep{height:1px; background:#233048; margin:16px 0}
+    .inline{display:flex; align-items:center; gap:12px; justify-content:center; margin:10px 0}
+    .inline .box{
+      background:var(--chip); padding:10px 14px; border:1px solid var(--line); border-radius:10px; min-width:150px; text-align:center; font-weight:600;
+    }
+    .hint{font-size:12px; color:var(--muted); margin-top:-6px}
+    .buttons{display:flex; gap:14px; justify-content:center; margin-top:14px}
+    button{padding:12px 18px; border:none; border-radius:12px; cursor:pointer; font-size:15px; font-weight:600}
+    .primary{background:var(--accent); color:#062a12; box-shadow:0 6px 16px rgba(34,197,94,.25)}
+    .primary:hover{filter:brightness(1.05)}
+    .danger{background:#ef4444; color:white; box-shadow:0 6px 16px rgba(239,68,68,.25)}
+    .danger:hover{filter:brightness(1.05)}
+    .out{display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px}
+    .card{background:#0f172a; border:1px solid var(--line); border-radius:14px; padding:14px}
+    .kpi{font-size:28px; text-align:center; padding:10px 0}
+    .note{font-size:12px; color:var(--muted); text-align:center}
+    .warning{color:var(--danger); text-align:center; font-size:14px}
+    .footer{font-size:12px; color:var(--muted); margin-top:12px; text-align:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">BASSE&nbsp;&nbsp;TENSION</div>
+    <div class="panel">
+      <div class="grid">
+
+        <div>
+          <div class="row">
+            <label for="phase">Système</label>
+            <select id="phase">
+              <option value="tri">Triphasé</option>
+              <option value="mono">Monophasé</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="p_kva">Puissance en kVA (calc. du courant)</label>
+            <input id="p_kva" type="number" step="0.01" placeholder="ex. 1000" />
+          </div>
+
+          <div class="row">
+            <label for="cosphi">Cos φ</label>
+            <input id="cosphi" type="number" step="0.01" value="0.9" />
+          </div>
+
+          <div class="row">
+            <label for="length">Longueur du câble [m]</label>
+            <input id="length" type="number" step="0.1" placeholder="ex. 120" />
+          </div>
+
+          <div class="row">
+            <label for="material">Métal du conducteur</label>
+            <select id="material">
+              <option value="cu">Cuivre</option>
+              <option value="al">Aluminium</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="nparallel">Nombre de câbles //</label>
+            <input id="nparallel" type="number" step="1" min="1" value="1" />
+          </div>
+
+          <div class="row">
+            <label for="amb">Temp. ambiante [°C] (indicatif)</label>
+            <input id="amb" type="number" step="1" placeholder="ex. 30" />
+          </div>
+
+        </div>
+
+        <div>
+          <div class="row">
+            <label for="i_a">ou Courant transporté [A]</label>
+            <input id="i_a" type="number" step="0.1" placeholder="ex. 1375" />
+          </div>
+
+          <div class="row">
+            <label for="u_v">Tension de service [V]</label>
+            <input id="u_v" type="number" step="1" placeholder="400 (tri) / 230 (mono)" />
+          </div>
+
+          <div class="row">
+            <label for="t_service">Température de service conducteur [°C]</label>
+            <input id="t_service" type="number" step="1" value="90" />
+          </div>
+
+          <div class="row">
+            <label for="section">Section conducteur [mm²]</label>
+            <input id="section" type="number" step="1" placeholder="ex. 240" />
+          </div>
+
+          <div class="row">
+            <label for="lf">Facteur de charge LF (0–1)</label>
+            <input id="lf" type="number" step="0.01" value="1" />
+          </div>
+
+          <div class="row">
+            <label for="pose">Mode de pose (indicatif)</label>
+            <select id="pose">
+              <option value="air">A l’air / goulotte</option>
+              <option value="conduit">Conduit</option>
+              <option value="terre">Enterré</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="sep"></div>
+      <div class="inline">
+        <span>Chute de tension</span>
+        <span class="box"><span id="dv_v">0.00</span> V</span>
+        <span>soit</span>
+        <span class="box"><span id="dv_pct">0.00</span> %</span>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" id="calc">Calculer</button>
+        <button class="danger" id="reset">Réinitialiser</button>
+      </div>
+
+      <div class="out">
+        <div class="card">
+          <div style="text-align:center; font-size:14px">Courant calculé</div>
+          <div class="kpi" id="i_calc">0.00 A</div>
+          <div class="note">Saisi directement ou déduit de la puissance, de la tension et du cos φ.</div>
+        </div>
+        <div class="card">
+          <div style="text-align:center; font-size:14px">Remarque</div>
+          <div class="kpi" id="msg">—</div>
+          <div class="note">Seuils indicatifs : 3 % éclairage, 5 % autres usages (BT).</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Modèle indicatif basé sur la résistivité cuivre/aluminium et la correction en température. À confirmer selon normes et tableaux fabricants.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Constantes de résistivité à 20 °C (Ω·mm²/m)
+    const RHO_20 = { cu: 0.017241, al: 0.028264 };
+    const ALPHA = 0.00393; // coefficient de température pour Cu/Al (approx.)
+
+    function getNumber(id){
+      const v = parseFloat(document.getElementById(id).value.replace(',', '.'));
+      return isNaN(v) ? null : v;
+    }
+    function setText(id, value){
+      document.getElementById(id).textContent = value;
+    }
+
+    function compute(){
+      const phase = document.getElementById('phase').value; // 'mono' | 'tri'
+      const p_kva = getNumber('p_kva');     // kVA
+      const cosphi = getNumber('cosphi');
+      const i_input = getNumber('i_a');     // A
+      const U = getNumber('u_v');           // V
+      const L = getNumber('length');        // m (aller simple)
+      const mat = document.getElementById('material').value; // cu | al
+      const T = getNumber('t_service') ?? 30; // °C
+      const S = getNumber('section');       // mm²
+      const npar = getNumber('nparallel') ?? 1; // câbles en //
+      const lf = getNumber('lf') ?? 1;
+
+      // Contrôles simples
+      if(!U || !L || !S || !cosphi || (!i_input && !p_kva)){
+        alert('Veuillez renseigner a minima : tension, longueur, section, cos φ et puissance OU courant.');
+        return;
+      }
+
+      // Courant
+      let I = i_input;
+      if(!I && p_kva && cosphi){
+        if(phase === 'tri'){
+          I = (p_kva*1000) / (Math.sqrt(3)*U*cosphi);
+        }else{
+          I = (p_kva*1000) / (U*cosphi);
+        }
+      }
+      I = I * (lf || 1); // facteur de charge appliqué au courant
+
+      // Résistance à 20 °C par mètre pour la section choisie
+      const rho20 = RHO_20[mat];
+      const R20_per_m = rho20 / (S * Math.max(1, npar)); // Ω/m
+      // Correction en température
+      const R_per_m = R20_per_m * (1 + ALPHA * ((T ?? 20) - 20));
+
+      // Facteur géométrique k : 2 en mono (aller/retour), √3 en tri
+      const k = (phase === 'tri') ? Math.sqrt(3) : 2;
+
+      // Réactance négligée (courants BT – tronçons courts) => terme cosφ uniquement
+      const dU = k * I * R_per_m * L * cosphi; // Volts
+
+      const dU_pct = (dU / U) * 100;
+
+      setText('dv_v', dU.toFixed(2));
+      setText('dv_pct', dU_pct.toFixed(2));
+      setText('i_calc', (I).toFixed(2) + ' A');
+
+      let msg = 'OK';
+      if(dU_pct > 5) msg = 'Chute > 5% (à réduire)';
+      if(dU_pct > 3 && dU_pct <= 5) msg = 'Attention si éclairage (>3%)';
+      setText('msg', msg);
+    }
+
+    document.getElementById('calc').addEventListener('click', compute);
+    document.getElementById('reset').addEventListener('click', ()=>{
+      document.querySelectorAll('input').forEach(i=>i.value='');
+      document.getElementById('phase').value='tri';
+      document.getElementById('material').value='cu';
+      document.getElementById('pose').value='air';
+      document.getElementById('dv_v').textContent='0.00';
+      document.getElementById('dv_pct').textContent='0.00';
+      document.getElementById('i_calc').textContent='0.00 A';
+      document.getElementById('msg').textContent='—';
+    });
+  </script>
+</body>
+</html>
