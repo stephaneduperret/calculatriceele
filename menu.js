@@ -12,8 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <ul id="menu" class="menu">
         <li><a href="./Convertir A en kVA.html">Convertir I-S</a></li>
-        <li><a href="./Calculatrice puissance câble et coût.html">Divers</a></li>
-        <li><a href="./Calculs solaire.html">Solaire</a></li>
+        <li><a href="./Calculatrice puissance câble et coût.html">Divers</a></li>  
         <li><a href="./Calculs solaire test.html">Solaire</a></li>
         <li><a href="./Calculs de dates.html">Date</a></li>
         <li><a href="./Chute de tension.html">Chute de tension</a></li>
@@ -86,5 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     lastScrollY = current;
   }, { passive: true });
 });
+
 
 
