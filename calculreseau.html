@@ -313,8 +313,11 @@ function drawNetwork(){
 
     // Label
     const Lm = state.lengths_m[i]||0;
-    const label = `IT${i+1}: ${fmtmm2(section)} • ${fmtA(I_req)} • L=${Math.round(Lm)} m • ΔU=${fmtPct(pct)} (${fmtV(dU)})`;
-    text((lineStartX+lineEndX)/2, y-16, label, 'middle', true);
+    const labelTop = `IT${i+1}: ${fmtmm2(section)} • ${fmtA(I_req)}`;
+    const labelBottom = `L=${Math.round(Lm)} m • ΔU=${fmtPct(pct)} (${fmtV(dU)})`;
+    const midX = (lineStartX+lineEndX)/2;
+    text(midX, y-16, labelTop, 'middle', true);
+    text(midX, y+18, labelBottom, 'middle', true);
 
     // Station visuelle
     rect(stationX - boxW/2, stationY, boxW, boxH, '#0ea5e9');
@@ -324,8 +327,8 @@ function drawNetwork(){
     const Sst = stationPower(i);
     const Ip = currentFromKVA(Sst, state.mvVoltage);
     const Is = currentFromKVA(Sst, state.lvVoltage);
-    text(stationX, stationY - 32, `Ip MT: ${fmtA(Ip)}`, 'middle', true);
-    text(stationX, stationY - 18, `Is total: ${fmtA(Is)}`, 'middle', true);
+    text(stationX, stationY - 56, `Ip MT: ${fmtA(Ip)}`, 'middle', true);
+    text(stationX, stationY - 42, `Is total: ${fmtA(Is)}`, 'middle', true);
 
     // mettre à jour l'info à côté de l'entrée longueur
     const el = document.getElementById(`seginfo-${i}`);
