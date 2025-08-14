@@ -52,9 +52,9 @@
     td:first-child, th:first-child{text-align:center}
 
     .segmentsCard{margin-top:16px; background:#0e1627; border:1px solid var(--line); border-radius:16px; padding:12px}
-    .segGrid{display:grid; grid-template-columns:120px 1fr; gap:10px; align-items:center}
+    .segGrid{display:grid; grid-template-columns:140px 1fr; gap:10px; align-items:center}
     .segGrid .row{display:contents}
-    .segGrid input{width:140px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#0b1020; color:var(--ink)}
+    .segGrid input, .segGrid select{width:160px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#0b1020; color:var(--ink)}
     .segInfo{color:var(--muted); font-size:12px}
   </style>
 </head>
@@ -63,7 +63,7 @@
     <header>
       <div>
         <h1>Calculatrice Réseau MT – Stations, Transfos, Câbles & ΔU</h1>
-        <div class="footNote">Visuel type chaîne de stations. Choix MT 13/21 kV, température 60°/90°, longueurs par tronçon, ΔU par tronçon, sections auto limitées aux sections disponibles.</div>
+        <div class="footNote">Visuel type chaîne de stations. Choix MT 13/21 kV, température 60°/90°, longueurs et sections par tronçon (auto ou forcée), ΔU par tronçon.</div>
       </div>
       <div class="controls">
         <div class="ctrl">
@@ -102,8 +102,8 @@
 
     <div class="diagramCard">
       <div class="legend">
-        <span><div class="dot" style="background:#22c55e"></div> Section câble recommandée + ΔU au-dessus de chaque tronçon</span>
-        <span><div class="dot" style="background:#60a5fa"></div> Ip MT et Is total affichés l'un sous l'autre au-dessus de chaque station</span>
+        <span><div class="dot" style="background:#22c55e"></div> Section câble (auto/forcée) + ΔU par tronçon</span>
+        <span><div class="dot" style="background:#60a5fa"></div> Ip MT et Is total affichés l'un sur l'autre au-dessus de chaque station</span>
       </div>
       <div class="svgWrap">
         <svg id="networkSvg" viewBox="0 0 1400 320"></svg>
@@ -111,9 +111,9 @@
     </div>
 
     <div class="segmentsCard" id="segmentsCard">
-      <h3 style="margin:0 0 8px 0">Tronçons de câble (longueurs)</h3>
+      <h3 style="margin:0 0 8px 0">Tronçons de câble (longueur & section)</h3>
       <div class="segGrid" id="segmentsGrid"></div>
-      <div class="footNote">Réglez ici la longueur de chaque tronçon IT. ΔU est calculée avec R(θ) (Cu) et X≈0,08 Ω/km. Coefficient de température α=0,00393/°C.</div>
+      <div class="footNote">ΔU calculée avec R(θ) (Cu) et X≈0,08 Ω/km. α=0,00393/°C. Sections possibles: 25, 50, 95, 150, 240, 300 mm².</div>
     </div>
 
     <div class="stationList" id="stationList"></div>
@@ -140,6 +140,7 @@ const state = {
   corrFactor: 0.90,
   stations: [], // [{transformers:[kVA,...]}]
   lengths_m: [], // longueur de chaque tronçon ITi (m)
+  manualSections: [], // section forcée par tronçon ou null
   // Tableau indicatif Imax (A) à 60°C et 90°C pour sections autorisées
   sectionTable: [
     {section:25,  imax60:130, imax90:150},
@@ -161,6 +162,7 @@ const fmtPct = n => isFinite(n) ? (Math.round(n*100)/100).toLocaleString('fr-CH'
 function initDefaultStations(count=4){
   state.stations = Array.from({length:count}).map(()=>({transformers:[1000]}));
   state.lengths_m = Array.from({length:count}).map(()=>100); // 100 m par défaut
+  state.manualSections = Array.from({length:count}).map(()=>null);
 }
 
 // ================= Calculs =================
@@ -181,7 +183,7 @@ function admissibleI(sec){
   const base = (state.temperature>=90? row.imax90 : row.imax60);
   return base*(parseFloat(state.corrFactor)||1);
 }
-function pickSection(requiredA){
+function autoPickSection(requiredA){
   for(const s of ALLOWED_SECTIONS){ if(admissibleI(s) >= requiredA - 1e-6) return s; }
   return null; // hors tableau
 }
@@ -236,7 +238,6 @@ function renderStations(){
     const list = document.createElement('div'); list.className='trList';
     st.transformers.forEach((kva,tIdx)=>{
       const row = document.createElement('div'); row.className='trItem';
-      // Sélecteur des puissances fixes
       const sel = document.createElement('select'); sel.setAttribute('data-station', idx); sel.setAttribute('data-tr', tIdx);
       TRANSFO_CHOICES.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p+' kVA'; if(+kva===p) o.selected=true; sel.appendChild(o); });
       const unit = document.createElement('div'); unit.style.fontSize='12px'; unit.style.color='var(--muted)'; unit.style.textAlign='right'; unit.textContent='kVA';
@@ -253,7 +254,6 @@ function renderStations(){
     host.appendChild(card);
   });
 
-  // bind
   host.querySelectorAll('select[data-station]').forEach(sel=>{
     sel.addEventListener('change', e=>{
       const i = +e.target.dataset.station; const t = +e.target.dataset.tr; const v = parseFloat(e.target.value)||0; state.stations[i].transformers[t]=v; drawAll();
@@ -268,16 +268,28 @@ function renderSegments(){
   const grid = document.getElementById('segmentsGrid');
   grid.innerHTML='';
   for(let i=0;i<state.stations.length;i++){
-    const label = document.createElement('div'); label.className='row';
+    // Longueur
     const l1 = document.createElement('div'); l1.textContent = `IT${i+1} longueur`; l1.style.textAlign='right'; l1.style.color='var(--muted)';
     const c1 = document.createElement('div');
     const inp = document.createElement('input'); inp.type='number'; inp.min='0'; inp.step='1'; inp.value=state.lengths_m[i]||0; inp.dataset.seg=i; inp.ariaLabel=`Longueur tronçon IT${i+1} en mètres`;
     const span = document.createElement('span'); span.className='segInfo'; span.style.marginLeft='8px'; span.id=`seginfo-${i}`;
     c1.appendChild(inp); c1.appendChild(document.createTextNode(' m')); c1.appendChild(span);
+
+    // Section forcée
+    const l2 = document.createElement('div'); l2.textContent = `IT${i+1} section`; l2.style.textAlign='right'; l2.style.color='var(--muted)';
+    const c2 = document.createElement('div');
+    const sel = document.createElement('select'); sel.dataset.seg=i; const opt0 = document.createElement('option'); opt0.value=''; opt0.textContent='Auto'; sel.appendChild(opt0);
+    ALLOWED_SECTIONS.forEach(s=>{ const o=document.createElement('option'); o.value=String(s); o.textContent=s+' mm²'; if(state.manualSections[i]===s) o.selected=true; sel.appendChild(o); });
+    c2.appendChild(sel);
+
     grid.appendChild(l1); grid.appendChild(c1);
+    grid.appendChild(l2); grid.appendChild(c2);
   }
   grid.querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input', e=>{ const i=+e.target.dataset.seg; state.lengths_m[i]=parseFloat(e.target.value)||0; drawAll(); });
+  });
+  grid.querySelectorAll('select').forEach(sel=>{
+    sel.addEventListener('change', e=>{ const i=+e.target.dataset.seg; const v = e.target.value===''? null: parseInt(e.target.value); state.manualSections[i]=v; drawAll(); });
   });
 }
 
@@ -306,16 +318,16 @@ function drawNetwork(){
     // Intensité requise du tronçon i (alimente i..n)
     const kVA_down = totalDownstreamPower(i);
     const I_req = currentFromKVA(kVA_down, state.mvVoltage);
-    const section = pickSection(I_req);
+    const autoSec = autoPickSection(I_req);
+    const chosenSec = state.manualSections[i] || autoSec;
 
     // ΔU du tronçon
-    const {dU, pct} = dropForSegment(i, section || ALLOWED_SECTIONS[ALLOWED_SECTIONS.length-1], I_req);
+    const {dU, pct} = dropForSegment(i, chosenSec || ALLOWED_SECTIONS[ALLOWED_SECTIONS.length-1], I_req);
 
-    // Label
-    const Lm = state.lengths_m[i]||0;
-    const labelTop = `IT${i+1}: ${fmtmm2(section)} • ${fmtA(I_req)}`;
+    // Label haut/bas
+    const Lm = state.lengths_m[i]||0; const midX = (lineStartX+lineEndX)/2;
+    const labelTop = `IT${i+1}: ${fmtmm2(chosenSec)} • ${fmtA(I_req)}`;
     const labelBottom = `L=${Math.round(Lm)} m • ΔU=${fmtPct(pct)} (${fmtV(dU)})`;
-    const midX = (lineStartX+lineEndX)/2;
     text(midX, y-16, labelTop, 'middle', true);
     text(midX, y+18, labelBottom, 'middle', true);
 
@@ -330,9 +342,9 @@ function drawNetwork(){
     text(stationX, stationY - 56, `Ip MT: ${fmtA(Ip)}`, 'middle', true);
     text(stationX, stationY - 42, `Is total: ${fmtA(Is)}`, 'middle', true);
 
-    // mettre à jour l'info à côté de l'entrée longueur
+    // panneau info à côté des entrées
     const el = document.getElementById(`seginfo-${i}`);
-    if(el){ el.textContent = `  •  Section: ${fmtmm2(section)}  •  ΔU: ${fmtPct(pct)}`; }
+    if(el){ el.textContent = `  •  Section: ${fmtmm2(chosenSec)}  •  ΔU: ${fmtPct(pct)}`; }
 
     prevX = stationX + boxW/2;
   }
@@ -363,9 +375,9 @@ function bindHeader(){
   document.getElementById('stationCount').addEventListener('input', e=>{
     let n = Math.max(1, Math.min(10, parseInt(e.target.value)||1));
     if(n > state.stations.length){
-      for(let i=state.stations.length;i<n;i++){ state.stations.push({transformers:[1000]}); state.lengths_m.push(100); }
+      for(let i=state.stations.length;i<n;i++){ state.stations.push({transformers:[1000]}); state.lengths_m.push(100); state.manualSections.push(null); }
     }else if(n < state.stations.length){
-      state.stations = state.stations.slice(0,n); state.lengths_m = state.lengths_m.slice(0,n);
+      state.stations = state.stations.slice(0,n); state.lengths_m = state.lengths_m.slice(0,n); state.manualSections = state.manualSections.slice(0,n);
     }
     drawAll();
   });
