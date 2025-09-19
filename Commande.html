@@ -3,12 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Commande d'Articles — CSV + PDF</title>
+  <title>Commande d'Articles — CSV (catalogue) + PDF</title>
 
-          <!-- Liens relatifs (GitHub Pages) -->
-  <link rel="stylesheet" href="./style.css">
-  <script src="./menu.js" defer></script>
-  
   <!-- Librairies CDN (fonctionnent sur GitHub Pages) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
@@ -23,7 +19,7 @@
     header{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 8px;margin-bottom:16px}
     h1{margin:0 0 6px;font-size:22px}
     .grid{display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:10px;margin:10px 0 6px}
-    .grid input, .grid textarea{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
+    .grid input{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
     .row > *{flex:0 0 auto}
     .btn{padding:9px 14px;border:1px solid var(--line);background:#0f1430;color:var(--ink);border-radius:12px;cursor:pointer}
@@ -47,6 +43,16 @@
     .small{font-size:12px;color:var(--muted)}
     .hidden{display:none}
 
+    /* Sélecteur catalogue */
+    #picker{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);z-index:20}
+    #picker .box{width:min(900px,92vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+    #picker .top{display:flex;gap:10px;align-items:center}
+    #picker input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
+    #picker table{width:100%;margin-top:10px;border-collapse:collapse}
+    #picker th,#picker td{border-bottom:1px solid var(--line);padding:8px}
+    #picker tr{cursor:pointer}
+    #picker tr:hover td{background:rgba(106,165,255,0.08)}
+
     /* Zone export PDF (marge blanche) */
     #pdf-area{background:#fff;color:#111;border-radius:12px;padding:18px}
     #pdf-area h2{margin:0 0 8px}
@@ -58,7 +64,7 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Bon de commande (gestion locale CSV)</h1>
+      <h1>Bon de commande (catalogue CSV + sélection)</h1>
       <div class="grid">
         <div class="field">
           <label>N° du compte projet</label>
@@ -82,22 +88,24 @@
           <label>Adresse e‑mail du fournisseur (pour l'envoi)</label>
           <input id="emailFournisseur" type="email" placeholder="fournisseur@exemple.ch" />
         </div>
-        <button class="btn" id="importCsv">Importer CSV…</button>
+        <button class="btn" id="importCsv">Importer catalogue CSV…</button>
         <input type="file" id="fileInput" accept=".csv" class="hidden" />
-        <button class="btn" id="exportCsv">Télécharger CSV</button>
-        <button class="btn ghost" id="loadRepoCsv" title="Tenter de charger ./db.csv du dépôt">Charger db.csv</button>
+        <button class="btn ghost" id="loadRepoCsv" title="Charger ./db.csv (catalogue)">Charger db.csv</button>
+        <span class="small" id="catalogInfo">Catalogue: 0 article</span>
+        <span style="flex:1"></span>
+        <button class="btn" id="exportCmdCsv" title="Exporter la commande au format CSV">Exporter commande CSV</button>
       </div>
-      <div class="small">Les données sont également sauvegardées automatiquement dans votre navigateur (localStorage).</div>
+      <div class="small">Le <em>catalogue</em> provient de <code>db.csv</code>. La <em>commande</em> ci‑dessous est indépendante et sauvée en localStorage.</div>
     </header>
 
     <section class="panel">
       <div class="toolbar">
-        <input id="search" type="text" placeholder="Rechercher (tous champs)…" />
-        <button class="btn ok" id="addRow">+ Ajouter un article</button>
+        <input id="search" type="text" placeholder="Rechercher dans la commande…" />
+        <button class="btn ok" id="addFromCatalog">+ Ajouter depuis le catalogue</button>
         <span class="small" id="countInfo"></span>
         <span style="flex:1"></span>
         <button class="btn primary" id="savePdf">Enregistrer en PDF</button>
-        <button class="btn warn" id="emailOutlook">Ouvrir un e‑mail (Outlook)</button>
+        <button class="btn warn" id="emailOutlook">Ouvrir un e‑mail (Outlook) avec PDF</button>
       </div>
       <div style="overflow:auto">
         <table id="tbl">
@@ -125,6 +133,28 @@
       </div>
     </section>
 
+    <!-- Sélecteur d'articles du catalogue -->
+    <div id="picker">
+      <div class="box">
+        <div class="top">
+          <input id="pickSearch" placeholder="Rechercher (Fournisseur, N° article, Désignation)…" />
+          <button class="btn" id="pickClose">Fermer</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Fournisseurs</th>
+              <th>N° Article</th>
+              <th>Désignation</th>
+              <th class="num">Prix</th>
+            </tr>
+          </thead>
+          <tbody id="pickBody"></tbody>
+        </table>
+        <div class="small">Clique sur une ligne pour l'ajouter à la commande (Quantité par défaut: 1).</div>
+      </div>
+    </div>
+
     <!-- Contenu invisible dédié à l'export PDF -->
     <div id="pdf-area" class="panel hidden">
       <h2>Commande</h2>
@@ -133,26 +163,28 @@
       <div style="margin-top:10px;font-size:12px;color:#333">Généré le <span id="pdf-date"></span></div>
     </div>
 
-    <div class="small">Astuce : après modifications, cliquez sur « Télécharger CSV » pour obtenir une nouvelle base <code>db.csv</code> à committer dans GitHub.</div>
+    <div class="small">Astuce : commitez <code>db.csv</code> (catalogue) dans le même dossier que cette page.</div>
   </div>
 
 <script>
 (function(){
-  const STORAGE_KEY = 'commandeCSV_v1';
+  const STORAGE_KEY = 'commandeCSV_v2';
   const $ = (sel) => document.querySelector(sel);
   const tbody = $('#tbody');
   const search = $('#search');
 
-  let rows = []; // {Fournisseurs, N° Article, Désignation, Quantité, Prix}
+  // Données
+  let catalog = []; // issu de db.csv (Fournisseurs, N° Article, Désignation, Prix)
+  let order = [];   // lignes de commande ({Fournisseurs, N° Article, Désignation, Quantité, Prix})
 
-  function fmtNum(v){
-    const n = Number(String(v).replace(',','.')) || 0; return n;
-  }
-  function money(n){return fmtNum(n).toFixed(2)}
+  // Utils
+  const fmtNum = (v) => { const n = Number(String(v).replace(',', '.')) || 0; return n; };
+  const money = (n) => fmtNum(n).toFixed(2);
+  const escapeHtml = (s) => String(s).replace(/[&<>\"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
   function saveLocal(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      rows,
+      order,
       meta:{
         projet:$('#projet').value, chantier:$('#chantier').value, client:$('#client').value, tel:$('#tel').value, email:$('#emailFournisseur').value
       }
@@ -164,7 +196,7 @@
     if(!s) return false;
     try{
       const j = JSON.parse(s);
-      rows = Array.isArray(j.rows)? j.rows: [];
+      order = Array.isArray(j.order)? j.order: [];
       const m = j.meta||{};
       $('#projet').value = m.projet||'';
       $('#chantier').value = m.chantier||'';
@@ -180,7 +212,7 @@
     tbody.innerHTML = '';
     const q = search.value.trim().toLowerCase();
     let total=0, shown=0;
-    rows.forEach((r, idx)=>{
+    order.forEach((r, idx)=>{
       const hay = Object.values(r).join(' ').toLowerCase();
       if(q && !hay.includes(q)) return;
       const tr = document.createElement('tr');
@@ -193,7 +225,7 @@
       const btn = document.createElement('button');
       btn.className = 'btn danger';
       btn.textContent = 'Supprimer';
-      btn.addEventListener('click', ()=>{ rows.splice(idx,1); render(); saveLocal();});
+      btn.addEventListener('click', ()=>{ order.splice(idx,1); render(); saveLocal();});
       tdX.appendChild(btn);
       [tdF,tdN,tdD,tdQ,tdP,tdX].forEach(td=>tr.appendChild(td));
       tbody.appendChild(tr);
@@ -205,7 +237,7 @@
   }
 
   function updateCount(shown){
-    const c = shown ?? rows.length;
+    const c = shown ?? order.length;
     $('#countInfo').textContent = c + ' article' + (c>1?'s':'');
   }
 
@@ -216,12 +248,11 @@
     inp.type = type;
     inp.placeholder = placeholder;
     inp.value = r[key] ?? '';
-    inp.addEventListener('input', (e)=>{
+    inp.addEventListener('input', ()=>{
       r[key] = inp.value;
       saveLocal();
       if(key==='Quantité' || key==='Prix'){
-        // recalcul total en direct
-        let t=0; rows.forEach(rr=>{ t+= fmtNum(rr['Quantité'])*fmtNum(rr['Prix']);});
+        let t=0; order.forEach(rr=>{ t+= fmtNum(rr['Quantité'])*fmtNum(rr['Prix']);});
         $('#total').textContent = money(t);
       }
     });
@@ -229,38 +260,60 @@
     return td;
   }
 
-  function addRow(){
-    rows.push({
-      'Fournisseurs':'',
-      'N° Article':'',
-      'Désignation':'',
-      'Quantité':'1',
-      'Prix':'0.00'
+  // ------ Catalogue (db.csv) ------
+  function setCatalogFromCSV(csv){
+    const parsed = Papa.parse(csv, {header:true, skipEmptyLines:true});
+    const wanted = ['Fournisseurs','N° Article','Désignation','Prix'];
+    catalog = (parsed.data||[]).map(obj=>{
+      const r={}; wanted.forEach(k=> r[k] = obj[k]??'');
+      return r;
+    });
+    $('#catalogInfo').textContent = `Catalogue: ${catalog.length} article${catalog.length>1?'s':''}`;
+    buildPicker();
+  }
+
+  function buildPicker(){
+    const body = $('#pickBody');
+    body.innerHTML = '';
+    catalog.forEach((it, i)=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(it['Fournisseurs']||'')}</td><td>${escapeHtml(it['N° Article']||'')}</td><td>${escapeHtml(it['Désignation']||'')}</td><td class="num">${money(it['Prix']||0)}</td>`;
+      tr.addEventListener('click', ()=>{ addFromCatalogItem(it); closePicker(); });
+      body.appendChild(tr);
+    });
+  }
+
+  function openPicker(){ if(!catalog.length){ alert('Catalogue vide. Chargez d\'abord db.csv.'); return; } $('#pickSearch').value=''; filterPicker(); $('#picker').style.display='flex'; }
+  function closePicker(){ $('#picker').style.display='none'; }
+  function filterPicker(){
+    const q = $('#pickSearch').value.trim().toLowerCase();
+    const rows = Array.from($('#pickBody').querySelectorAll('tr'));
+    rows.forEach(tr=>{
+      const hay = tr.textContent.toLowerCase();
+      tr.style.display = (!q || hay.includes(q))? '': 'none';
+    });
+  }
+
+  function addFromCatalogItem(it){
+    order.push({
+      'Fournisseurs': it['Fournisseurs']||'',
+      'N° Article': it['N° Article']||'',
+      'Désignation': it['Désignation']||'',
+      'Quantité': '1',
+      'Prix': String(it['Prix']||'0.00')
     });
     render();
     saveLocal();
   }
 
-  // CSV helpers
-  function toCSV(){
-    return Papa.unparse(rows, {quotes:false, delimiter:',', newline:'\n'});
-  }
-  function fromCSV(csv){
-    const parsed = Papa.parse(csv, {header:true, skipEmptyLines:true});
-    const wanted = ['Fournisseurs','N° Article','Désignation','Quantité','Prix'];
-    rows = (parsed.data||[]).map(obj=>{
-      const r={}; wanted.forEach(k=> r[k] = obj[k]??''); return r;
-    });
-    render(); saveLocal();
+  // ------ Exports ------
+  function orderToCSV(){
+    return Papa.unparse(order, {quotes:false, delimiter:',', newline:'\n'});
   }
 
-  // PDF generation
-  async function savePDF(){
-    // Construire une vue propre pour le PDF
-    const meta = {
-      projet: $('#projet').value, chantier: $('#chantier').value,
-      client: $('#client').value, tel: $('#tel').value
-    };
+  // ------ PDF (réutilisable pour e‑mail) ------
+  async function generatePdfBlob(){
+    const meta = { projet: $('#projet').value, chantier: $('#chantier').value, client: $('#client').value, tel: $('#tel').value };
     $('#pdf-meta').innerHTML = `
       <div><strong>Projet :</strong> ${escapeHtml(meta.projet||'-')}</div>
       <div><strong>Chantier :</strong> ${escapeHtml(meta.chantier||'-')}</div>
@@ -270,7 +323,7 @@
     const head = ['Fournisseurs','N° Article','Désignation','Quantité','Prix','Montant'];
     let html = '<thead><tr>' + head.map(h=>`<th>${h}</th>`).join('') + '</tr></thead><tbody>';
     let total=0;
-    rows.forEach(r=>{
+    order.forEach(r=>{
       const q = fmtNum(r['Quantité']);
       const p = fmtNum(r['Prix']);
       const m = q*p; total+=m;
@@ -285,53 +338,120 @@
 
     const filename = `Commande_${(meta.client||'client').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
 
-    await html2pdf().set({
+    // Utiliser html2pdf pour obtenir un blob sans téléchargement immédiat
+    const worker = html2pdf().set({
       margin: 10,
       filename,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS:true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).from(area).save();
+    }).from(area).toPdf();
+
+    const pdfObj = await worker.get('pdf');
+    const blob = new Blob([pdfObj.output('arraybuffer')], {type:'application/pdf'});
 
     area.classList.add('hidden');
-    // Conserver le dernier nom pour le bouton e‑mail
+    return {blob, filename};
+  }
+
+  async function savePDF(){
+    const {blob, filename} = await generatePdfBlob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
     lastPdfName = filename;
   }
 
   let lastPdfName = '';
 
-  function emailOutlook(){
+  // Créer un .eml avec le PDF en pièce jointe (ouvrable dans Outlook)
+  async function emailOutlook(){
     const to = $('#emailFournisseur').value || '';
     const subject = 'Commande';
-    const meta = `Projet: ${$('#projet').value || ''}%0D%0AChantier: ${$('#chantier').value || ''}%0D%0AClient: ${$('#client').value || ''}%0D%0ATéléphone: ${$('#tel').value || ''}`;
-    const body = encodeURIComponent(
-      `Bonjour,\n\nVeuillez trouver ci-joint notre bon de commande (PDF).\n\n${decodeURIComponent(meta)}\n\n— Généré depuis l'outil Commande d'Articles.`
-    );
-    // Limitation navigateurs : impossible de joindre automatiquement un fichier à un e‑mail
-    // Le lien ci-dessous ouvre le client mail (Outlook si par défaut) avec destinataire + objet + corps préremplis.
-    const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${body}`;
-    window.location.href = href;
-    alert('Limitation navigateur : merci d\'ajouter manuellement le PDF enregistré (' + (lastPdfName||'le fichier PDF') + ') en pièce jointe dans votre e‑mail.');
+    const metaLines = [
+      `Projet: ${$('#projet').value || ''}`,
+      `Chantier: ${$('#chantier').value || ''}`,
+      `Client: ${$('#client').value || ''}`,
+      `Téléphone: ${$('#tel').value || ''}`
+    ].join('\r\n');
+    const bodyText = `Bonjour,\r\n\r\nVeuillez trouver ci-joint notre bon de commande (PDF).\r\n\r\n${metaLines}\r\n\r\n— Généré depuis l'outil Commande d'Articles.`;
+
+    // Générer le PDF comme blob
+    const {blob: pdfBlob, filename} = await generatePdfBlob();
+    lastPdfName = filename;
+
+    // Lire le PDF en base64
+    const base64Pdf = await blobToBase64(pdfBlob); // data:application/pdf;base64,AAA...
+    const b64 = base64Pdf.split(',')[1];
+
+    const boundary = '----=_Part_' + Math.random().toString(36).slice(2);
+    const eml = [
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      'MIME-Version: 1.0',
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      'Content-Type: text/plain; charset=utf-8',
+      'Content-Transfer-Encoding: 7bit',
+      '',
+      bodyText,
+      '',
+      `--${boundary}`,
+      `Content-Type: application/pdf; name="${filename}"`,
+      'Content-Transfer-Encoding: base64',
+      `Content-Disposition: attachment; filename="${filename}"`,
+      '',
+      chunkString(b64, 76),
+      `--${boundary}--`,
+      ''
+    ].join('\r\n');
+
+    const emlBlob = new Blob([eml], {type:'message/rfc822'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(emlBlob);
+    a.download = `Message_commande_${new Date().toISOString().slice(0,10)}.eml`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    alert('Un fichier .eml a été téléchargé. Ouvre-le avec Outlook : le brouillon s\'ouvrira avec le PDF déjà en pièce jointe.');
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  function chunkString(str, size){
+    const out = [];
+    for(let i=0;i<str.length;i+=size){ out.push(str.slice(i,i+size)); }
+    return out.join('\r\n');
+  }
+  function blobToBase64(blob){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
   }
 
-  // Events
-  $('#addRow').addEventListener('click', addRow);
-  $('#exportCsv').addEventListener('click', ()=>{
-    const blob = new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
+  // Evénements
+  $('#addFromCatalog').addEventListener('click', openPicker);
+  $('#pickClose').addEventListener('click', closePicker);
+  $('#pickSearch').addEventListener('input', filterPicker);
+
+  $('#exportCmdCsv').addEventListener('click', ()=>{
+    const blob = new Blob([orderToCSV()], {type:'text/csv;charset=utf-8;'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'db.csv';
+    a.download = 'commande.csv';
     a.click();
+    URL.revokeObjectURL(a.href);
   });
+
   $('#importCsv').addEventListener('click', ()=> $('#fileInput').click());
   $('#fileInput').addEventListener('change', (e)=>{
     const f = e.target.files[0]; if(!f) return;
     const reader = new FileReader();
-    reader.onload = ()=> fromCSV(reader.result);
+    reader.onload = ()=> setCatalogFromCSV(reader.result);
     reader.readAsText(f, 'utf-8');
     e.target.value = '';
   });
@@ -340,8 +460,8 @@
       const res = await fetch('./db.csv?cache=' + Date.now());
       if(!res.ok) throw new Error('db.csv introuvable');
       const txt = await res.text();
-      fromCSV(txt);
-      alert('db.csv chargée depuis le dépôt.');
+      setCatalogFromCSV(txt);
+      alert('Catalogue db.csv chargé depuis le dépôt.');
     }catch(err){ alert('Impossible de charger ./db.csv : ' + err.message); }
   });
 
@@ -354,14 +474,12 @@
 
   // Init
   if(!loadLocal()){
-    // essai de chargement initial de db.csv si présent
-    fetch('./db.csv').then(r=> r.ok? r.text(): Promise.reject()).then(txt=>{ fromCSV(txt) }).catch(()=>{
-      rows = [];
-      render();
-    });
+    order = [];
+    render();
   }
+  // Tenter de charger automatiquement le catalogue s'il existe
+  fetch('./db.csv').then(r=> r.ok? r.text(): Promise.reject()).then(txt=> setCatalogFromCSV(txt)).catch(()=>{});
 })();
 </script>
 </body>
 </html>
-
