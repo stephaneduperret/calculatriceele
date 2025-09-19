@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ICC en chaîne — Mise en page verticale</title>
-  
-        <!-- Liens relatifs (GitHub Pages) -->
-  <link rel="stylesheet" href="./style.css">
-  <script src="./menu.js" defer></script>
-  
+<title>ICC en chaîne — Mise en page verticale (armoires dynamiques)</title>
+
+<!-- Liens relatifs (GitHub Pages) -->
+<link rel="stylesheet" href="./style.css">
+<script src="./menu.js" defer></script>
+
 <style>
   :root{
     --bg:#0f1222; --panel:#151936; --ink:#e7e9ff; --muted:#9aa3c7; --line:#2a2f57; --accent:#6aa5ff; --ok:#27c28a;
@@ -18,7 +18,6 @@
   header{padding:28px 22px 6px;max-width:980px;margin:auto}
   h1{margin:0 0 8px;font-size:24px}
   p.note{margin:0;color:var(--muted)}
-  /* Layout colonne + ligne verticale */
   .stack{position:relative;max-width:980px;margin:18px auto 48px;padding:0 22px}
   .stack:before{
     content:""; position:absolute; left:50%; top:0; transform:translateX(-50%);
@@ -62,6 +61,17 @@
   .hint{color:var(--muted);font-size:12px;margin-top:6px}
   footer{max-width:980px;margin:0 auto 36px;padding:0 22px;color:var(--muted)}
   .tag{display:inline-block;padding:2px 8px;border:1px solid #2d3772;border-radius:999px;font-size:11px;color:#c7cff3}
+
+  /* Barre de contrôle + / - */
+  .bar{
+    grid-column:2;
+    display:flex;justify-content:space-between;align-items:center;
+    background:#11163b;border:1px dashed #2a2f57;padding:10px 12px;border-radius:12px
+  }
+  .bar span{color:#b9c3ea;font-size:13px}
+  .iconbtn{
+    width:38px;height:38px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:20px;
+  }
 </style>
 </head>
 <body>
@@ -70,7 +80,7 @@
     <p class="note">Modèle de Thévenin. Ik = ULL / (√3 · |Zeq|). Entrer le transfo dans la Station, puis définir chaque tronçon. Les résultats sont en kA.</p>
   </header>
 
-  <main class="stack">
+  <main class="stack" id="app">
     <!-- Station -->
     <section class="stage" id="st_station">
       <span class="dot"></span>
@@ -105,81 +115,20 @@
       </div>
     </section>
 
-    <!-- Armoire 1 -->
-    <section class="stage" id="st_a1">
+    <!-- Barre d’ajout / retrait d’armoires -->
+    <section class="stage" aria-label="barre-armoires">
       <span class="dot"></span>
-      <div class="node">
-        <p class="title">Armoire 1</p>
-        <div class="grid">
-          <div class="row">
-            <label>Longueur du tronçon (m)</label>
-            <input type="number" id="a1_L" min="0" step="0.1" placeholder="ex. 25">
-          </div>
-          <div class="row">
-            <label>Nombre de conducteurs par phase</label>
-            <select id="a1_n"><option>1</option><option>2</option><option>3</option><option>4</option></select>
-          </div>
-          <div class="row">
-            <label>Matériau</label>
-            <select id="a1_mat"><option value="cu">Cuivre</option><option value="al">Aluminium</option></select>
-          </div>
-          <div class="row">
-            <label>Section (mm²)</label>
-            <select id="a1_sec"></select>
-          </div>
-          <div class="row" style="grid-column:1/-1">
-            <label>Pose des conducteurs</label>
-            <div class="radio">
-              <label><input type="radio" name="a1_pose" value="jointifs" checked>Jointifs</label>
-              <label><input type="radio" name="a1_pose" value="espace">Espacés</label>
-            </div>
-          </div>
+      <div class="bar">
+        <span>Ajouter ou enlever des armoires entre la Station et le Client</span>
+        <div>
+          <button class="iconbtn" title="Ajouter une armoire" onclick="addArmoire()">+</button>
+          <button class="iconbtn ghost" title="Retirer la dernière armoire" onclick="removeArmoire()">–</button>
         </div>
-        <div class="actions">
-          <button onclick="calcStage('a1')">Calculer Armoire 1</button>
-          <button class="ghost" onclick="resetStage('a1')">Réinitialiser</button>
-        </div>
-        <div class="result" id="a1_res">Réponse: —</div>
       </div>
     </section>
 
-    <!-- Armoire 2 -->
-    <section class="stage" id="st_a2">
-      <span class="dot"></span>
-      <div class="node">
-        <p class="title">Armoire 2</p>
-        <div class="grid">
-          <div class="row">
-            <label>Longueur du tronçon (m)</label>
-            <input type="number" id="a2_L" min="0" step="0.1" placeholder="ex. 40">
-          </div>
-          <div class="row">
-            <label>Nombre de conducteurs par phase</label>
-            <select id="a2_n"><option>1</option><option>2</option><option>3</option><option>4</option></select>
-          </div>
-          <div class="row">
-            <label>Matériau</label>
-            <select id="a2_mat"><option value="cu">Cuivre</option><option value="al">Aluminium</option></select>
-          </div>
-          <div class="row">
-            <label>Section (mm²)</label>
-            <select id="a2_sec"></select>
-          </div>
-          <div class="row" style="grid-column:1/-1">
-            <label>Pose des conducteurs</label>
-            <div class="radio">
-              <label><input type="radio" name="a2_pose" value="jointifs" checked>Jointifs</label>
-              <label><input type="radio" name="a2_pose" value="espace">Espacés</label>
-            </div>
-          </div>
-        </div>
-        <div class="actions">
-          <button onclick="calcStage('a2')">Calculer Armoire 2</button>
-          <button class="ghost" onclick="resetStage('a2')">Réinitialiser</button>
-        </div>
-        <div class="result" id="a2_res">Réponse: —</div>
-      </div>
-    </section>
+    <!-- Ici seront insérées dynamiquement les armoires -->
+    <div id="armoires"></div>
 
     <!-- Client -->
     <section class="stage" id="st_client">
@@ -234,15 +183,12 @@ const cable = {
 const poseFactor={jointifs:1.0, espace:1.25};
 const sqrt3=Math.sqrt(3);
 
-['a1','a2','client'].forEach(id=>{
-  document.getElementById(id+'_sec').innerHTML = sections.map(s=>`<option value="${s}">${s}</option>`).join('');
-});
-
-/* Etat courant de la chaîne */
+/* État courant de la chaîne */
 let ULL=400;           // V
-let Zsource=0;         // ohms à la station
-let Zprop=0;           // ohms propagés jusqu’au dernier noeud
+let Zsource=0;         // Ω à la station
+let Zprop=0;           // Ω propagés jusqu’au dernier noeud
 
+/* Utilitaires calc */
 function zFromIk(ull, ik_kA){ return (ik_kA>0) ? ull/(sqrt3*(ik_kA*1000)) : 0; }
 function ikFromZ(ull, z){ return (z>0) ? (ull/(sqrt3*z))/1000 : 0; }
 function ikTransfo(ull, s_kVA, uk_pct){
@@ -257,7 +203,15 @@ function zCable(mat, sec, L_m, nPar, pose){
   return Math.hypot((Rkm*L)/n,(Xkm*L)/n);
 }
 
-/* Station */
+/* Remplir les listes de sections pour un prefix */
+function fillSections(prefix){
+  const sel = document.getElementById(prefix+'_sec');
+  if(!sel) return;
+  sel.innerHTML = sections.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sel.value = '95';
+}
+
+/* STATION */
 function computeStation(){
   ULL = Number(document.getElementById('st_u').value||400);
   const S   = Number(document.getElementById('st_s').value||0);
@@ -271,11 +225,13 @@ function computeStation(){
   document.getElementById('st_res').textContent =
     ik>0 ? `Réponse: Ik3ϕ à la Station ≈ ${ik.toFixed(2)} kA` : `Réponse: —`;
   document.getElementById('tag_source').textContent =
-    Zsource>0 ? `Zeq source: ${Zsource.toFixed(4)} Ω` : 'Zeq source: —';
-  // Réinitialise les résultats aval pour éviter les confusions
-  ['a1_res','a2_res','client_res'].forEach(id=>document.getElementById(id).textContent='Réponse: —');
-}
+    (Zsource>0) ? `Zeq source: ${Zsource.toFixed(4)} Ω` : 'Zeq source: —';
 
+  // Réinitialise les résultats aval
+  [...document.querySelectorAll('.result')].forEach(el=>{
+    if(el.id!=='st_res') el.textContent='Réponse: —';
+  });
+}
 function resetStation(){
   document.getElementById('st_u').value=400;
   document.getElementById('st_s').value=630;
@@ -284,10 +240,12 @@ function resetStation(){
   Zsource=0; Zprop=0;
   document.getElementById('st_res').textContent='Réponse: —';
   document.getElementById('tag_source').textContent='Zeq source: —';
-  ['a1_res','a2_res','client_res'].forEach(id=>document.getElementById(id).textContent='Réponse: —');
+  [...document.querySelectorAll('.result')].forEach(el=>{
+    if(el.id!=='st_res') el.textContent='Réponse: —';
+  });
 }
 
-/* Étapes aval */
+/* CALCUL D’UNE ÉTAPE */
 function calcStage(prefix){
   if(!(Zprop>0)){ alert('Commence par initialiser la Station.'); return; }
   const L   = Number(document.getElementById(prefix+'_L').value||0);
@@ -300,23 +258,101 @@ function calcStage(prefix){
   const Zc = zCable(mat,sec,L,n,pose);
   Zprop = Zprop + Zc;
   const ik = ikFromZ(ULL, Zprop);
-  document.getElementById(prefix+'_res').textContent =
-    (ik>0) ? `Réponse: Ik3ϕ ≈ ${ik.toFixed(2)} kA (Zeq=${Zprop.toFixed(4)} Ω)` : 'Réponse: —';
+  const out = document.getElementById(prefix+'_res');
+  if(out){
+    out.textContent = (ik>0) ? `Réponse: Ik3ϕ ≈ ${ik.toFixed(2)} kA (Zeq=${Zprop.toFixed(4)} Ω)` : 'Réponse: —';
+  }
 }
 
 function resetStage(prefix){
+  const L = document.getElementById(prefix+'_L');
+  if(!L) return;
   document.getElementById(prefix+'_L').value='';
   document.getElementById(prefix+'_n').value='1';
   document.getElementById(prefix+'_mat').value='cu';
   document.getElementById(prefix+'_sec').value='95';
-  document.querySelectorAll(`input[name="${prefix}_pose"]`)[0].checked=true;
-  document.getElementById(prefix+'_res').textContent='Réponse: —';
-  // Ne pas toucher à Zprop pour garder la progression de la chaîne
+  const radios = document.querySelectorAll(`input[name="${prefix}_pose"]`);
+  if(radios.length) radios[0].checked=true;
+  const out = document.getElementById(prefix+'_res');
+  if(out) out.textContent='Réponse: —';
+  // Ne touche pas Zprop pour garder la progression
 }
+
+/* GESTION DYNAMIQUE DES ARMOIRES */
+const armoiresWrap = document.getElementById('armoires');
+let armoireCount = 0;
+
+// Génère le HTML d’une armoire avec un index (1,2,3…)
+function armoireTemplate(i){
+  const prefix = `a${i}`;
+  const radioName = `${prefix}_pose`;
+  return `
+  <section class="stage" id="st_${prefix}" data-prefix="${prefix}">
+    <span class="dot"></span>
+    <div class="node">
+      <p class="title">Armoire ${i}</p>
+      <div class="grid">
+        <div class="row">
+          <label>Longueur du tronçon (m)</label>
+          <input type="number" id="${prefix}_L" min="0" step="0.1" placeholder="ex. 25">
+        </div>
+        <div class="row">
+          <label>Nombre de conducteurs par phase</label>
+          <select id="${prefix}_n"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+        </div>
+        <div class="row">
+          <label>Matériau</label>
+          <select id="${prefix}_mat"><option value="cu">Cuivre</option><option value="al">Aluminium</option></select>
+        </div>
+        <div class="row">
+          <label>Section (mm²)</label>
+          <select id="${prefix}_sec"></select>
+        </div>
+        <div class="row" style="grid-column:1/-1">
+          <label>Pose des conducteurs</label>
+          <div class="radio">
+            <label><input type="radio" name="${radioName}" value="jointifs" checked>Jointifs</label>
+            <label><input type="radio" name="${radioName}" value="espace">Espacés</label>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button data-action="calc" data-prefix="${prefix}">Calculer Armoire ${i}</button>
+        <button class="ghost" data-action="reset" data-prefix="${prefix}">Réinitialiser</button>
+      </div>
+      <div class="result" id="${prefix}_res">Réponse: —</div>
+    </div>
+  </section>`;
+}
+
+// Ajoute une armoire à la fin (juste avant le Client)
+function addArmoire(){
+  armoireCount++;
+  armoiresWrap.insertAdjacentHTML('beforeend', armoireTemplate(armoireCount));
+  fillSections(`a${armoireCount}`);
+}
+
+// Retire la dernière armoire si présente
+function removeArmoire(){
+  if(armoireCount<=0) return;
+  const last = document.getElementById(`st_a${armoireCount}`);
+  if(last){ last.remove(); armoireCount--; }
+}
+
+// Délégation des clics (Calculer / Réinitialiser) pour les armoires
+armoiresWrap.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const action = btn.getAttribute('data-action');
+  const prefix = btn.getAttribute('data-prefix');
+  if(action==='calc'){ calcStage(prefix); }
+  if(action==='reset'){ resetStage(prefix); }
+});
+
+// Initialisation : remplir le Client et créer 2 armoires par défaut
+fillSections('client');
+addArmoire(); // Armoire 1
+addArmoire(); // Armoire 2
 </script>
 </body>
 </html>
-
-
-
-
