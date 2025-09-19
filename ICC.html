@@ -5,9 +5,25 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>ICC en chaîne — Mise en page verticale (armoires dynamiques)</title>
 
-<!-- Styles & menu -->
 <link rel="stylesheet" href="./style.css">
 <script src="./menu.js" defer></script>
+
+<style>
+  /* Renforts de centrage — tout le reste vient de style.css */
+  .stack{position:relative;max-width:980px;margin:18px auto 48px;padding:0 22px}
+  .stage{
+    position:relative;
+    display:grid;
+    grid-template-columns:minmax(16px,1fr) minmax(320px,560px) minmax(16px,1fr);
+    gap:16px; margin:34px 0;
+  }
+  .stage .node{grid-column:2}
+  .bar{grid-column:2}
+  /* Utilitaire pour des rangées pleine largeur à l’intérieur de .grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.full{grid-column:1/-1}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
   <header>
@@ -62,7 +78,7 @@
       </div>
     </section>
 
-    <!-- Ici seront insérées dynamiquement les armoires -->
+    <!-- Armoires dynamiques (centrées car chaque .stage générée a .node en colonne 2) -->
     <div id="armoires"></div>
 
     <!-- Client -->
@@ -281,8 +297,8 @@ armoiresWrap.addEventListener('click', (e)=>{
 
 /* Initialisation */
 fillSections('client');
-addArmoire();
-addArmoire();
+addArmoire();  // Armoire 1
+addArmoire();  // Armoire 2
 </script>
 </body>
 </html>
