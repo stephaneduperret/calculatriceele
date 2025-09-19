@@ -1,7 +1,9 @@
-Fournisseurs,N° Article,Désignation,Quantité,Prix
+Fournisseurs,NÂ° Article,DÃ©signation,QuantitÃ©,Prix
 ElectroMat,1001,Disjoncteur 16A,10,12.50
 ElectroMat,1002,Disjoncteur 32A,5,18.90
-Cablage SA,2001,Câble cuivre 3x2.5mm²,100,1.20
-Cablage SA,2002,Câble cuivre 3x6mm²,50,2.80
-OutilsPro,3001,Pince à dénuder,2,25.00
-OutilsPro,3002,Tournevis isolé,5,7.50
+Cablage SA,2001,CÃ¢ble cuivre 3x2.5mmÂ²,100,1.20
+Cablage SA,2002,CÃ¢ble cuivre 3x6mmÂ²,50,2.80
+OutilsPro,3001,Pince Ã  dÃ©nuder,2,25.00
+OutilsPro,3002,Tournevis isolÃ©,5,7.50
+StÃ©phane,3002,Tournevis isolÃ©,5,7.50
+Duperret,3002,Tournevis isolÃ©,5,7.50
