@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Commande d'Articles — CSV + PDF</title>
+  
+  <!-- Librairies CDN (fonctionnent sur GitHub Pages) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0f1222; --panel:#151936; --ink:#e7e9ff; --muted:#9aa3c7; --line:#2a2f57; --accent:#6aa5ff; --ok:#27c28a; --warn:#ffb020; --danger:#ff6b6b;
+      --r:16px;
+    }
+    html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:1100px;margin:30px auto;padding:0 16px}
+    header{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 8px;margin-bottom:16px}
+    h1{margin:0 0 6px;font-size:22px}
+    .grid{display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:10px;margin:10px 0 6px}
+    .grid input, .grid textarea{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .row > *{flex:0 0 auto}
+    .btn{padding:9px 14px;border:1px solid var(--line);background:#0f1430;color:var(--ink);border-radius:12px;cursor:pointer}
+    .btn:hover{border-color:var(--accent)}
+    .btn.primary{background:var(--accent);color:#0a0c1a;border-color:transparent}
+    .btn.ok{background:var(--ok);color:#08251c;border-color:transparent}
+    .btn.warn{background:var(--warn);color:#231600;border-color:transparent}
+    .btn.danger{background:var(--danger);color:#250909;border-color:transparent}
+    .btn.ghost{background:transparent}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:var(--muted)}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:16px 0}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    .toolbar input[type="text"]{padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink);min-width:240px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left}
+    th{color:var(--muted);font-weight:600}
+    tr:hover td{background:rgba(106,165,255,0.05)}
+    tfoot td{border-top:2px solid var(--line);font-weight:600}
+    .num{text-align:right}
+    .small{font-size:12px;color:var(--muted)}
+    .hidden{display:none}
+
+    /* Zone export PDF (marge blanche) */
+    #pdf-area{background:#fff;color:#111;border-radius:12px;padding:18px}
+    #pdf-area h2{margin:0 0 8px}
+    #pdf-area table{width:100%;border-collapse:collapse}
+    #pdf-area th,#pdf-area td{border:1px solid #ddd;padding:8px}
+    #pdf-area tfoot td{font-weight:bold}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Bon de commande (gestion locale CSV)</h1>
+      <div class="grid">
+        <div class="field">
+          <label>N° du compte projet</label>
+          <input id="projet" placeholder="Ex.: 24-1234" />
+        </div>
+        <div class="field">
+          <label>Adresse du chantier</label>
+          <input id="chantier" placeholder="Rue, N°, NPA, Localité" />
+        </div>
+        <div class="field">
+          <label>Nom du client</label>
+          <input id="client" placeholder="Société / Personne" />
+        </div>
+        <div class="field">
+          <label>Téléphone du client</label>
+          <input id="tel" placeholder="+41 .. .. .. .." />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field" style="min-width:260px;flex:1">
+          <label>Adresse e‑mail du fournisseur (pour l'envoi)</label>
+          <input id="emailFournisseur" type="email" placeholder="fournisseur@exemple.ch" />
+        </div>
+        <button class="btn" id="importCsv">Importer CSV…</button>
+        <input type="file" id="fileInput" accept=".csv" class="hidden" />
+        <button class="btn" id="exportCsv">Télécharger CSV</button>
+        <button class="btn ghost" id="loadRepoCsv" title="Tenter de charger ./db.csv du dépôt">Charger db.csv</button>
+      </div>
+      <div class="small">Les données sont également sauvegardées automatiquement dans votre navigateur (localStorage).</div>
+    </header>
+
+    <section class="panel">
+      <div class="toolbar">
+        <input id="search" type="text" placeholder="Rechercher (tous champs)…" />
+        <button class="btn ok" id="addRow">+ Ajouter un article</button>
+        <span class="small" id="countInfo"></span>
+        <span style="flex:1"></span>
+        <button class="btn primary" id="savePdf">Enregistrer en PDF</button>
+        <button class="btn warn" id="emailOutlook">Ouvrir un e‑mail (Outlook)</button>
+      </div>
+      <div style="overflow:auto">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Fournisseurs</th>
+              <th>N° Article</th>
+              <th>Désignation</th>
+              <th class="num">Quantité</th>
+              <th class="num">Prix</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <!-- lignes dynamiques -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" class="num">Total (CHF)</td>
+              <td class="num" id="total">0.00</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- Contenu invisible dédié à l'export PDF -->
+    <div id="pdf-area" class="panel hidden">
+      <h2>Commande</h2>
+      <div id="pdf-meta"></div>
+      <table id="pdf-table"></table>
+      <div style="margin-top:10px;font-size:12px;color:#333">Généré le <span id="pdf-date"></span></div>
+    </div>
+
+    <div class="small">Astuce : après modifications, cliquez sur « Télécharger CSV » pour obtenir une nouvelle base <code>db.csv</code> à committer dans GitHub.</div>
+  </div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'commandeCSV_v1';
+  const $ = (sel) => document.querySelector(sel);
+  const tbody = $('#tbody');
+  const search = $('#search');
+
+  let rows = []; // {Fournisseurs, N° Article, Désignation, Quantité, Prix}
+
+  function fmtNum(v){
+    const n = Number(String(v).replace(',','.')) || 0; return n;
+  }
+  function money(n){return fmtNum(n).toFixed(2)}
+
+  function saveLocal(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      rows,
+      meta:{
+        projet:$('#projet').value, chantier:$('#chantier').value, client:$('#client').value, tel:$('#tel').value, email:$('#emailFournisseur').value
+      }
+    }));
+    updateCount();
+  }
+  function loadLocal(){
+    const s = localStorage.getItem(STORAGE_KEY);
+    if(!s) return false;
+    try{
+      const j = JSON.parse(s);
+      rows = Array.isArray(j.rows)? j.rows: [];
+      const m = j.meta||{};
+      $('#projet').value = m.projet||'';
+      $('#chantier').value = m.chantier||'';
+      $('#client').value = m.client||'';
+      $('#tel').value = m.tel||'';
+      $('#emailFournisseur').value = m.email||'';
+      render();
+      return true;
+    }catch(e){return false}
+  }
+
+  function render(){
+    tbody.innerHTML = '';
+    const q = search.value.trim().toLowerCase();
+    let total=0, shown=0;
+    rows.forEach((r, idx)=>{
+      const hay = Object.values(r).join(' ').toLowerCase();
+      if(q && !hay.includes(q)) return;
+      const tr = document.createElement('tr');
+      const tdF = cellInput(r, 'Fournisseurs', idx);
+      const tdN = cellInput(r, 'N° Article', idx);
+      const tdD = cellInput(r, 'Désignation', idx);
+      const tdQ = cellInput(r, 'Quantité', idx, 'number', 'num');
+      const tdP = cellInput(r, 'Prix', idx, 'number', 'num', '0.00');
+      const tdX = document.createElement('td');
+      const btn = document.createElement('button');
+      btn.className = 'btn danger';
+      btn.textContent = 'Supprimer';
+      btn.addEventListener('click', ()=>{ rows.splice(idx,1); render(); saveLocal();});
+      tdX.appendChild(btn);
+      [tdF,tdN,tdD,tdQ,tdP,tdX].forEach(td=>tr.appendChild(td));
+      tbody.appendChild(tr);
+      total += fmtNum(r['Quantité']) * fmtNum(r['Prix']);
+      shown++;
+    });
+    $('#total').textContent = money(total);
+    updateCount(shown);
+  }
+
+  function updateCount(shown){
+    const c = shown ?? rows.length;
+    $('#countInfo').textContent = c + ' article' + (c>1?'s':'');
+  }
+
+  function cellInput(r, key, idx, type='text', extraClass='', placeholder=''){
+    const td = document.createElement('td');
+    if(extraClass) td.classList.add(extraClass);
+    const inp = document.createElement('input');
+    inp.type = type;
+    inp.placeholder = placeholder;
+    inp.value = r[key] ?? '';
+    inp.addEventListener('input', (e)=>{
+      r[key] = inp.value;
+      saveLocal();
+      if(key==='Quantité' || key==='Prix'){
+        // recalcul total en direct
+        let t=0; rows.forEach(rr=>{ t+= fmtNum(rr['Quantité'])*fmtNum(rr['Prix']);});
+        $('#total').textContent = money(t);
+      }
+    });
+    td.appendChild(inp);
+    return td;
+  }
+
+  function addRow(){
+    rows.push({
+      'Fournisseurs':'',
+      'N° Article':'',
+      'Désignation':'',
+      'Quantité':'1',
+      'Prix':'0.00'
+    });
+    render();
+    saveLocal();
+  }
+
+  // CSV helpers
+  function toCSV(){
+    return Papa.unparse(rows, {quotes:false, delimiter:',', newline:'\n'});
+  }
+  function fromCSV(csv){
+    const parsed = Papa.parse(csv, {header:true, skipEmptyLines:true});
+    const wanted = ['Fournisseurs','N° Article','Désignation','Quantité','Prix'];
+    rows = (parsed.data||[]).map(obj=>{
+      const r={}; wanted.forEach(k=> r[k] = obj[k]??''); return r;
+    });
+    render(); saveLocal();
+  }
+
+  // PDF generation
+  async function savePDF(){
+    // Construire une vue propre pour le PDF
+    const meta = {
+      projet: $('#projet').value, chantier: $('#chantier').value,
+      client: $('#client').value, tel: $('#tel').value
+    };
+    $('#pdf-meta').innerHTML = `
+      <div><strong>Projet :</strong> ${escapeHtml(meta.projet||'-')}</div>
+      <div><strong>Chantier :</strong> ${escapeHtml(meta.chantier||'-')}</div>
+      <div><strong>Client :</strong> ${escapeHtml(meta.client||'-')} — <strong>Téléphone :</strong> ${escapeHtml(meta.tel||'-')}</div>
+    `;
+    const tbl = $('#pdf-table');
+    const head = ['Fournisseurs','N° Article','Désignation','Quantité','Prix','Montant'];
+    let html = '<thead><tr>' + head.map(h=>`<th>${h}</th>`).join('') + '</tr></thead><tbody>';
+    let total=0;
+    rows.forEach(r=>{
+      const q = fmtNum(r['Quantité']);
+      const p = fmtNum(r['Prix']);
+      const m = q*p; total+=m;
+      html += `<tr><td>${escapeHtml(r['Fournisseurs']||'')}</td><td>${escapeHtml(r['N° Article']||'')}</td><td>${escapeHtml(r['Désignation']||'')}</td><td style="text-align:right">${q}</td><td style="text-align:right">${p.toFixed(2)}</td><td style="text-align:right">${m.toFixed(2)}</td></tr>`;
+    });
+    html += `</tbody><tfoot><tr><td colspan="5" style="text-align:right">Total (CHF)</td><td style="text-align:right">${total.toFixed(2)}</td></tr></tfoot>`;
+    tbl.innerHTML = html;
+    $('#pdf-date').textContent = new Date().toLocaleString();
+
+    const area = $('#pdf-area');
+    area.classList.remove('hidden');
+
+    const filename = `Commande_${(meta.client||'client').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+
+    await html2pdf().set({
+      margin: 10,
+      filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS:true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(area).save();
+
+    area.classList.add('hidden');
+    // Conserver le dernier nom pour le bouton e‑mail
+    lastPdfName = filename;
+  }
+
+  let lastPdfName = '';
+
+  function emailOutlook(){
+    const to = $('#emailFournisseur').value || '';
+    const subject = 'Commande';
+    const meta = `Projet: ${$('#projet').value || ''}%0D%0AChantier: ${$('#chantier').value || ''}%0D%0AClient: ${$('#client').value || ''}%0D%0ATéléphone: ${$('#tel').value || ''}`;
+    const body = encodeURIComponent(
+      `Bonjour,\n\nVeuillez trouver ci-joint notre bon de commande (PDF).\n\n${decodeURIComponent(meta)}\n\n— Généré depuis l'outil Commande d'Articles.`
+    );
+    // Limitation navigateurs : impossible de joindre automatiquement un fichier à un e‑mail
+    // Le lien ci-dessous ouvre le client mail (Outlook si par défaut) avec destinataire + objet + corps préremplis.
+    const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    window.location.href = href;
+    alert('Limitation navigateur : merci d\'ajouter manuellement le PDF enregistré (' + (lastPdfName||'le fichier PDF') + ') en pièce jointe dans votre e‑mail.');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  }
+
+  // Events
+  $('#addRow').addEventListener('click', addRow);
+  $('#exportCsv').addEventListener('click', ()=>{
+    const blob = new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'db.csv';
+    a.click();
+  });
+  $('#importCsv').addEventListener('click', ()=> $('#fileInput').click());
+  $('#fileInput').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=> fromCSV(reader.result);
+    reader.readAsText(f, 'utf-8');
+    e.target.value = '';
+  });
+  $('#loadRepoCsv').addEventListener('click', async ()=>{
+    try{
+      const res = await fetch('./db.csv?cache=' + Date.now());
+      if(!res.ok) throw new Error('db.csv introuvable');
+      const txt = await res.text();
+      fromCSV(txt);
+      alert('db.csv chargée depuis le dépôt.');
+    }catch(err){ alert('Impossible de charger ./db.csv : ' + err.message); }
+  });
+
+  ['#projet','#chantier','#client','#tel','#emailFournisseur'].forEach(sel=>{
+    $(sel).addEventListener('input', saveLocal);
+  });
+  search.addEventListener('input', render);
+  $('#savePdf').addEventListener('click', savePDF);
+  $('#emailOutlook').addEventListener('click', emailOutlook);
+
+  // Init
+  if(!loadLocal()){
+    // essai de chargement initial de db.csv si présent
+    fetch('./db.csv').then(r=> r.ok? r.text(): Promise.reject()).then(txt=>{ fromCSV(txt) }).catch(()=>{
+      rows = [];
+      render();
+    });
+  }
+})();
+</script>
+</body>
+</html>
