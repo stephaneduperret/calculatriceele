@@ -10,7 +10,58 @@
   <script src="./menu.js" defer></script>
   
 <style>
-  
+  :root{
+    --bg:#0f1222; --panel:#151936; --ink:#e7e9ff; --muted:#9aa3c7; --line:#2a2f57; --accent:#6aa5ff; --ok:#27c28a;
+    --r:18px;
+  }
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  header{padding:28px 22px 6px;max-width:980px;margin:auto}
+  h1{margin:0 0 8px;font-size:24px}
+  p.note{margin:0;color:var(--muted)}
+  /* Layout colonne + ligne verticale */
+  .stack{position:relative;max-width:980px;margin:18px auto 48px;padding:0 22px}
+  .stack:before{
+    content:""; position:absolute; left:50%; top:0; transform:translateX(-50%);
+    width:4px; height:100%; background:linear-gradient(180deg,var(--line),transparent 12px) repeat-y;
+    background-size:4px 24px; border-radius:4px; opacity:.8
+  }
+  .stage{
+    position:relative; display:grid; grid-template-columns: 1fr minmax(320px,560px) 1fr; gap:16px; margin:34px 0;
+  }
+  .stage .node{
+    grid-column:2; background:var(--panel); border:1px solid #1e2450; border-radius:var(--r);
+    box-shadow:0 12px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+    padding:16px;
+  }
+  .dot{position:absolute; left:50%; transform:translate(-50%,-10px); top:-6px; width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff 0 2px, #9dc1ff 3px, #4b78ff 8px, #2746a8 12px);
+    box-shadow:0 0 22px #6aa5ffaa, inset 0 0 6px #fff3
+  }
+  .title{font-weight:700;margin:0 0 8px;font-size:16px}
+  .sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+  label{font-size:12px;color:var(--muted)}
+  input,select{
+    width:100%; background:#0e1330; color:var(--ink); border:1px solid #2a3166; border-radius:12px; padding:10px 12px;
+    outline:none;
+  }
+  input:focus,select:focus{border-color:#3f6bff; box-shadow:0 0 0 3px rgba(106,165,255,.18)}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .radio{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .radio label{display:flex;gap:6px;align-items:center}
+  .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  button{
+    cursor:pointer; border:0; border-radius:12px; padding:10px 14px; font-weight:700;
+    background:linear-gradient(180deg,#79b2ff,#3b78ff); color:#071237;
+  }
+  .ghost{background:#1b234b;color:#b9c3ea;border:1px solid #2d3772}
+  .result{
+    margin-top:10px; padding:10px 12px; border-radius:12px; background:#0d2c25; color:#7dffd8; font-weight:700
+  }
+  .hint{color:var(--muted);font-size:12px;margin-top:6px}
+  footer{max-width:980px;margin:0 auto 36px;padding:0 22px;color:var(--muted)}
+  .tag{display:inline-block;padding:2px 8px;border:1px solid #2d3772;border-radius:999px;font-size:11px;color:#c7cff3}
 </style>
 </head>
 <body>
@@ -265,6 +316,7 @@ function resetStage(prefix){
 </script>
 </body>
 </html>
+
 
 
 
