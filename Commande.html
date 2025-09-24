@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Commande d'Articles — CSV (catalogue) + PDF</title>
+  <title>Commande d'Articles — Catalogue CSV + PDF + Outlook (optimisé)</title>
 
   <!-- Librairies CDN (fonctionnent sur GitHub Pages) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -11,17 +11,23 @@
 
   <style>
     :root{
-      --bg:#0f1222; --panel:#151936; --ink:#e7e9ff; --muted:#9aa3c7; --line:#2a2f57; --accent:#6aa5ff; --ok:#27c28a; --warn:#ffb020; --danger:#ff6b6b;
+      --bg:#0e1122; --panel:#151936; --ink:#e7e9ff; --muted:#9aa3c7; --line:#2a2f57; --accent:#6aa5ff; --ok:#27c28a; --warn:#ffb020; --danger:#ff6b6b;
       --r:16px;
     }
     html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-    .wrap{max-width:1100px;margin:30px auto;padding:0 16px}
-    header{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 8px;margin-bottom:16px}
-    h1{margin:0 0 6px;font-size:22px}
-    .grid{display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:10px;margin:10px 0 6px}
-    .grid input{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .wrap{max-width:1180px;margin:24px auto;padding:0 16px}
+
+    /* Barre supérieure collante */
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg, rgba(21,25,54,.98), rgba(21,25,54,.92));backdrop-filter:blur(6px);
+      border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+    h1{margin:0 0 8px;font-size:22px}
+    .grid{display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:10px;margin:6px 0 0}
+    @media (max-width:900px){.grid{grid-template-columns:repeat(2, minmax(0,1fr))}}
+    .grid input, .grid select{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
+
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
     .row > *{flex:0 0 auto}
+
     .btn{padding:9px 14px;border:1px solid var(--line);background:#0f1430;color:var(--ink);border-radius:12px;cursor:pointer}
     .btn:hover{border-color:var(--accent)}
     .btn.primary{background:var(--accent);color:#0a0c1a;border-color:transparent}
@@ -29,12 +35,18 @@
     .btn.warn{background:var(--warn);color:#231600;border-color:transparent}
     .btn.danger{background:var(--danger);color:#250909;border-color:transparent}
     .btn.ghost{background:transparent}
+    .btn.icon{display:inline-flex;align-items:center;gap:8px}
+
     .field{display:flex;flex-direction:column;gap:6px}
     .field label{font-size:12px;color:var(--muted)}
-    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:16px 0}
+
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:16px 0}
+
     .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-    .toolbar input[type="text"]{padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink);min-width:240px}
+    .toolbar input[type="text"], .toolbar input[type="number"]{padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink);min-width:240px}
+
     table{width:100%;border-collapse:collapse}
+    thead th{position:sticky;top:0;background:#101538;border-bottom:1px solid var(--line)}
     th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left}
     th{color:var(--muted);font-weight:600}
     tr:hover td{background:rgba(106,165,255,0.05)}
@@ -43,9 +55,16 @@
     .small{font-size:12px;color:var(--muted)}
     .hidden{display:none}
 
+    /* Inputs de ligne */
+    .td-edit input[type="text"], .td-edit input[type="number"]{width:100%;padding:8px;border-radius:10px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
+    .qty{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    .qty input{width:76px;text-align:right;padding:8px;border:none;background:#0f1430;color:var(--ink)}
+    .qty button{width:36px;border:none;background:#0f1430;color:var(--ink);cursor:pointer;border-left:1px solid var(--line)}
+    .qty button:first-child{border-left:none;border-right:1px solid var(--line)}
+
     /* Sélecteur catalogue */
     #picker{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);z-index:20}
-    #picker .box{width:min(900px,92vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+    #picker .box{width:min(980px,92vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
     #picker .top{display:flex;gap:10px;align-items:center}
     #picker input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1430;color:var(--ink)}
     #picker table{width:100%;margin-top:10px;border-collapse:collapse}
@@ -59,12 +78,15 @@
     #pdf-area table{width:100%;border-collapse:collapse}
     #pdf-area th,#pdf-area td{border:1px solid #ddd;padding:8px}
     #pdf-area tfoot td{font-weight:bold}
+
+    .chips{display:flex;gap:6px;flex-wrap:wrap}
+    .chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#0f1430}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>Bon de commande (catalogue CSV + sélection)</h1>
+      <h1>Bon de commande — Catalogue CSV + PDF + Outlook</h1>
       <div class="grid">
         <div class="field">
           <label>N° du compte projet</label>
@@ -88,24 +110,28 @@
           <label>Adresse e‑mail du fournisseur (pour l'envoi)</label>
           <input id="emailFournisseur" type="email" placeholder="fournisseur@exemple.ch" />
         </div>
-        <button class="btn" id="importCsv">Importer catalogue CSV…</button>
+        <button class="btn" id="importCsv" title="Importer un fichier CSV local">Importer CSV…</button>
         <input type="file" id="fileInput" accept=".csv" class="hidden" />
         <button class="btn ghost" id="loadRepoCsv" title="Charger ./db.csv (catalogue)">Charger db.csv</button>
         <span class="small" id="catalogInfo">Catalogue: 0 article</span>
         <span style="flex:1"></span>
-        <button class="btn" id="exportCmdCsv" title="Exporter la commande au format CSV">Exporter commande CSV</button>
+        <button class="btn" id="exportCmdCsv" title="Exporter la commande au format CSV (délimiteur ;)">Exporter commande CSV</button>
       </div>
-      <div class="small">Le <em>catalogue</em> provient de <code>db.csv</code>. La <em>commande</em> ci‑dessous est indépendante et sauvée en localStorage.</div>
+      <div class="small">Le catalogue provient de db.csv (délimiteur ; conseillé). La commande est sauvegardée en local (navigateur).</div>
     </header>
 
     <section class="panel">
       <div class="toolbar">
-        <input id="search" type="text" placeholder="Rechercher dans la commande…" />
+        <input id="search" type="text" placeholder="Rechercher dans la commande… (Ctrl/Cmd+K)" />
+        <div class="chips" id="chips"></div>
         <button class="btn ok" id="addFromCatalog">+ Ajouter depuis le catalogue</button>
+        <input id="quickAdd" type="text" placeholder="Ajout rapide: saisissez N° article et Entrée" />
         <span class="small" id="countInfo"></span>
         <span style="flex:1"></span>
+        <label class="small" for="tva">TVA %</label>
+        <input id="tva" type="number" min="0" step="0.1" value="8.1" style="width:90px"/>
         <button class="btn primary" id="savePdf">Enregistrer en PDF</button>
-        <button class="btn warn" id="emailOutlook">Ouvrir un e‑mail (Outlook) avec PDF</button>
+        <button class="btn warn" id="emailOutlook">Ouvrir e‑mail Outlook avec PDF</button>
       </div>
       <div style="overflow:auto">
         <table id="tbl">
@@ -116,21 +142,31 @@
               <th>Désignation</th>
               <th class="num">Quantité</th>
               <th class="num">Prix</th>
+              <th class="num">Montant</th>
               <th></th>
             </tr>
           </thead>
-          <tbody id="tbody">
-            <!-- lignes dynamiques -->
-          </tbody>
+          <tbody id="tbody"></tbody>
           <tfoot>
             <tr>
-              <td colspan="4" class="num">Total (CHF)</td>
+              <td colspan="5" class="num">Sous‑total (CHF)</td>
+              <td class="num" id="subtotal">0.00</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="num">TVA <span id="tvaLabel">8.1</span>%</td>
+              <td class="num" id="tvaAmount">0.00</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="num">Total TTC (CHF)</td>
               <td class="num" id="total">0.00</td>
               <td></td>
             </tr>
           </tfoot>
         </table>
       </div>
+      <div class="small" style="margin-top:8px">Astuces: double‑cliquez une ligne du tableau pour ouvrir/fermer l'édition. Flèches ↑↓ pour parcourir. Entrée pour valider.</div>
     </section>
 
     <!-- Sélecteur d'articles du catalogue -->
@@ -151,7 +187,7 @@
           </thead>
           <tbody id="pickBody"></tbody>
         </table>
-        <div class="small">Clique sur une ligne pour l'ajouter à la commande (Quantité par défaut: 1).</div>
+        <div class="small">Cliquez une ligne pour l'ajouter (Quantité par défaut: 1). Touche Échap pour fermer.</div>
       </div>
     </div>
 
@@ -163,30 +199,33 @@
       <div style="margin-top:10px;font-size:12px;color:#333">Généré le <span id="pdf-date"></span></div>
     </div>
 
-    <div class="small">Astuce : commitez <code>db.csv</code> (catalogue) dans le même dossier que cette page.</div>
+    <div class="small">Conseil: utilisez un CSV avec séparateur ; et en‑têtes: Fournisseurs;N° Article;Désignation;Prix</div>
   </div>
 
 <script>
 (function(){
-  const STORAGE_KEY = 'commandeCSV_v2';
+  const STORAGE_KEY = 'commandeCSV_v3';
   const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
   const tbody = $('#tbody');
   const search = $('#search');
+  const chipsBox = $('#chips');
 
   // Données
-  let catalog = []; // issu de db.csv (Fournisseurs, N° Article, Désignation, Prix)
-  let order = [];   // lignes de commande ({Fournisseurs, N° Article, Désignation, Quantité, Prix})
+  let catalog = []; // {Fournisseurs, N° Article, Désignation, Prix}
+  let order = [];   // {Fournisseurs, N° Article, Désignation, Quantité, Prix}
 
   // Utils
   const fmtNum = (v) => { const n = Number(String(v).replace(',', '.')) || 0; return n; };
   const money = (n) => fmtNum(n).toFixed(2);
   const escapeHtml = (s) => String(s).replace(/[&<>\"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  const debounce = (fn, ms=250)=>{ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); } };
 
   function saveLocal(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       order,
       meta:{
-        projet:$('#projet').value, chantier:$('#chantier').value, client:$('#client').value, tel:$('#tel').value, email:$('#emailFournisseur').value
+        projet:$('#projet').value, chantier:$('#chantier').value, client:$('#client').value, tel:$('#tel').value, email:$('#emailFournisseur').value, tva: $('#tva').value
       }
     }));
     updateCount();
@@ -203,37 +242,100 @@
       $('#client').value = m.client||'';
       $('#tel').value = m.tel||'';
       $('#emailFournisseur').value = m.email||'';
+      $('#tva').value = m.tva ?? '8.1';
       render();
       return true;
     }catch(e){return false}
   }
 
+  function buildChips(){
+    // puces de filtre rapides basées sur les fournisseurs présents
+    const uniq = [...new Set(order.map(r=> (r['Fournisseurs']||'').trim()).filter(Boolean))].slice(0,12);
+    chipsBox.innerHTML = '';
+    uniq.forEach(name=>{
+      const chip = document.createElement('button');
+      chip.className = 'chip';
+      chip.textContent = name;
+      chip.title = 'Filtrer par fournisseur';
+      chip.addEventListener('click', ()=>{ search.value = name; render(); });
+      chipsBox.appendChild(chip);
+    });
+  }
+
   function render(){
     tbody.innerHTML = '';
     const q = search.value.trim().toLowerCase();
-    let total=0, shown=0;
+    let subtotal=0, shown=0;
+
     order.forEach((r, idx)=>{
       const hay = Object.values(r).join(' ').toLowerCase();
       if(q && !hay.includes(q)) return;
+
       const tr = document.createElement('tr');
-      const tdF = cellInput(r, 'Fournisseurs', idx);
-      const tdN = cellInput(r, 'N° Article', idx);
-      const tdD = cellInput(r, 'Désignation', idx);
-      const tdQ = cellInput(r, 'Quantité', idx, 'number', 'num');
-      const tdP = cellInput(r, 'Prix', idx, 'number', 'num', '0.00');
+      tr.addEventListener('dblclick', ()=>{ // bascule édition/lecture
+        const inputs = tr.querySelectorAll('input');
+        inputs.forEach(i=> i.toggleAttribute('readonly'));
+      });
+
+      // Fournisseur
+      tr.appendChild(tdEdit(r, 'Fournisseurs', idx));
+      // N° Article
+      tr.appendChild(tdEdit(r, 'N° Article', idx));
+      // Désignation
+      tr.appendChild(tdEdit(r, 'Désignation', idx));
+      // Quantité avec stepper
+      const tdQ = document.createElement('td');
+      tdQ.className = 'num';
+      const box = document.createElement('div');
+      box.className = 'qty';
+      const minus = document.createElement('button'); minus.textContent='−'; minus.title='Diminuer';
+      const inpQ = document.createElement('input'); inpQ.type='number'; inpQ.step='1'; inpQ.min='0'; inpQ.value = r['Quantité'] ?? '1';
+      const plus = document.createElement('button'); plus.textContent='+'; plus.title='Augmenter';
+      minus.addEventListener('click', ()=>{ inpQ.value = Math.max(0, fmtNum(inpQ.value)-1); r['Quantité']=inpQ.value; saveLocal(); updateTotals(); });
+      plus.addEventListener('click', ()=>{ inpQ.value = fmtNum(inpQ.value)+1; r['Quantité']=inpQ.value; saveLocal(); updateTotals(); });
+      inpQ.addEventListener('input', ()=>{ r['Quantité']=inpQ.value; saveLocal(); updateTotals(); });
+      box.append(minus, inpQ, plus); tdQ.appendChild(box); tr.appendChild(tdQ);
+
+      // Prix
+      const tdP = document.createElement('td'); tdP.className='num td-edit';
+      const inpP = document.createElement('input'); inpP.type='number'; inpP.step='0.05'; inpP.min='0'; inpP.value = r['Prix'] ?? '0.00';
+      inpP.addEventListener('input', ()=>{ r['Prix']=inpP.value; saveLocal(); updateTotals(); });
+      tdP.appendChild(inpP); tr.appendChild(tdP);
+
+      // Montant
+      const amount = fmtNum(r['Quantité']) * fmtNum(r['Prix']);
+      subtotal += amount;
+      const tdM = document.createElement('td'); tdM.className='num'; tdM.textContent = money(amount); tr.appendChild(tdM);
+
+      // Actions
       const tdX = document.createElement('td');
-      const btn = document.createElement('button');
-      btn.className = 'btn danger';
-      btn.textContent = 'Supprimer';
-      btn.addEventListener('click', ()=>{ order.splice(idx,1); render(); saveLocal();});
-      tdX.appendChild(btn);
-      [tdF,tdN,tdD,tdQ,tdP,tdX].forEach(td=>tr.appendChild(td));
+      const btnDel = document.createElement('button'); btnDel.className='btn danger'; btnDel.textContent='Supprimer';
+      btnDel.addEventListener('click', ()=>{ order.splice(idx,1); render(); saveLocal(); });
+      tdX.appendChild(btnDel); tr.appendChild(tdX);
+
       tbody.appendChild(tr);
-      total += fmtNum(r['Quantité']) * fmtNum(r['Prix']);
       shown++;
     });
-    $('#total').textContent = money(total);
+
+    $('#subtotal').textContent = money(subtotal);
+    updateTVA(subtotal);
     updateCount(shown);
+    buildChips();
+  }
+
+  function updateTotals(){
+    let subtotal=0;
+    order.forEach(r=>{ subtotal += fmtNum(r['Quantité']) * fmtNum(r['Prix']); });
+    $('#subtotal').textContent = money(subtotal);
+    updateTVA(subtotal);
+  }
+
+  function updateTVA(subtotal){
+    const tva = fmtNum($('#tva').value || 0);
+    $('#tvaLabel').textContent = tva.toString();
+    const tvaAmt = subtotal * (tva/100);
+    $('#tvaAmount').textContent = money(tvaAmt);
+    $('#total').textContent = money(subtotal + tvaAmt);
   }
 
   function updateCount(shown){
@@ -241,33 +343,25 @@
     $('#countInfo').textContent = c + ' article' + (c>1?'s':'');
   }
 
-  function cellInput(r, key, idx, type='text', extraClass='', placeholder=''){
-    const td = document.createElement('td');
-    if(extraClass) td.classList.add(extraClass);
-    const inp = document.createElement('input');
-    inp.type = type;
-    inp.placeholder = placeholder;
-    inp.value = r[key] ?? '';
-    inp.addEventListener('input', ()=>{
-      r[key] = inp.value;
-      saveLocal();
-      if(key==='Quantité' || key==='Prix'){
-        let t=0; order.forEach(rr=>{ t+= fmtNum(rr['Quantité'])*fmtNum(rr['Prix']);});
-        $('#total').textContent = money(t);
-      }
-    });
-    td.appendChild(inp);
-    return td;
+  function tdEdit(r, key, idx){
+    const td = document.createElement('td'); td.className='td-edit';
+    const inp = document.createElement('input'); inp.type='text'; inp.value = r[key] ?? '';
+    inp.addEventListener('input', ()=>{ r[key]=inp.value; saveLocal(); });
+    td.appendChild(inp); return td;
   }
 
   // ------ Catalogue (db.csv) ------
   function setCatalogFromCSV(csv){
-    const parsed = Papa.parse(csv, {header:true, skipEmptyLines:true});
+    // essaie d'abord ; puis auto
+    let parsed = Papa.parse(csv, {header:true, skipEmptyLines:true, delimiter:';'});
+    if(!parsed.data || parsed.data.length === 0 || Object.keys(parsed.data[0]||{}).length < 2){
+      parsed = Papa.parse(csv, {header:true, skipEmptyLines:true}); // auto
+    }
     const wanted = ['Fournisseurs','N° Article','Désignation','Prix'];
     catalog = (parsed.data||[]).map(obj=>{
       const r={}; wanted.forEach(k=> r[k] = obj[k]??'');
       return r;
-    });
+    }).filter(r=> (r['Désignation']||'').trim().length>0);
     $('#catalogInfo').textContent = `Catalogue: ${catalog.length} article${catalog.length>1?'s':''}`;
     buildPicker();
   }
@@ -275,7 +369,7 @@
   function buildPicker(){
     const body = $('#pickBody');
     body.innerHTML = '';
-    catalog.forEach((it, i)=>{
+    catalog.forEach((it)=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `<td>${escapeHtml(it['Fournisseurs']||'')}</td><td>${escapeHtml(it['N° Article']||'')}</td><td>${escapeHtml(it['Désignation']||'')}</td><td class="num">${money(it['Prix']||0)}</td>`;
       tr.addEventListener('click', ()=>{ addFromCatalogItem(it); closePicker(); });
@@ -283,7 +377,7 @@
     });
   }
 
-  function openPicker(){ if(!catalog.length){ alert('Catalogue vide. Chargez d\'abord db.csv.'); return; } $('#pickSearch').value=''; filterPicker(); $('#picker').style.display='flex'; }
+  function openPicker(){ if(!catalog.length){ alert("Catalogue vide. Chargez d'abord db.csv."); return; } $('#pickSearch').value=''; filterPicker(); $('#picker').style.display='flex'; $('#pickSearch').focus(); }
   function closePicker(){ $('#picker').style.display='none'; }
   function filterPicker(){
     const q = $('#pickSearch').value.trim().toLowerCase();
@@ -306,30 +400,44 @@
     saveLocal();
   }
 
+  // Ajout rapide par N° Article
+  function quickAddByNumber(num){
+    if(!num) return;
+    const it = catalog.find(x=> String(x['N° Article']).trim().toLowerCase()=== String(num).trim().toLowerCase());
+    if(it){ addFromCatalogItem(it); }
+    else{ alert('Article non trouvé dans le catalogue: ' + num); }
+  }
+
   // ------ Exports ------
   function orderToCSV(){
-    return Papa.unparse(order, {quotes:false, delimiter:',', newline:'\n'});
+    // délimiteur ; pour Excel FR/CH
+    return Papa.unparse(order, {quotes:false, delimiter:';', newline:'\r\n'});
   }
 
   // ------ PDF (réutilisable pour e‑mail) ------
   async function generatePdfBlob(){
     const meta = { projet: $('#projet').value, chantier: $('#chantier').value, client: $('#client').value, tel: $('#tel').value };
     $('#pdf-meta').innerHTML = `
-      <div><strong>Projet :</strong> ${escapeHtml(meta.projet||'-')}</div>
-      <div><strong>Chantier :</strong> ${escapeHtml(meta.chantier||'-')}</div>
-      <div><strong>Client :</strong> ${escapeHtml(meta.client||'-')} — <strong>Téléphone :</strong> ${escapeHtml(meta.tel||'-')}</div>
+      <div><span>Projet :</span> ${escapeHtml(meta.projet||'-')}</div>
+      <div><span>Chantier :</span> ${escapeHtml(meta.chantier||'-')}</div>
+      <div><span>Client :</span> ${escapeHtml(meta.client||'-')} — <span>Téléphone :</span> ${escapeHtml(meta.tel||'-')}</div>
     `;
     const tbl = $('#pdf-table');
     const head = ['Fournisseurs','N° Article','Désignation','Quantité','Prix','Montant'];
     let html = '<thead><tr>' + head.map(h=>`<th>${h}</th>`).join('') + '</tr></thead><tbody>';
-    let total=0;
+    let subtotal=0;
     order.forEach(r=>{
       const q = fmtNum(r['Quantité']);
       const p = fmtNum(r['Prix']);
-      const m = q*p; total+=m;
+      const m = q*p; subtotal+=m;
       html += `<tr><td>${escapeHtml(r['Fournisseurs']||'')}</td><td>${escapeHtml(r['N° Article']||'')}</td><td>${escapeHtml(r['Désignation']||'')}</td><td style="text-align:right">${q}</td><td style="text-align:right">${p.toFixed(2)}</td><td style="text-align:right">${m.toFixed(2)}</td></tr>`;
     });
-    html += `</tbody><tfoot><tr><td colspan="5" style="text-align:right">Total (CHF)</td><td style="text-align:right">${total.toFixed(2)}</td></tr></tfoot>`;
+    const tva = fmtNum($('#tva').value||0); const tvaAmt = subtotal*(tva/100);
+    html += `</tbody><tfoot>
+      <tr><td colspan="5" style="text-align:right">Sous‑total (CHF)</td><td style="text-align:right">${subtotal.toFixed(2)}</td></tr>
+      <tr><td colspan="5" style="text-align:right">TVA ${tva.toFixed(1)}%</td><td style="text-align:right">${tvaAmt.toFixed(2)}</td></tr>
+      <tr><td colspan="5" style="text-align:right">Total TTC (CHF)</td><td style="text-align:right">${(subtotal+tvaAmt).toFixed(2)}</td></tr>
+    </tfoot>`;
     tbl.innerHTML = html;
     $('#pdf-date').textContent = new Date().toLocaleString();
 
@@ -378,11 +486,9 @@
     ].join('\r\n');
     const bodyText = `Bonjour,\r\n\r\nVeuillez trouver ci-joint notre bon de commande (PDF).\r\n\r\n${metaLines}\r\n\r\n— Généré depuis l'outil Commande d'Articles.`;
 
-    // Générer le PDF comme blob
     const {blob: pdfBlob, filename} = await generatePdfBlob();
     lastPdfName = filename;
 
-    // Lire le PDF en base64
     const base64Pdf = await blobToBase64(pdfBlob); // data:application/pdf;base64,AAA...
     const b64 = base64Pdf.split(',')[1];
 
@@ -416,7 +522,7 @@
     a.click();
     URL.revokeObjectURL(a.href);
 
-    alert('Un fichier .eml a été téléchargé. Ouvre-le avec Outlook : le brouillon s\'ouvrira avec le PDF déjà en pièce jointe.');
+    alert("Un fichier .eml a été téléchargé. Ouvrez-le avec Outlook : le brouillon s'ouvrira avec le PDF déjà en pièce jointe.");
   }
 
   function chunkString(str, size){
@@ -433,10 +539,10 @@
     });
   }
 
-  // Evénements
+  // Événements
   $('#addFromCatalog').addEventListener('click', openPicker);
   $('#pickClose').addEventListener('click', closePicker);
-  $('#pickSearch').addEventListener('input', filterPicker);
+  $('#pickSearch').addEventListener('input', debounce(filterPicker, 80));
 
   $('#exportCmdCsv').addEventListener('click', ()=>{
     const blob = new Blob([orderToCSV()], {type:'text/csv;charset=utf-8;'});
@@ -465,12 +571,26 @@
     }catch(err){ alert('Impossible de charger ./db.csv : ' + err.message); }
   });
 
-  ['#projet','#chantier','#client','#tel','#emailFournisseur'].forEach(sel=>{
-    $(sel).addEventListener('input', saveLocal);
+  ['#projet','#chantier','#client','#tel','#emailFournisseur','#tva'].forEach(sel=>{
+    $(sel).addEventListener('input', debounce(saveLocal, 150));
   });
-  search.addEventListener('input', render);
+  search.addEventListener('input', debounce(render, 120));
   $('#savePdf').addEventListener('click', savePDF);
   $('#emailOutlook').addEventListener('click', emailOutlook);
+
+  // Raccourcis clavier
+  document.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); search.focus(); }
+    if(e.key==='Escape'){ closePicker(); }
+  });
+
+  // Ajout rapide Entrée
+  $('#quickAdd').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){
+      const v = e.currentTarget.value.trim();
+      if(v){ quickAddByNumber(v); e.currentTarget.value=''; }
+    }
+  });
 
   // Init
   if(!loadLocal()){
