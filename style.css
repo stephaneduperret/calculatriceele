@@ -3,7 +3,7 @@
   --bg-1:#e6eef7;
   --bg-2:#cfd9e8;
   --card:#111827;
-  --ink:#1e293b;
+  --ink:#D4D2D2;
   --muted:#94a3b8;
   --stroke:rgba(255,255,255,.06);
   --accent:#22c55e;
@@ -155,6 +155,7 @@ th{background:rgba(255,255,255,.04); color:var(--muted)}
   .navbar .toggle .bars::before,
   .navbar .toggle .bars::after{transition:none}
 }
+
 
 
 
