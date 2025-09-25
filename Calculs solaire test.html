@@ -8,8 +8,6 @@
   <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
-  
-
 
   <style>
     :root{
@@ -92,6 +90,7 @@
     }
 
     .page-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px }
+    .res-line{display:flex; justify-content:space-between; gap:8px}
   </style>
 </head>
 <body>
@@ -147,6 +146,17 @@
 
         <div class="result" id="resPanels">Nombre de panneaux nécessaires : —</div>
       </section>
+
+      <!-- 5) Intensité fusible COF et Point de connexion -->
+      <section class="card">
+        <h2>Intensité fusible COF et Point de connexion</h2>
+        <p class="hint">Calibres normalisés. Règle : on choisit toujours la valeur strictement supérieure.</p>
+
+        <div class="result" id="resFuses">
+          <div class="res-line"><span>Fusibles au coffret d'introduction</span><strong id="fuseCof">—</strong></div>
+          <div class="res-line"><span>Fusible au point de connexion GRD</span><strong id="fuseGrd">—</strong></div>
+        </div>
+      </section>
     </div>
 
     <div class="page-actions">
@@ -175,6 +185,10 @@
     const $resConvert = document.getElementById('resConvert');
     const $resCable   = document.getElementById('resCable');
     const $resPanels  = document.getElementById('resPanels');
+
+    // Fuses DOM
+    const $fuseCof = document.getElementById('fuseCof');
+    const $fuseGrd = document.getElementById('fuseGrd');
 
     // Table câbles
     const cables = {
@@ -217,9 +231,21 @@
       ]
     };
 
+    // Calibres fusibles (liste de l'image)
+    const fuseRatings = [6,10,16,20,25,32,40,50,63,80,100,125,160,200,224,250,315,355,400,500,630,800,900,1000,1250];
+
+    // Helpers fusibles
+    const nextFuseStrictAbove = (value) => {
+      for (const f of fuseRatings) {
+        if (f > value) return f;
+      }
+      return '—';
+    };
+
     // État et garde anti-boucle
     let updating = false;
     let lastKva = null;
+    let lastI = null;
 
     function setValueExcept(el, source, value){
       if (source !== el) el.value = value;
@@ -230,14 +256,28 @@
       return (Math.round(n * Math.pow(10, dec)) / Math.pow(10, dec)).toFixed(dec);
     }
 
+    function updateFuses(){
+      if (!isFinite(lastI) || lastI <= 0){
+        $fuseCof.textContent = '—';
+        $fuseGrd.textContent = '—';
+        return;
+      }
+      const cof = nextFuseStrictAbove(lastI);        // au-dessus de Imax
+      const grd = typeof cof === 'number' ? nextFuseStrictAbove(cof) : '—'; // au-dessus du coffret
+      $fuseCof.textContent = (typeof cof === 'number') ? (cof + ' A') : '—';
+      $fuseGrd.textContent = (typeof grd === 'number') ? (grd + ' A') : '—';
+    }
+
     function applyFromKva(kva, sourceEl){
       if (!isFinite(kva) || kva <= 0) {
         lastKva = null;
+        lastI = null;
         // Remise à l'état neutre des résultats
         $resSurface.textContent = 'Puissance disponible : —';
         $resConvert.textContent = 'Résultat : — A';
         $resPanels.textContent  = 'Nombre de panneaux nécessaires : —';
         $resCable.textContent   = 'Type de câble : —';
+        updateFuses();
         return;
       }
 
@@ -245,6 +285,7 @@
 
       // Calculs liés
       const I = (kva * 1000) / (Math.sqrt(3) * U);
+      lastI = I;
       const surface = (kva * 1000) / (REND * IRR);
       const nPanels = Math.max(1, Math.ceil(kva / PANEL_KVA));
 
@@ -264,6 +305,9 @@
       const table = cables[t] || cables[90];
       const found = table.find(c => I <= c.current);
       $resCable.textContent = 'Type de câble : ' + (found ? found.cable : '—');
+
+      // Fusibles (COF + GRD)
+      updateFuses();
     }
 
     function syncFromSurface(){
