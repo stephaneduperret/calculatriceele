@@ -1,6 +1,6 @@
 /* Palette & reset */
 :root{
-  --bg-1:#0b1220;
+  --bg-1:#e6eef7;
   --bg-2:#12233c;
   --card:#111827;
   --ink:#e5e7eb;
@@ -155,4 +155,5 @@ th{background:rgba(255,255,255,.04); color:var(--muted)}
   .navbar .toggle .bars::before,
   .navbar .toggle .bars::after{transition:none}
 }
+
 
