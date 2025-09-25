@@ -9,49 +9,139 @@
 <script src="./menu.js" defer></script>
 
 <style>
-  /* Renforts de centrage — tout le reste vient de style.css */
-  .stack{position:relative;max-width:980px;margin:18px auto 48px;padding:0 22px}
+  /* Conteneur principal centré */
+  .stack{position:relative;max-width:1040px;margin:18px auto 48px;padding:0 22px}
+
+  /* Scène centrée */
   .stage{
     position:relative;
     display:grid;
-    grid-template-columns:minmax(16px,1fr) minmax(320px,560px) minmax(16px,1fr);
-    gap:16px; margin:34px 0;
+    grid-template-columns:minmax(16px,1fr) minmax(340px,620px) minmax(16px,1fr);
+    gap:16px; margin:26px 0;
   }
   .stage .node{grid-column:2}
-  .bar{grid-column:2}
-  /* Utilitaire pour des rangées pleine largeur à l’intérieur de .grid */
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .row.full{grid-column:1/-1}
-  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+
+  /* Cartes UI */
+  .card{
+    background:var(--panel, #151936);
+    color:var(--ink, #e7e9ff);
+    border:1px solid var(--line, #2a2f57);
+    border-radius:18px;
+    padding:18px 18px 16px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }
+  .card .title{margin:0 0 4px 0;font-size:1.1rem}
+  .card .sub{margin:0 0 14px 0;color:var(--muted, #9aa3c7);font-size:.95rem}
+
+  /* Grille de petites cartes (cellules) */
+  .cells{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(180px,1fr));
+    gap:12px;
+  }
+  @media (max-width:640px){ .cells{grid-template-columns:1fr} }
+
+  .cell{
+    background:var(--bg, #0f1222);
+    border:1px solid var(--line, #2a2f57);
+    border-radius:14px;
+    padding:12px;
+  }
+  .cell label{display:block;margin:0 0 6px 0;font-size:.88rem;color:var(--muted, #9aa3c7)}
+  .cell input,.cell select{
+    width:100%;
+    padding:10px 12px;
+    background:rgba(255,255,255,.04);
+    color:inherit;
+    border:1px solid var(--line, #2a2f57);
+    border-radius:12px;
+    font-size:.98rem;
+    outline:none;
+  }
+  .cell .radio{display:flex;gap:14px;flex-wrap:wrap}
+  .cell .radio label{display:flex;gap:6px;align-items:center;color:var(--ink,#e7e9ff)}
+
+  /* Actions */
+  .actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  button{
+    border:1px solid var(--line,#2a2f57);
+    background:var(--accent,#6aa5ff);
+    color:#0a1020;
+    padding:10px 14px;border-radius:14px;font-weight:600;cursor:pointer;
+  }
+  button.ghost{
+    background:transparent;color:var(--ink,#e7e9ff);
+  }
+  .iconbtn{width:38px;height:38px;display:inline-grid;place-items:center;border-radius:12px}
+
+  /* Résultats */
+  .result{
+    margin-top:10px;
+    padding:10px 12px;
+    background:rgba(39,194,138,.08);
+    border:1px solid rgba(39,194,138,.35);
+    border-radius:12px;
+    font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size:.95rem;
+  }
+  .tag{
+    display:inline-block;margin-left:6px;padding:6px 10px;border-radius:999px;
+    background:rgba(255,255,255,.06);border:1px solid var(--line,#2a2f57);font-size:.85rem
+  }
+
+  /* Barre d’ajout/retrait */
+  .bar{
+    grid-column:2;
+    display:flex;justify-content:space-between;align-items:center;
+    gap:14px;padding:14px 16px;border:1px dashed var(--line,#2a2f57);
+    border-radius:16px;background:rgba(255,255,255,.03)
+  }
+
+  header{padding:28px 0 8px 0}
+  h1{margin:0 0 8px 0;font-size:1.35rem}
+  .top-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+
+  footer{opacity:.8;margin:18px 0 30px}
+
+  /* Impression : simplifier */
+  @media print{
+    header,.bar,.actions,.top-actions{display:none !important}
+    .stage{margin:10px 0}
+    .card{box-shadow:none;border-color:#777}
+    .cell{border-color:#aaa}
+    input,select{border:none;background:transparent}
+  }
 </style>
 </head>
 <body>
-  <header>
+  <header class="stack">
     <h1>Calcul des courants de court-circuit (Ik) — Station à coffret Client</h1>
-   
+    <div class="top-actions">
+      <button class="ghost" onclick="window.print()">Imprimer la page</button>
+      <button onclick="printResultsOnly()">Imprimer les résultats</button>
+    </div>
   </header>
 
   <main class="stack" id="app">
     <!-- Station -->
     <section class="stage" id="st_station">
-      <span class="dot"></span>
-      <div class="node">
+      <div class="node card">
         <p class="title">Station</p>
         <p class="sub">Définition du transformateur et du point de départ</p>
-        <div class="grid">
-          <div class="row">
+        <div class="cells">
+          <div class="cell">
             <label for="st_u">Tension secondaire ULL (V)</label>
             <input type="number" id="st_u" value="400" min="100" step="1">
           </div>
-          <div class="row">
+          <div class="cell">
             <label for="st_s">Puissance transfo S (kVA)</label>
             <input type="number" id="st_s" value="630" min="1" step="1">
           </div>
-          <div class="row">
+          <div class="cell">
             <label for="st_uk">Tension de court-circuit uₖ (%)</label>
             <input type="number" id="st_uk" value="4" min="1" step="0.1">
           </div>
-          <div class="row">
+          <div class="cell">
             <label for="st_ik_known">ICC amont connu (kA) optionnel</label>
             <input type="number" id="st_ik_known" placeholder="laisser vide si calcul via transfo" min="0" step="0.01">
           </div>
@@ -62,13 +152,12 @@
           <span class="tag" id="tag_source">Zeq source: —</span>
         </div>
         <div class="result" id="st_res">Réponse: —</div>
-        <div class="hint">Si « ICC amont » est rempli, il est prioritaire sur S/uₖ. Sinon le calcul utilise le transformateur.</div>
+        <div class="sub">Si « ICC amont » est rempli, il est prioritaire sur S/uₖ. Sinon le calcul utilise le transformateur.</div>
       </div>
     </section>
 
     <!-- Barre d’ajout / retrait d’armoires -->
     <section class="stage" aria-label="barre-armoires">
-      <span class="dot"></span>
       <div class="bar">
         <span>Ajouter ou enlever des armoires entre la Station et le Client</span>
         <div>
@@ -78,32 +167,31 @@
       </div>
     </section>
 
-    <!-- Armoires dynamiques (centrées car chaque .stage générée a .node en colonne 2) -->
+    <!-- Armoires dynamiques -->
     <div id="armoires"></div>
 
     <!-- Client -->
     <section class="stage" id="st_client">
-      <span class="dot"></span>
-      <div class="node">
+      <div class="node card">
         <p class="title">Client</p>
-        <div class="grid">
-          <div class="row">
+        <div class="cells">
+          <div class="cell">
             <label for="client_L">Longueur du tronçon (m)</label>
             <input type="number" id="client_L" min="0" step="0.1" placeholder="ex. 60">
           </div>
-          <div class="row">
+          <div class="cell">
             <label for="client_n">Nombre de conducteurs par phase</label>
             <select id="client_n"><option>1</option><option>2</option><option>3</option><option>4</option></select>
           </div>
-          <div class="row">
+          <div class="cell">
             <label for="client_mat">Matériau</label>
             <select id="client_mat"><option value="cu">Cuivre</option><option value="al">Aluminium</option></select>
           </div>
-          <div class="row">
+          <div class="cell">
             <label for="client_sec">Section (mm²)</label>
             <select id="client_sec"></select>
           </div>
-          <div class="row full">
+          <div class="cell" style="grid-column:1/-1">
             <label>Pose des conducteurs</label>
             <div class="radio">
               <label><input type="radio" name="client_pose" value="jointifs" checked>Jointifs</label>
@@ -120,7 +208,7 @@
     </section>
   </main>
 
-  <footer>
+  <footer class="stack">
     Astuce: clique d’abord sur « Initialiser la source » pour établir l’impédance équivalente de la Station, puis calcule chaque étape de haut en bas.
   </footer>
 
@@ -221,7 +309,7 @@ function resetStage(prefix){
   document.getElementById(prefix+'_L').value='';
   document.getElementById(prefix+'_n').value='1';
   document.getElementById(prefix+'_mat').value='cu';
-  document.getElementById(prefix+'_sec').value='95';
+  if(document.getElementById(prefix+'_sec')) document.getElementById(prefix+'_sec').value='95';
   const radios = document.querySelectorAll(`input[name="${prefix}_pose"]`);
   if(radios.length) radios[0].checked=true;
   const out = document.getElementById(prefix+'_res');
@@ -237,27 +325,26 @@ function armoireTemplate(i){
   const radioName = `${prefix}_pose`;
   return `
   <section class="stage" id="st_${prefix}" data-prefix="${prefix}">
-    <span class="dot"></span>
-    <div class="node">
+    <div class="node card">
       <p class="title">Armoire ${i}</p>
-      <div class="grid">
-        <div class="row">
+      <div class="cells">
+        <div class="cell">
           <label for="${prefix}_L">Longueur du tronçon (m)</label>
           <input type="number" id="${prefix}_L" min="0" step="0.1" placeholder="ex. 25">
         </div>
-        <div class="row">
+        <div class="cell">
           <label for="${prefix}_n">Nombre de conducteurs par phase</label>
           <select id="${prefix}_n"><option>1</option><option>2</option><option>3</option><option>4</option></select>
         </div>
-        <div class="row">
+        <div class="cell">
           <label for="${prefix}_mat">Matériau</label>
           <select id="${prefix}_mat"><option value="cu">Cuivre</option><option value="al">Aluminium</option></select>
         </div>
-        <div class="row">
+        <div class="cell">
           <label for="${prefix}_sec">Section (mm²)</label>
           <select id="${prefix}_sec"></select>
         </div>
-        <div class="row full">
+        <div class="cell" style="grid-column:1/-1">
           <label>Pose des conducteurs</label>
           <div class="radio">
             <label><input type="radio" name="${radioName}" value="jointifs" checked>Jointifs</label>
@@ -295,6 +382,51 @@ armoiresWrap.addEventListener('click', (e)=>{
   if(action==='reset'){ resetStage(prefix); }
 });
 
+/* Impression des résultats uniquement */
+function collectResults(){
+  const blocks = [];
+  const station = document.querySelector('#st_station .title');
+  const stRes = document.getElementById('st_res')?.textContent?.trim();
+  if(station && stRes && stRes!=='Réponse: —'){
+    blocks.push({title:station.textContent, res:stRes});
+  }
+  document.querySelectorAll('#armoires .stage').forEach(sec=>{
+    const title = sec.querySelector('.title')?.textContent || 'Armoire';
+    const res = sec.querySelector('.result')?.textContent?.trim();
+    if(res && res!=='Réponse: —') blocks.push({title, res});
+  });
+  const clientTitle = document.querySelector('#st_client .title')?.textContent;
+  const clientRes = document.getElementById('client_res')?.textContent?.trim();
+  if(clientTitle && clientRes && clientRes!=='Réponse: —'){
+    blocks.push({title:clientTitle, res:clientRes});
+  }
+  return blocks;
+}
+
+function printResultsOnly(){
+  const data = collectResults();
+  const w = window.open('','_blank','width=900,height=700');
+  const css = `
+    body{font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:24px;background:#fff;color:#111}
+    h1{font-size:18px;margin:0 0 14px 0}
+    .card{border:1px solid #bbb;border-radius:12px;padding:12px 14px;margin:10px 0}
+    .res{font-family:ui-monospace,Menlo,Consolas;font-size:13px;background:#f6faf7;border:1px solid #bfe9d3;border-radius:10px;padding:8px 10px;margin-top:6px}
+  `;
+  w.document.write(`<html><head><title>Résultats Ik</title><style>${css}</style></head><body>`);
+  w.document.write(`<h1>Résultats — Calculs Ik</h1>`);
+  if(!data.length){
+    w.document.write(`<div class="card">Aucun résultat à imprimer. Lancez d'abord les calculs.</div>`);
+  }else{
+    data.forEach(b=>{
+      w.document.write(`<div class="card"><div>${b.title}</div><div class="res">${b.res}</div></div>`);
+    });
+  }
+  w.document.write(`</body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
 /* Initialisation */
 fillSections('client');
 addArmoire();  // Armoire 1
@@ -302,4 +434,3 @@ addArmoire();  // Armoire 2
 </script>
 </body>
 </html>
-
