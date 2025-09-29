@@ -6,44 +6,15 @@
   <title>Calculatrice transfo & câbles BT</title>
 
   <!-- Liens relatifs pour GitHub Pages -->
-
-
-
-  
   <link rel="icon" type="image/png" href="./calculator.png">
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
-
-  <style>
-    :root { --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --accent:#22c55e; --alert:#ef4444; }
-    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:linear-gradient(120deg,#0b1220,#12233c); color:var(--ink);}
-    .wrap{max-width:1100px; margin:24px auto; padding:24px;}
-    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px;}
-    .card{background:rgba(17,24,39,.7); border:1px solid rgba(148,163,184,.2); border-radius:16px; padding:18px;}
-    h1{font-size:1.8rem; margin:.2rem 0 1rem;}
-    h2{font-size:1rem; color:var(--muted); margin:.2rem 0 .8rem}
-    label{font-size:.92rem; color:var(--muted);}
-    input,select{width:100%; margin-top:6px; padding:10px 12px; background:#0b1020; color:var(--ink); border:1px solid rgba(148,163,184,.3); border-radius:12px; outline:none}
-    .row{display:flex; gap:10px}
-    .row>*{flex:1}
-    .muted{color:var(--muted); font-size:.9rem}
-    .out{font-size:1.1rem; line-height:1.5}
-    .good{color:var(--accent)}
-    .bad{color:var(--alert)}
-    .table{width:100%; border-collapse:collapse;}
-    .table th,.table td{border-bottom:1px dashed rgba(148,163,184,.2); padding:.55rem .4rem; text-align:right}
-    .table th:first-child,.table td:first-child{text-align:left}
-    .btns{margin-top:20px; display:flex; gap:10px}
-    button{padding:10px 14px; border:none; border-radius:8px; cursor:pointer;}
-    .btn-primary{background:#2563eb; color:white;}
-    .btn-secondary{background:#4b5563; color:white;}
-  </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Calculatrice électrique – Courants transfo & nombre de câbles BT (FLEX TRAFO)</h1>
 
-    <div class="card" style="margin-bottom:16px">
+    <div class="card mb-16">
       <h2>Informations chantier</h2>
       <div class="row">
         <label>Station
@@ -68,7 +39,8 @@
             <option>1600</option>
           </select>
         </label>
-        <div class="row" style="margin-top:10px">
+
+        <div class="row mt-10">
           <label>Primaire (kV)
             <input id="vpri" type="number" step="0.1" value="21">
           </label>
@@ -76,7 +48,8 @@
             <input id="vsec" type="number" step="1" value="420">
           </label>
         </div>
-        <div class="row" style="margin-top:10px">
+
+        <div class="row mt-10">
           <label> cos φ
             <input id="fp" type="number" step="0.01" min="0.1" max="1" value="0.90">
           </label>
@@ -84,7 +57,8 @@
             <input id="factor" type="number" step="0.01" value="0.90">
           </label>
         </div>
-        <div class="row" style="margin-top:10px">
+
+        <div class="row mt-10">
           <label>Nombre de phases
             <select id="phases">
               <option value="3" selected>3~ (triphasé)</option>
@@ -99,12 +73,14 @@
             </select>
           </label>
         </div>
-        <div class="row" style="margin-top:10px">
+
+        <div class="row mt-10">
           <label>Ampacité perso (A)
             <input id="ampCustom" type="number" step="1" placeholder="ex: 600" disabled>
           </label>
         </div>
-        <div style="margin-top:12px">
+
+        <div class="mt-12">
           <button id="calc">Calculer</button>
         </div>
       </div>
@@ -117,10 +93,10 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:16px">
+    <div class="card mt-16">
       <h2>Table rapide (3~ • 420 V • cos φ = 0.90) – ampacité 240 & 300 mm²</h2>
       <table class="table" id="quick"></table>
-      <div class="muted" style="margin-top:6px">Hypothèses de la table rapide: triphasé 420 V, cos φ 0.90, sans facteur de correction.</div>
+      <div class="muted mt-6">Hypothèses de la table rapide: triphasé 420 V, cos φ 0.90, sans facteur de correction.</div>
     </div>
 
     <div class="btns">
@@ -129,99 +105,99 @@
     </div>
   </div>
 
-<script>
-(function(){
-  const fmt = new Intl.NumberFormat('fr-CH', {maximumFractionDigits:2});
-  const el = id=>document.getElementById(id);
-  const kva = el('kva'), vpri=el('vpri'), vsec=el('vsec');
-  const section=el('section'), ampCustom=el('ampCustom'), factor=el('factor');
-  const phases=el('phases'), fpEl = el('fp');
-  const out=el('out');
-  const adresse=el('adresse'), localite=el('localite');
+  <script>
+  (function(){
+    const fmt = new Intl.NumberFormat('fr-CH', {maximumFractionDigits:2});
+    const el = id=>document.getElementById(id);
+    const kva = el('kva'), vpri=el('vpri'), vsec=el('vsec');
+    const section=el('section'), ampCustom=el('ampCustom'), factor=el('factor');
+    const phases=el('phases'), fpEl = el('fp');
+    const out=el('out');
+    const adresse=el('adresse'), localite=el('localite');
 
-  section.addEventListener('change', ()=>{
-    if(section.value==='custom'){ ampCustom.disabled=false; ampCustom.focus(); }
-    else { ampCustom.disabled=true; ampCustom.value=''; }
-  });
-
-  function iPhase(SkVA, U, ph, fp){
-    const cosphi = Math.max(0.1, Math.min(1, fp || 0.9));
-    const P = SkVA * 1000 * cosphi;
-    return ph==3 ? P / (Math.sqrt(3)*U) : P / U;
-  }
-
-  function ampsFromSection(){
-    if(section.value==='custom'){
-      const a = parseFloat(ampCustom.value);
-      return isFinite(a) && a>0 ? a : NaN;
-    }
-    return parseFloat(section.value.split('|')[1]);
-  }
-
-  function protectionTGBT(Isec){
-    if (Isec <= 630) return '1 réglette DIN3 630A';
-    if (Isec <= 1260) return '1 réglette double DIN3 2x630A';
-    if (Isec <= 1600) return 'Disjoncteur 1600A';
-    if (Isec <= 2500) return 'Disjoncteur 2500A';
-    return 'Protection à définir (hors plage)';
-  }
-
-  function calc(){
-    const SkVA = parseFloat(kva.value);
-    const Upri = parseFloat(vpri.value)*1000;
-    const Usec = parseFloat(vsec.value);
-    const ph = parseInt(phases.value,10);
-    const Asection = ampsFromSection();
-    const k = parseFloat(factor.value);
-    const fp = parseFloat(fpEl.value);
-
-    if(!SkVA || !Usec || !Upri || !ph || !Asection || !k || !fp){
-      out.innerHTML = '<span class="bad">Merci de compléter correctement tous les champs.</span>';
-      return;
-    }
-
-    const Ipri = iPhase(SkVA, Upri, ph, fp);
-    const Isec = iPhase(SkVA, Usec, ph, fp);
-
-    const Aperm = Asection * k;
-    const nPerPhase = Math.max(1, Math.ceil(Isec / Aperm));
-    const nNeutre = nPerPhase;
-    const totalCables = (nPerPhase * (ph===3?3:1)) + (ph===3 ? nNeutre : 0);
-
-    const protection = protectionTGBT(Isec);
-
-    out.innerHTML = `
-      <p>Adresse : ${adresse.value || '-'}, ${localite.value || '-'}</p>
-      <p>cos φ utilisé : ${fmt.format(fp)}</p>
-      <p>Courant primaire : ${fmt.format(Ipri)} A</p>
-      <p>Courant secondaire : ${fmt.format(Isec)} A</p>
-      <p>Nombre de câbles par phase : ${nPerPhase} + neutre (${nNeutre}) → Total : ${totalCables}</p>
-      <p>Protection TGBT : ${protection}</p>
-    `;
-  }
-
-  el('calc').addEventListener('click', calc);
-
-  const quick = el('quick');
-  const ratings = [250,400,630,1000,1250,1600];
-  function buildQuick(){
-    const U=420, ph=3, cosphi=0.90, pairs=[[240,450],[300,521]];
-    let html = '<tr><th>kVA</th><th>Iₛₑc (A)</th>';
-    pairs.forEach(p=> html += `<th>${p[0]} mm²</th>`);
-    html += '</tr>';
-    ratings.forEach(S=>{
-      const I = iPhase(S,U,ph,cosphi);
-      html += `<tr><td>${S}</td><td>${fmt.format(I)}</td>`;
-      pairs.forEach(p=>{
-        const n = Math.max(1, Math.ceil(I / p[1]));
-        html += `<td>${n} + neutre (${n})</td>`;
-      });
-      html += '</tr>';
+    section.addEventListener('change', ()=>{
+      if(section.value==='custom'){ ampCustom.disabled=false; ampCustom.focus(); }
+      else { ampCustom.disabled=true; ampCustom.value=''; }
     });
-    quick.innerHTML = html;
-  }
-  buildQuick();
-})();
-</script>
+
+    function iPhase(SkVA, U, ph, fp){
+      const cosphi = Math.max(0.1, Math.min(1, fp || 0.9));
+      const P = SkVA * 1000 * cosphi;
+      return ph==3 ? P / (Math.sqrt(3)*U) : P / U;
+    }
+
+    function ampsFromSection(){
+      if(section.value==='custom'){
+        const a = parseFloat(ampCustom.value);
+        return isFinite(a) && a>0 ? a : NaN;
+      }
+      return parseFloat(section.value.split('|')[1]);
+    }
+
+    function protectionTGBT(Isec){
+      if (Isec <= 630) return '1 réglette DIN3 630A';
+      if (Isec <= 1260) return '1 réglette double DIN3 2x630A';
+      if (Isec <= 1600) return 'Disjoncteur 1600A';
+      if (Isec <= 2500) return 'Disjoncteur 2500A';
+      return 'Protection à définir (hors plage)';
+    }
+
+    function calc(){
+      const SkVA = parseFloat(kva.value);
+      const Upri = parseFloat(vpri.value)*1000;
+      const Usec = parseFloat(vsec.value);
+      const ph = parseInt(phases.value,10);
+      const Asection = ampsFromSection();
+      const k = parseFloat(factor.value);
+      const fp = parseFloat(fpEl.value);
+
+      if(!SkVA || !Usec || !Upri || !ph || !Asection || !k || !fp){
+        out.innerHTML = '<span class="bad">Merci de compléter correctement tous les champs.</span>';
+        return;
+      }
+
+      const Ipri = iPhase(SkVA, Upri, ph, fp);
+      const Isec = iPhase(SkVA, Usec, ph, fp);
+
+      const Aperm = Asection * k;
+      const nPerPhase = Math.max(1, Math.ceil(Isec / Aperm));
+      const nNeutre = nPerPhase;
+      const totalCables = (nPerPhase * (ph===3?3:1)) + (ph===3 ? nNeutre : 0);
+
+      const protection = protectionTGBT(Isec);
+
+      out.innerHTML = `
+        <p>Adresse : ${adresse.value || '-'}, ${localite.value || '-'}</p>
+        <p>cos φ utilisé : ${fmt.format(fp)}</p>
+        <p>Courant primaire : ${fmt.format(Ipri)} A</p>
+        <p>Courant secondaire : ${fmt.format(Isec)} A</p>
+        <p>Nombre de câbles par phase : ${nPerPhase} + neutre (${nNeutre}) → Total : ${totalCables}</p>
+        <p>Protection TGBT : ${protection}</p>
+      `;
+    }
+
+    el('calc').addEventListener('click', calc);
+
+    const quick = el('quick');
+    const ratings = [250,400,630,1000,1250,1600];
+    function buildQuick(){
+      const U=420, ph=3, cosphi=0.90, pairs=[[240,450],[300,521]];
+      let html = '<tr><th>kVA</th><th>Iₛₑc (A)</th>';
+      pairs.forEach(p=> html += `<th>${p[0]} mm²</th>`);
+      html += '</tr>';
+      ratings.forEach(S=>{
+        const I = iPhase(S,U,ph,cosphi);
+        html += `<tr><td>${S}</td><td>${fmt.format(I)}</td>`;
+        pairs.forEach(p=>{
+          const n = Math.max(1, Math.ceil(I / p[1]));
+          html += `<td>${n} + neutre (${n})</td>`;
+        });
+        html += '</tr>';
+      });
+      quick.innerHTML = html;
+    }
+    buildQuick();
+  })();
+  </script>
 </body>
 </html>
