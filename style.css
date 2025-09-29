@@ -105,7 +105,7 @@ button.secondary:hover{border-color:#2b3a55}
 /* Tableau */
 table{ width:100%; border-collapse:collapse; margin-top:10px; background:#0f172a; border-radius:12px; overflow:hidden; }
 th, td{ border:1px solid var(--stroke); padding:10px; text-align:center; }
-th{background:rgba(255,255,255,.04); color:var(--muted)}
+th{background:rgba(10,10,255,.04); color:var(--muted)}
 .total{font-weight:700;}
 
 /* Pied de page */
@@ -155,6 +155,7 @@ th{background:rgba(255,255,255,.04); color:var(--muted)}
   .navbar .toggle .bars::before,
   .navbar .toggle .bars::after{transition:none}
 }
+
 
 
 
