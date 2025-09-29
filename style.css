@@ -81,7 +81,7 @@ h1 + p.subtitle{ text-align:center; margin:0 0 20px 0; color:rgb(50, 11, 189); f
 
 /* Formulaires */
 label, input, select, p{ font-size:15px; margin:10px 0; display:block; }
-label{color:var(--muted); margin-bottom:6px}
+label{color:rgb(50, 11, 189); margin-bottom:6px}
 input, select{
   width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--stroke);
   background:#0f172a; color:var(--ink); outline:none;
@@ -155,6 +155,7 @@ th{background:rgba(255,255,255,.04); color:var(--muted)}
   .navbar .toggle .bars::before,
   .navbar .toggle .bars::after{transition:none}
 }
+
 
 
 
