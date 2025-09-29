@@ -5,7 +5,7 @@
   --card:#ffffff;
   --ink:#D4D2D2;
   --muted:#94a3b8;
-  --stroke:rgba(255,255,255,.06);
+  --stroke:#EBEBEB;
   --accent:#22c55e;
   --accent-hover:#16a34a;
   --focus:#60a5fa;
@@ -155,6 +155,7 @@ th{background:rgba(10,10,255,.04); color:var(--muted)}
   .navbar .toggle .bars::before,
   .navbar .toggle .bars::after{transition:none}
 }
+
 
 
 
