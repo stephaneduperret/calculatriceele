@@ -9,34 +9,39 @@
 <!--  <script src="./menu.js" defer></script> -->
   
   <style>
-    <div class="container">
-    
  .container {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh; /* centre aussi verticalement */
+      min-height: 100vh;
     }
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
       background: linear-gradient(120deg, #0b1220, #12233c);
       color: #e5e7eb;
       display: flex;
-      justify-content: center;
+      flex-direction: column; /* pour placer le titre au-dessus du contenu */
+      justify-content: flex-start;
       align-items: center;
       min-height: 100vh;
-
- 
     }
+
+    h1 {
+      margin-top: 40px;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      color: #60a5fa;
+      text-align: center;
+    }
+
     .menu-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px;
       max-width: 800px;
       width: 90%;
-     
- 
     }
 
     .card {
@@ -80,7 +85,9 @@
   </style>
 </head>
 <body>
- 
+
+  <h1>Calculatrices réseaux</h1>
+
   <div class="menu-container">
     <a href="https://stephaneduperret.github.io/calculatriceele/Commande.html" class="card">
       <div class="card-title">Commande</div>
@@ -137,36 +144,16 @@
       <div class="card-desc">Calculs réseau MT</div>
     </a>
 
-     <a href="https://stephaneduperret.github.io/calculatriceele/ICC.html" class="card">
+    <a href="https://stephaneduperret.github.io/calculatriceele/ICC.html" class="card">
       <div class="card-title">ICC</div>
       <div class="card-desc">Calculs de courant de court-circuit</div>
     </a>
     
   </div>
-</div>
+
   <footer>
     Dernière modification faite par Stéphane le 1er octobre 2025.
   </footer>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
