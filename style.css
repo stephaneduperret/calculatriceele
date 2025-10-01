@@ -31,60 +31,6 @@
 
 /*-- test************************************ */
 
-/* Structure principale */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  display: flex;
-  justify-content: center;   /* centre horizontalement */
-  align-items: flex-start;    /* si tu veux centrer aussi verticalement → remplace par center */
-  background: linear-gradient(120deg, #0b1220, #12233c);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
-  color: #e5e7eb;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-
-/* Conteneur principal centré */
-.container2 {
-  background: var(--card);
-  padding: 24px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 600px; /* ← taille réduite */
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-}
-/* Grille des paramètres */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-/* Champs et labels */
-.grid label {
-  display: block;
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-  color: var(--muted);
-}
-
-.grid input,
-.grid select {
-  width: 100%;
-  padding: 8px;
-  background: #1f2937;
-  border: 1px solid var(--stroke);
-  border-radius: 6px;
-  color: var(--ink);
-  font-size: 0.95rem;
-}
-
 
 /*--  Fin test************************************ */
 
@@ -258,6 +204,7 @@ th{background:rgba(50,95,219,.06); color:var(--ink); font-weight:700}
 /* Liens généraux (hors navbar) */
 a{ color:var(--accent) }
 a:hover{ color:var(--accent-hover) }
+
 
 
 
