@@ -11,6 +11,12 @@
   --focus:#60a5fa;
   --menu-overlay:rgba(245,248,253,.92);
 }
+/* Grille des paramètres */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 
 /* Mode sombre automatique (optionnel mais utile) */
 @media (prefers-color-scheme: dark){
@@ -198,3 +204,4 @@ th{background:rgba(50,95,219,.06); color:var(--ink); font-weight:700}
 /* Liens généraux (hors navbar) */
 a{ color:var(--accent) }
 a:hover{ color:var(--accent-hover) }
+
