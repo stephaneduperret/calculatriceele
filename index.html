@@ -7,52 +7,104 @@
   <link rel="icon" type="image/png" href="./calculator.png">
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
+      background: linear-gradient(120deg, #0b1220, #12233c);
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      width: 90%;
+    }
+
+    .card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(4px);
+      transition: transform 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #d1d5db;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+  </style>
 </head>
 <body>
 
+  <div class="menu-container">
+    <a href="./commande/index.html" class="card">
+      <div class="card-title">Commande</div>
+      <div class="card-desc">Commande de matériels</div>
+    </a>
 
-  <!-- Contenu principal : grille de cartes menu -->
-  <main class="stage" role="main">
-    <section class="menu-grid" aria-label="Entrées rapides">
-      <!-- Colonne gauche (remplie) -->
-      <a class="menu-card" href="./commande/index.html">
-        <div class="menu-card__header">Commande</div>
-        <div class="menu-card__body">Commande de matériels</div>
-      </a>
+    <a href="./convertir-is/index.html" class="card">
+      <div class="card-title">Convertir I-S</div>
+      <div class="card-desc">Conversion Ampère ↔ kVA</div>
+    </a>
 
-      <a class="menu-card" href="./convertir-is/index.html">
-        <div class="menu-card__header">Convertir I-S</div>
-        <div class="menu-card__body">Ampère à kVA</div>
-      </a>
+    <a href="./divers/index.html" class="card">
+      <div class="card-title">Divers</div>
+      <div class="card-desc">Augmentation de puissance, tarifs des câbles</div>
+    </a>
 
-      <a class="menu-card" href="./divers/augmentation-puissance.html">
-        <div class="menu-card__header">Divers</div>
-        <div class="menu-card__body">
-          Augmentation de puissance<br/>
-          Tarifs de câble
-        </div>
-      </a>
+    <a href="./solaire/index.html" class="card">
+      <div class="card-title">Solaire</div>
+      <div class="card-desc">Outils et choix des câbles pour installations PV</div>
+    </a>
 
-      <a class="menu-card" href="./solaire/outils-cables.html">
-        <div class="menu-card__header">Solaire</div>
-        <div class="menu-card__body">Outils et choix des câbles</div>
-      </a>
+    <a href="./eligibilite/index.html" class="card">
+      <div class="card-title">Éligibilité</div>
+      <div class="card-desc">Vérification RCP / CA en fonction des données</div>
+    </a>
 
-      <!-- Emplacements vides colonne droite (placeholders cliquables ou non) -->
-      <a class="menu-card menu-card--ghost" href="./placeholder1.html" aria-label="Module à venir"></a>
-      <a class="menu-card menu-card--ghost" href="./placeholder2.html" aria-label="Module à venir"></a>
-      <a class="menu-card menu-card--ghost" href="./placeholder3.html" aria-label="Module à venir"></a>
-      <a class="menu-card menu-card--ghost" href="./placeholder4.html" aria-label="Module à venir"></a>
-      <a class="menu-card menu-card--ghost" href="./placeholder5.html" aria-label="Module à venir"></a>
-      <a class="menu-card menu-card--ghost" href="./placeholder6.html" aria-label="Module à venir"></a>
-    </section>
-  </main>
+    <a href="./icc/index.html" class="card">
+      <div class="card-title">ICC</div>
+      <div class="card-desc">Calculs de courant de court-circuit</div>
+    </a>
+  </div>
 
-  <!-- Pied de page -->
-  <footer class="page-footer">
-    <small>Dernière modification faite par Stéphane le 19 septembre 2025.</small>
+  <footer>
+    Dernière modification faite par Stéphane le 19 septembre 2025.
   </footer>
 
 </body>
 </html>
-
