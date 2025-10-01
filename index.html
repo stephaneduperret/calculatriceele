@@ -1,16 +1,84 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculatrice Privé sdu</title>
-    <link rel="icon" type="image/png" href="./calculator.png">
-    <link rel="stylesheet" href="./style.css">
-    <script src="./menu.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculatrice Privé sdu</title>
+  <link rel="icon" type="image/png" href="./calculator.png">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./menu.js" defer></script>
 </head>
 <body>
 
+  <!-- Barre de navigation -->
+  <header class="navbar" role="navigation" aria-label="Menu principal">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html" aria-label="Accueil VOÉ">voé</a>
+
+      <button class="menu-toggle" aria-expanded="false" aria-controls="nav-links">
+        <span class="sr-only">Ouvrir le menu</span>
+        ☰
+      </button>
+
+      <nav id="nav-links" class="links">
+        <a href="./commande/index.html">Commande</a>
+        <a href="./convertir-is/index.html">Convertir I-S</a>
+        <a href="./divers/index.html">Divers</a>
+        <a href="./solaire/index.html">Solaire</a>
+        <a href="./eligibilite/index.html">Éligibilité</a>
+        <a href="./date/index.html">Date</a>
+        <a href="./chute-tension/index.html">Chute de tension</a>
+        <a href="./tarifs-divers/index.html">Tarifs divers</a>
+        <a href="./alim-armoire/index.html">Alim Armoire</a>
+        <a href="./calculs-reseau/index.html">Calculs Réseau</a>
+        <a href="./transformateur/index.html">Transformateur</a>
+        <a href="./icc/index.html">Icc</a>
+        <a href="./index.html" class="active">Accueil</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenu principal : grille de cartes menu -->
+  <main class="stage" role="main">
+    <section class="menu-grid" aria-label="Entrées rapides">
+      <!-- Colonne gauche (remplie) -->
+      <a class="menu-card" href="./commande/index.html">
+        <div class="menu-card__header">Commande</div>
+        <div class="menu-card__body">Commande de matériels</div>
+      </a>
+
+      <a class="menu-card" href="./convertir-is/index.html">
+        <div class="menu-card__header">Convertir I-S</div>
+        <div class="menu-card__body">Ampère à kVA</div>
+      </a>
+
+      <a class="menu-card" href="./divers/augmentation-puissance.html">
+        <div class="menu-card__header">Divers</div>
+        <div class="menu-card__body">
+          Augmentation de puissance<br/>
+          Tarifs de câble
+        </div>
+      </a>
+
+      <a class="menu-card" href="./solaire/outils-cables.html">
+        <div class="menu-card__header">Solaire</div>
+        <div class="menu-card__body">Outils et choix des câbles</div>
+      </a>
+
+      <!-- Emplacements vides colonne droite (placeholders cliquables ou non) -->
+      <a class="menu-card menu-card--ghost" href="./placeholder1.html" aria-label="Module à venir"></a>
+      <a class="menu-card menu-card--ghost" href="./placeholder2.html" aria-label="Module à venir"></a>
+      <a class="menu-card menu-card--ghost" href="./placeholder3.html" aria-label="Module à venir"></a>
+      <a class="menu-card menu-card--ghost" href="./placeholder4.html" aria-label="Module à venir"></a>
+      <a class="menu-card menu-card--ghost" href="./placeholder5.html" aria-label="Module à venir"></a>
+      <a class="menu-card menu-card--ghost" href="./placeholder6.html" aria-label="Module à venir"></a>
+    </section>
+  </main>
+
+  <!-- Pied de page -->
+  <footer class="page-footer">
+    <small>Dernière modification faite par Stéphane le 19 septembre 2025.</small>
+  </footer>
+
 </body>
 </html>
-
-
