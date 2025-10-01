@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const footer = `
     <footer>
       <div class="footer">
-        Dernière modification faite par Stéphane le 19 septembre 2025.
+        Dernière modification faite par Stéphane le 1er octobre 2025.
       </div>
     </footer>
   `;
@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastScrollY = current;
   }, { passive: true });
 });
+
 
 
 
