@@ -12,7 +12,7 @@
   --menu-overlay:rgba(245,248,253,.92);
 }
 /* Grille des paramètres */
-.grid {
+.gridsdu {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
@@ -204,4 +204,5 @@ th{background:rgba(50,95,219,.06); color:var(--ink); font-weight:700}
 /* Liens généraux (hors navbar) */
 a{ color:var(--accent) }
 a:hover{ color:var(--accent-hover) }
+
 
