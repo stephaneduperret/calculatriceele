@@ -1,232 +1,228 @@
 <!doctype html>
 <html lang="fr">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Formulaire Supabase</title>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Formulaire Supabase</title>
 
-<!-- Liens relatifs (GitHub Pages) -->
-<link rel="stylesheet" href="./style.css">
-<script src="./menu.js" defer></script>
+  <!-- Liens relatifs (GitHub Pages) -->
+  <link rel="stylesheet" href="./style.css">
+  <script src="./menu.js" defer></script>
+</head>
+<body>
 
-<h1>Contact</h1>
-<form id="contactForm" autocomplete="off">
-  <!-- champ caché technique pour l'édition -->
-  <input type="hidden" name="id" id="rowId">
+  <h1>Contact</h1>
+  <form id="contactForm" autocomplete="off">
+    <!-- champ caché technique pour l'édition -->
+    <input type="hidden" name="id" id="rowId">
 
-  <label>Nom<br><input name="nom" required></label><br>
-  <label>Prénom<br><input name="prenom" ></label><br>
-  <label>Email<br><input type="email" name="email" ></label><br>
-  <label>Telephone<br> 
-  <input name="telephone"
-         inputmode="tel"
-         autocomplete="tel"
-         placeholder="+41 79 123 45 67"
-         pattern="^\+?[0-9\s().-]{6,20}$">
-</label>
-  <label>Message<br><textarea name="message"></textarea></label><br>
+    <label>Nom<br><input name="nom" required></label><br>
+    <label>Prénom<br><input name="prenom"></label><br>
+    <label>Email<br><input type="email" name="email"></label><br>
+    <label>Téléphone<br>
+      <input name="telephone"
+             inputmode="tel"
+             autocomplete="tel"
+             placeholder="+41 79 123 45 67"
+             pattern="^\+?[0-9\s().-]{6,20}$">
+    </label><br>
+    <label>Message<br><textarea name="message"></textarea></label><br>
 
-  <button id="submitBtn" type="submit">Envoyer</button>
-  <button id="cancelEditBtn" type="button" hidden>Annuler</button>
-</form>
+    <button id="submitBtn" type="submit">Envoyer</button>
+    <button id="cancelEditBtn" type="button" hidden>Annuler</button>
+  </form>
 
-<pre id="out"></pre>
+  <pre id="out"></pre>
 
-<hr>
+  <hr>
 
-<h2>Recherche par nom</h2>
-<label for="nomSearch">Nom (texte) :</label>
-<input id="nomSearch" type="text" placeholder="Tape un nom ou une partie du nom…" autocomplete="off">
-<button id="resetBtn" type="button">Réinitialiser</button>
+  <h2>Recherche par nom</h2>
+  <label for="nomSearch">Nom (texte) :</label>
+  <input id="nomSearch" type="text" placeholder="Tape un nom ou une partie du nom…" autocomplete="off">
+  <button id="resetBtn" type="button">Réinitialiser</button>
 
-<h3>Résultats</h3>
-<table id="results" border="1" cellpadding="6">
-  <thead>
-    <tr>
-      <th>Nom</th>
-      <th>Prénom</th>
-      <th>Email</th>
-      <th>Téléphone</th>
-      <th>Message</th>
-      <th>Créé le</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <h3>Résultats</h3>
+  <table id="results" border="1" cellpadding="6">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Email</th>
+        <th>Téléphone</th>
+        <th>Message</th>
+        <th>Créé le</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<pre id="log" style="white-space:pre-wrap;"></pre>
+  <pre id="log" style="white-space:pre-wrap;"></pre>
 
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  // Identifiants (clé ANON côté client)
-  const SUPABASE_URL = "https://shiuohwitzunjfwwbfom.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXVvaHdpdHp1bmpmd3diZm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjY3NzAsImV4cCI6MjA3NDk0Mjc3MH0.-wzyYIzOBFFClVYheIcIlt8YEQU4_IY1xTFQxiNUnf4";
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Identifiants (clé ANON côté client)
+    const SUPABASE_URL = "https://shiuohwitzunjfwwbfom.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXVvaHdpdHp1bmpmd3diZm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjY3NzAsImV4cCI6MjA3NDk0Mjc3MH0.-wzyYIzOBFFClVYheIcIlt8YEQU4_IY1xTFQxiNUnf4";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const form          = document.getElementById('contactForm');
-  const out           = document.getElementById('out');
-  const tbody         = document.querySelector('#results tbody');
-  const log           = document.getElementById('log');
-  const nomSearch     = document.getElementById('nomSearch');
-  const resetBtn      = document.getElementById('resetBtn');
-  const submitBtn     = document.getElementById('submitBtn');
-  const cancelEditBtn = document.getElementById('cancelEditBtn');
-  const rowIdInput    = document.getElementById('rowId');
+    const form          = document.getElementById('contactForm');
+    const out           = document.getElementById('out');
+    const tbody         = document.querySelector('#results tbody');
+    const log           = document.getElementById('log');
+    const nomSearch     = document.getElementById('nomSearch');
+    const resetBtn      = document.getElementById('resetBtn');
+    const submitBtn     = document.getElementById('submitBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const rowIdInput    = document.getElementById('rowId');
 
-  // État : id en cours d’édition (null = création)
-  let editingId = null;
+    // État : id en cours d’édition (null = création)
+    let editingId = null;
 
-  // 1) Insert/Update via formulaire selon l’état
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(form));
-    // On ne veut pas envoyer l'id en création
-    const { id, ...payload } = data;
-
-    out.textContent = "⌛ Traitement en cours...";
-
-    if (editingId) {
-      // UPDATE
-      const { error } = await supabase
-        .from('contacts')
-        .update(payload)
-        .eq('id', editingId);
-
-      out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message
-                              : "✅ Contact mis à jour !";
-    } else {
-      // INSERT
-      const { error } = await supabase.from('contacts').insert([payload]);
-      out.textContent = error ? "❌ Erreur (création) : " + error.message
-                              : "✅ Contact créé !";
-    }
-
-    // Reset + reload
-    exitEditMode();
-    await searchByNom(nomSearch.value || null);
-  });
-
-  // 2) Charger les résultats (avec id pour l’édition)
-  async function searchByNom(term) {
-    log.textContent = "Recherche...";
-    tbody.innerHTML = "";
-
-    let query = supabase
-      .from('contacts')
-      .select('id, nom, prenom, email, telephone, message, created_at')
-      .order('created_at', { ascending: false })
-      .limit(200);
-
-    if (term && term.trim() !== "") {
-      query = query.ilike('nom', `%${term.trim()}%`);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      log.textContent = "❌ Erreur (recherche) : " + error.message;
-      return;
-    }
-    if (!data || data.length === 0) {
-      log.textContent = "Aucun résultat.";
-      return;
-    }
-
-    for (const r of data) {
-      const tr = document.createElement('tr');
-      tr.dataset.id = r.id; // on garde l'id sur la ligne
-      tr.innerHTML = `
-        <td>${escapeHtml(r.nom ?? "")}</td>
-        <td>${escapeHtml(r.prenom ?? "")}</td>
-        <td>${escapeHtml(r.email ?? "")}</td>
-        <td>${escapeHtml(r.telephone ?? "")}</td>
-        <td>${escapeHtml(r.message ?? "")}</td>
-        <td>${new Date(r.created_at).toLocaleString()}</td>
-      `;
-      // clic = passer en mode édition avec les valeurs
-      tr.addEventListener('click', () => enterEditMode(r));
-      tbody.appendChild(tr);
-    }
-    log.textContent = `✅ ${data.length} résultat(s). Cliquez une ligne pour éditer.`;
-  }
-
-  // 3) Debounce pour la recherche live
-  function debounce(fn, delay = 300) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), delay);
-    };
-  }
-
-  const onSearchInput = debounce(() => {
-    const term = nomSearch.value;
-    searchByNom(term);
-  }, 300);
-
-  // 4) Évènements recherche
-  nomSearch.addEventListener('input', onSearchInput);
-  nomSearch.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+    // 1) Insert/Update via formulaire selon l’état
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      searchByNom(nomSearch.value);
+      const data = Object.fromEntries(new FormData(form));
+      // On ne veut pas envoyer l'id en création
+      const { id, ...payload } = data;
+
+      out.textContent = "⌛ Traitement en cours...";
+
+      if (editingId) {
+        // UPDATE
+        const { error } = await supabase
+          .from('contacts')
+          .update(payload)
+          .eq('id', editingId);
+
+        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message
+                                : "✅ Contact mis à jour !";
+      } else {
+        // INSERT
+        const { error } = await supabase.from('contacts').insert([payload]);
+        out.textContent = error ? "❌ Erreur (création) : " + error.message
+                                : "✅ Contact créé !";
+      }
+
+      // Reset + reload
+      exitEditMode();
+      await searchByNom(nomSearch.value || null);
+    });
+
+    // 2) Charger les résultats (avec id pour l’édition)
+    async function searchByNom(term) {
+      log.textContent = "Recherche...";
+      tbody.innerHTML = "";
+
+      let query = supabase
+        .from('contacts')
+        .select('id, nom, prenom, email, telephone, message, created_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (term && term.trim() !== "") {
+        // Filtre partiel insensible à la casse
+        query = query.ilike('nom', `%${term.trim()}%`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        log.textContent = "❌ Erreur (recherche) : " + error.message;
+        return;
+      }
+      if (!data || data.length === 0) {
+        log.textContent = "Aucun résultat.";
+        return;
+      }
+
+      for (const r of data) {
+        const tr = document.createElement('tr');
+        tr.dataset.id = r.id; // on garde l'id sur la ligne
+        tr.innerHTML = `
+          <td>${escapeHtml(r.nom ?? "")}</td>
+          <td>${escapeHtml(r.prenom ?? "")}</td>
+          <td>${escapeHtml(r.email ?? "")}</td>
+          <td>${escapeHtml(r.telephone ?? "")}</td>
+          <td>${escapeHtml(r.message ?? "")}</td>
+          <td>${new Date(r.created_at).toLocaleString()}</td>
+        `;
+        // clic = passer en mode édition avec les valeurs
+        tr.addEventListener('click', () => enterEditMode(r));
+        tbody.appendChild(tr);
+      }
+      log.textContent = \`✅ \${data.length} résultat(s). Cliquez une ligne pour éditer.\`;
     }
-  });
 
-  resetBtn.addEventListener('click', () => {
-    nomSearch.value = "";
-    searchByNom(null);
-    nomSearch.focus();
-  });
+    // 3) Debounce pour la recherche live
+    function debounce(fn, delay = 300) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    }
 
-  // 5) Mode édition : entrer / sortir
-  function enterEditMode(row) {
-    editingId = row.id;
-    rowIdInput.value = row.id;
-    form.nom.value = row.nom ?? "";
-    form.prenom.value = row.prenom ?? "";
-    form.email.value = row.email ?? "";
-    form.telephone.value = row.telephone ?? "";
-    form.message.value = row.message ?? "";
+    const onSearchInput = debounce(() => {
+      const term = nomSearch.value;
+      searchByNom(term);
+    }, 300);
 
-    submitBtn.textContent = "Mettre à jour";
-    cancelEditBtn.hidden = false;
-    out.textContent = `✏️ Édition de l’entrée #${row.id}`;
-  }
+    // 4) Évènements recherche
+    nomSearch.addEventListener('input', onSearchInput);
+    nomSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchByNom(nomSearch.value);
+      }
+    });
 
-  function exitEditMode() {
-    editingId = null;
-    rowIdInput.value = "";
-    form.reset();
-    submitBtn.textContent = "Envoyer";
-    cancelEditBtn.hidden = true;
-  }
+    resetBtn.addEventListener('click', () => {
+      nomSearch.value = "";
+      searchByNom(null);
+      nomSearch.focus();
+    });
 
-  cancelEditBtn.addEventListener('click', () => {
-    exitEditMode();
-    out.textContent = "ℹ️ Mode création.";
-  });
+    // 5) Mode édition : entrer / sortir
+    function enterEditMode(row) {
+      editingId = row.id;
+      rowIdInput.value = row.id;
+      form.nom.value = row.nom ?? "";
+      form.prenom.value = row.prenom ?? "";
+      form.email.value = row.email ?? "";
+      form.telephone.value = row.telephone ?? "";
+      form.message.value = row.message ?? "";
 
-  // 6) util anti-XSS
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+      submitBtn.textContent = "Mettre à jour";
+      cancelEditBtn.hidden = false;
+      out.textContent = \`✏️ Édition de l’entrée #\${row.id}\`;
+    }
 
-  // Au chargement : affiche tout
-  await searchByNom(null);
-</script>
+    function exitEditMode() {
+      editingId = null;
+      rowIdInput.value = "";
+      form.reset();
+      submitBtn.textContent = "Envoyer";
+      cancelEditBtn.hidden = true;
+    }
+
+    cancelEditBtn.addEventListener('click', () => {
+      exitEditMode();
+      out.textContent = "ℹ️ Mode création.";
+    });
+
+    // 6) util anti-XSS
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // Au chargement : affiche tout
+    await searchByNom(null);
+  </script>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
