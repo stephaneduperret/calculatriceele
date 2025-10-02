@@ -107,7 +107,7 @@
 
     let query = supabase
       .from('contacts')
-      .select('id, nom, prenom, email, message, created_at')
+      .select('id, nom, prenom, email, telephone, message, created_at')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -215,6 +215,7 @@
   await searchByNom(null);
 </script>
 </html>
+
 
 
 
