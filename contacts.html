@@ -132,6 +132,7 @@
         <td>${escapeHtml(r.nom ?? "")}</td>
         <td>${escapeHtml(r.prenom ?? "")}</td>
         <td>${escapeHtml(r.email ?? "")}</td>
+        <td>${escapeHtml(r.telephone ?? "")}</td>
         <td>${escapeHtml(r.message ?? "")}</td>
         <td>${new Date(r.created_at).toLocaleString()}</td>
       `;
@@ -178,6 +179,7 @@
     form.nom.value = row.nom ?? "";
     form.prenom.value = row.prenom ?? "";
     form.email.value = row.email ?? "";
+    form.telephone.value = row.telephone ?? "";
     form.message.value = row.message ?? "";
 
     submitBtn.textContent = "Mettre à jour";
@@ -212,4 +214,5 @@
   await searchByNom(null);
 </script>
 </html>
+
 
