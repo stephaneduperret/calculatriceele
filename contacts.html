@@ -147,10 +147,10 @@
       tr.addEventListener('click', () => enterEditMode(r));
       tbody.appendChild(tr);
     }
-    log.textContent = \`✅ \${data.length} résultat(s). Cliquez une ligne pour éditer.\`;
+    log.textContent = \"✅ \${data.length} résultat(s). Cliquez une ligne pour éditer.\";
   }
-
-  // 3) Debounce pour la recherche live
+  
+// 3) Debounce pour la recherche live
   function debounce(fn, delay = 300) {
     let t;
     return (...args) => {
@@ -191,7 +191,7 @@
 
     submitBtn.textContent = "Mettre à jour";
     cancelEditBtn.hidden = false;
-    out.textContent = \`✏️ Édition de l’entrée #\${row.id}\`;
+    out.textContent = \"✏️ Édition de l’entrée #\${row.id}\";
   }
 
   function exitEditMode() {
@@ -221,3 +221,4 @@
   await searchByNom(null);
 </script>
 </html>
+
