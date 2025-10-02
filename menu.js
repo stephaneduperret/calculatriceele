@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
          <li><a href="./calculreseau.html">Calculs Réseau</a></li>
         <li><a href="./Transfo.html">Transformateur</a></li>
         <li><a href="./ICC.html">Icc</a></li>
+        <li><a href="./contacts.html">Contacts</a></li>
         <li><a href="./index.html" style="color:blue;">Accueil</a></li>
       </ul>
     </header>
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastScrollY = current;
   }, { passive: true });
 });
+
 
 
 
