@@ -176,45 +176,78 @@
         `;
         tr.addEventListener('click', () => enterEditMode(r));
         tbody.appendChild(tr);
-      }
-      log.textContent = \`✅ \${data.length} résultat(s). Cliquez une ligne pour éditer.\`;
-    }
+         }
+    log.textContent = `✅ ${data.length} résultat(s). Cliquez une ligne pour éditer.`;
+  }
 
-    function debounce(fn, delay = 300) {
-      let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delay); };
-    }
-    const onSearchInput = debounce(() => searchByNom(nomSearch.value), 300);
-    nomSearch.addEventListener('input', onSearchInput);
-    nomSearch.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchByNom(nomSearch.value); } });
-    resetBtn.addEventListener('click', () => { nomSearch.value = ""; searchByNom(null); nomSearch.focus(); });
+  // 3) Debounce pour la recherche live
+  function debounce(fn, delay = 300) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  }
 
-    function enterEditMode(row) {
-      editingId = row.id;
-      rowIdInput.value = row.id;
-      form.nom.value = row.nom ?? "";
-      form.prenom.value = row.prenom ?? "";
-      form.email.value = row.email ?? "";
-      form.telephone.value = row.telephone ?? "";
-      form.message.value = row.message ?? "";
-      submitBtn.textContent = "Mettre à jour";
-      cancelEditBtn.hidden = false;
-      out.textContent = \`✏️ Édition de l’entrée #\${row.id}\`;
-    }
+  const onSearchInput = debounce(() => {
+    const term = nomSearch.value;
+    searchByNom(term);
+  }, 300);
 
-    function exitEditMode() {
-      editingId = null;
-      rowIdInput.value = "";
-      form.reset();
-      submitBtn.textContent = "Envoyer";
-      cancelEditBtn.hidden = true;
+  // 4) Évènements recherche
+  nomSearch.addEventListener('input', onSearchInput);
+  nomSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      searchByNom(nomSearch.value);
     }
-    cancelEditBtn.addEventListener('click', () => { exitEditMode(); out.textContent = "ℹ️ Mode création."; });
+  });
 
-    function escapeHtml(s) {
-      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    }
+  resetBtn.addEventListener('click', () => {
+    nomSearch.value = "";
+    searchByNom(null);
+    nomSearch.focus();
+  });
 
-    await searchByNom(null);
-  </script>
-</body>
+  // 5) Mode édition : entrer / sortir
+  function enterEditMode(row) {
+    editingId = row.id;
+    rowIdInput.value = row.id;
+    form.nom.value = row.nom ?? "";
+    form.prenom.value = row.prenom ?? "";
+    form.email.value = row.email ?? "";
+    form.telephone.value = row.telephone ?? "";
+    form.message.value = row.message ?? "";
+
+    submitBtn.textContent = "Mettre à jour";
+    cancelEditBtn.hidden = false;
+    out.textContent = `✏️ Édition de l’entrée #${row.id}`;
+  }
+
+  function exitEditMode() {
+    editingId = null;
+    rowIdInput.value = "";
+    form.reset();
+    submitBtn.textContent = "Envoyer";
+    cancelEditBtn.hidden = true;
+  }
+
+  cancelEditBtn.addEventListener('click', () => {
+    exitEditMode();
+    out.textContent = "ℹ️ Mode création.";
+  });
+
+  // 6) util anti-XSS
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  // Au chargement : affiche tout
+  await searchByNom(null);
+</script>
 </html>
