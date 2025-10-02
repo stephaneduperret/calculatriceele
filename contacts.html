@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formulaire Supabase</title>
+
+<h1>Contact</h1>
+<form id="contactForm">
+  <label>Nom<br><input name="nom" required></label><br>
+  <label>Email<br><input type="email" name="email" required></label><br>
+  <label>Message<br><textarea name="message"></textarea></label><br>
+  <button type="submit">Envoyer</button>
+</form>
+
+<pre id="out"></pre>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const SUPABASE_URL = "https://shiuohwitzunjfwwbfom.supabase.co";      // ← remplace ici
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXVvaHdpdHp1bmpmd3diZm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjY3NzAsImV4cCI6MjA3NDk0Mjc3MH0.-wzyYIzOBFFClVYheIcIlt8YEQU4_IY1xTFQxiNUnf4"; // ← ta clé anon
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const form = document.getElementById('contactForm');
+  const out  = document.getElementById('out');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+
+    const { error } = await supabase
+      .from('contacts')
+      .insert([data]);
+
+    out.textContent = error ? "❌ Erreur : " + error.message : "✅ Données enregistrées !";
+    if (!error) form.reset();
+  });
+</script>
+</html>
