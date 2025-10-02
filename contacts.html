@@ -18,10 +18,8 @@
 <hr>
 
 <h2>Recherche par nom</h2>
-<label for="nomSelect">Nom :</label>
-<select id="nomSelect">
-  <option value="">-- Tous les noms --</option>
-</select>
+<label for="nomSearch">Nom (texte) :</label>
+<input id="nomSearch" type="text" placeholder="Tape un nom ou une partie du nom…" autocomplete="off">
 <button id="resetBtn" type="button">Réinitialiser</button>
 
 <h3>Résultats</h3>
@@ -43,19 +41,19 @@
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  // Tes identifiants (ok côté client pour la clé ANON)
+  // Identifiants (clé ANON côté client)
   const SUPABASE_URL = "https://shiuohwitzunjfwwbfom.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXVvaHdpdHp1bmpmd3diZm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjY3NzAsImV4cCI6MjA3NDk0Mjc3MH0.-wzyYIzOBFFClVYheIcIlt8YEQU4_IY1xTFQxiNUnf4";
-
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const form = document.getElementById('contactForm');
-  const out  = document.getElementById('out');
+  const form   = document.getElementById('contactForm');
+  const out    = document.getElementById('out');
+  const tbody  = document.querySelector('#results tbody');
+  const log    = document.getElementById('log');
 
-  const nomSelect = document.getElementById('nomSelect');
+  // Nouveaux éléments de recherche texte
+  const nomSearch = document.getElementById('nomSearch');
   const resetBtn  = document.getElementById('resetBtn');
-  const tbody     = document.querySelector('#results tbody');
-  const log       = document.getElementById('log');
 
   // 1) Insert via formulaire
   form.addEventListener('submit', async (e) => {
@@ -65,39 +63,12 @@
     out.textContent = error ? "❌ Erreur : " + error.message : "✅ Données enregistrées !";
     if (!error) {
       form.reset();
-      // recharge la liste de noms et les résultats
-      await loadNoms();
-      await searchByNom(null);
+      await searchByNom(null); // recharge tous
     }
   });
 
-  // 2) Charger la liste des noms distincts
-  async function loadNoms() {
-    log.textContent = "Chargement des noms...";
-    const { data, error } = await supabase
-      .from('contacts')
-      .select('nom', { distinct: true })
-      .not('nom', 'is', null)
-      .order('nom', { ascending: true });
-
-    if (error) {
-      log.textContent = "❌ Erreur (noms) : " + error.message;
-      return;
-    }
-
-    // reset et remplir
-    nomSelect.length = 1; // garde l'option placeholder
-    for (const row of data) {
-      const opt = document.createElement('option');
-      opt.value = row.nom;
-      opt.textContent = row.nom;
-      nomSelect.appendChild(opt);
-    }
-    log.textContent = "Noms chargés.";
-  }
-
-  // 3) Rechercher selon la sélection
-  async function searchByNom(nom) {
+  // 2) Recherche selon texte
+  async function searchByNom(term) {
     log.textContent = "Recherche...";
     tbody.innerHTML = "";
 
@@ -107,7 +78,11 @@
       .order('created_at', { ascending: false })
       .limit(200);
 
-    if (nom) query = query.eq('nom', nom);
+    // si un terme est saisi, on fait un filtre partiel insensible à la casse
+    if (term && term.trim() !== "") {
+      // .ilike = case-insensitive, %term% pour « contient »
+      query = query.ilike('nom', `%${term.trim()}%`);
+    }
 
     const { data, error } = await query;
 
@@ -134,15 +109,33 @@
     log.textContent = `✅ ${data.length} résultat(s).`;
   }
 
+  // 3) Débounce pour la recherche live
+  function debounce(fn, delay = 300) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  const onSearchInput = debounce(() => {
+    const term = nomSearch.value;
+    searchByNom(term);
+  }, 300);
+
   // 4) Évènements
-  nomSelect.addEventListener('change', () => {
-    const v = nomSelect.value || null;
-    searchByNom(v);
+  nomSearch.addEventListener('input', onSearchInput);
+  nomSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      searchByNom(nomSearch.value);
+    }
   });
 
   resetBtn.addEventListener('click', () => {
-    nomSelect.value = "";
+    nomSearch.value = "";
     searchByNom(null);
+    nomSearch.focus();
   });
 
   // util anti-XSS
@@ -155,8 +148,7 @@
       .replaceAll("'", "&#039;");
   }
 
-  // Au chargement
-  await loadNoms();
+  // Au chargement : affiche tout
   await searchByNom(null);
 </script>
 </html>
