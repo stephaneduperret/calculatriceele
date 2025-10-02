@@ -4,17 +4,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Formulaire Supabase</title>
 
-           <!-- Liens relatifs (GitHub Pages) -->
-  <link rel="stylesheet" href="./style.css">
-  <script src="./menu.js" defer></script>
+<!-- Liens relatifs (GitHub Pages) -->
+<link rel="stylesheet" href="./style.css">
+<script src="./menu.js" defer></script>
 
 <h1>Contact</h1>
-<form id="contactForm">
+<form id="contactForm" autocomplete="off">
+  <!-- champ caché technique pour l'édition -->
+  <input type="hidden" name="id" id="rowId">
+
   <label>Nom<br><input name="nom" required></label><br>
   <label>Prénom<br><input name="prenom" required></label><br>
   <label>Email<br><input type="email" name="email" required></label><br>
   <label>Message<br><textarea name="message"></textarea></label><br>
-  <button type="submit">Envoyer</button>
+
+  <button id="submitBtn" type="submit">Envoyer</button>
+  <button id="cancelEditBtn" type="button" hidden>Annuler</button>
 </form>
 
 <pre id="out"></pre>
@@ -50,41 +55,61 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXVvaHdpdHp1bmpmd3diZm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjY3NzAsImV4cCI6MjA3NDk0Mjc3MH0.-wzyYIzOBFFClVYheIcIlt8YEQU4_IY1xTFQxiNUnf4";
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const form   = document.getElementById('contactForm');
-  const out    = document.getElementById('out');
-  const tbody  = document.querySelector('#results tbody');
-  const log    = document.getElementById('log');
+  const form          = document.getElementById('contactForm');
+  const out           = document.getElementById('out');
+  const tbody         = document.querySelector('#results tbody');
+  const log           = document.getElementById('log');
+  const nomSearch     = document.getElementById('nomSearch');
+  const resetBtn      = document.getElementById('resetBtn');
+  const submitBtn     = document.getElementById('submitBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const rowIdInput    = document.getElementById('rowId');
 
-  // Nouveaux éléments de recherche texte
-  const nomSearch = document.getElementById('nomSearch');
-  const resetBtn  = document.getElementById('resetBtn');
+  // État : id en cours d’édition (null = création)
+  let editingId = null;
 
-  // 1) Insert via formulaire
+  // 1) Insert/Update via formulaire selon l’état
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form));
-    const { error } = await supabase.from('contacts').insert([data]);
-    out.textContent = error ? "❌ Erreur : " + error.message : "✅ Données enregistrées !";
-    if (!error) {
-      form.reset();
-      await searchByNom(null); // recharge tous
+    // On ne veut pas envoyer l'id en création
+    const { id, ...payload } = data;
+
+    out.textContent = "⌛ Traitement en cours...";
+
+    if (editingId) {
+      // UPDATE
+      const { error } = await supabase
+        .from('contacts')
+        .update(payload)
+        .eq('id', editingId);
+
+      out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message
+                              : "✅ Contact mis à jour !";
+    } else {
+      // INSERT
+      const { error } = await supabase.from('contacts').insert([payload]);
+      out.textContent = error ? "❌ Erreur (création) : " + error.message
+                              : "✅ Contact créé !";
     }
+
+    // Reset + reload
+    exitEditMode();
+    await searchByNom(nomSearch.value || null);
   });
 
-  // 2) Recherche selon texte
+  // 2) Charger les résultats (avec id pour l’édition)
   async function searchByNom(term) {
     log.textContent = "Recherche...";
     tbody.innerHTML = "";
 
     let query = supabase
       .from('contacts')
-      .select('nom, prenom, email, message, created_at')
+      .select('id, nom, prenom, email, message, created_at')
       .order('created_at', { ascending: false })
       .limit(200);
 
-    // si un terme est saisi, on fait un filtre partiel insensible à la casse
     if (term && term.trim() !== "") {
-      // .ilike = case-insensitive, %term% pour « contient »
       query = query.ilike('nom', `%${term.trim()}%`);
     }
 
@@ -101,6 +126,7 @@
 
     for (const r of data) {
       const tr = document.createElement('tr');
+      tr.dataset.id = r.id; // on garde l'id sur la ligne
       tr.innerHTML = `
         <td>${escapeHtml(r.nom ?? "")}</td>
         <td>${escapeHtml(r.prenom ?? "")}</td>
@@ -108,12 +134,14 @@
         <td>${escapeHtml(r.message ?? "")}</td>
         <td>${new Date(r.created_at).toLocaleString()}</td>
       `;
+      // clic = passer en mode édition avec les valeurs
+      tr.addEventListener('click', () => enterEditMode(r));
       tbody.appendChild(tr);
     }
-    log.textContent = `✅ ${data.length} résultat(s).`;
+    log.textContent = `✅ ${data.length} résultat(s). Cliquez une ligne pour éditer.`;
   }
 
-  // 3) Débounce pour la recherche live
+  // 3) Debounce pour la recherche live
   function debounce(fn, delay = 300) {
     let t;
     return (...args) => {
@@ -127,7 +155,7 @@
     searchByNom(term);
   }, 300);
 
-  // 4) Évènements
+  // 4) Évènements recherche
   nomSearch.addEventListener('input', onSearchInput);
   nomSearch.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -142,7 +170,34 @@
     nomSearch.focus();
   });
 
-  // util anti-XSS
+  // 5) Mode édition : entrer / sortir
+  function enterEditMode(row) {
+    editingId = row.id;
+    rowIdInput.value = row.id;
+    form.nom.value = row.nom ?? "";
+    form.prenom.value = row.prenom ?? "";
+    form.email.value = row.email ?? "";
+    form.message.value = row.message ?? "";
+
+    submitBtn.textContent = "Mettre à jour";
+    cancelEditBtn.hidden = false;
+    out.textContent = `✏️ Édition de l’entrée #${row.id}`;
+  }
+
+  function exitEditMode() {
+    editingId = null;
+    rowIdInput.value = "";
+    form.reset();
+    submitBtn.textContent = "Envoyer";
+    cancelEditBtn.hidden = true;
+  }
+
+  cancelEditBtn.addEventListener('click', () => {
+    exitEditMode();
+    out.textContent = "ℹ️ Mode création.";
+  });
+
+  // 6) util anti-XSS
   function escapeHtml(s) {
     return String(s)
       .replaceAll("&", "&amp;")
@@ -156,4 +211,3 @@
   await searchByNom(null);
 </script>
 </html>
-
