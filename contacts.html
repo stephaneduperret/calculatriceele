@@ -14,15 +14,9 @@
   <input type="hidden" name="id" id="rowId">
 
   <label>Nom<br><input name="nom" required></label><br>
-  <label>Prénom<br><input name="prenom" required></label><br>
-  <label>Email<br><input type="email" name="email" required></label><br>
-  <label>Telephone<br>
-    <input name="telephone"
-           inputmode="tel"
-           autocomplete="tel"
-           placeholder="+41 79 123 45 67"
-           pattern="^\+?[0-9\s().-]{6,20}$">
-  </label><br>
+  <label>Prénom<br><input name="prenom"></label><br>
+  <label>Email<br><input type="email" name="email"></label><br>
+  <label>Téléphone<br><input type="telephonr" name="email"</label><br>
   <label>Message<br><textarea name="message"></textarea></label><br>
 
   <button id="submitBtn" type="submit">Envoyer</button>
@@ -45,7 +39,7 @@
       <th>Nom</th>
       <th>Prénom</th>
       <th>Email</th>
-      <th>Telephone</th>
+      <th>Téléphone</th>
       <th>Message</th>
       <th>Créé le</th>
     </tr>
@@ -147,10 +141,10 @@
       tr.addEventListener('click', () => enterEditMode(r));
       tbody.appendChild(tr);
     }
-    log.textContent = \"✅ \${data.length} résultat(s). Cliquez une ligne pour éditer.\";
+    log.textContent = `✅ ${data.length} résultat(s). Cliquez une ligne pour éditer.`;
   }
-  
-// 3) Debounce pour la recherche live
+
+  // 3) Debounce pour la recherche live
   function debounce(fn, delay = 300) {
     let t;
     return (...args) => {
@@ -191,7 +185,7 @@
 
     submitBtn.textContent = "Mettre à jour";
     cancelEditBtn.hidden = false;
-    out.textContent = \"✏️ Édition de l’entrée #\${row.id}\";
+    out.textContent = `✏️ Édition de l’entrée #${row.id}`;
   }
 
   function exitEditMode() {
@@ -221,6 +215,3 @@
   await searchByNom(null);
 </script>
 </html>
-
-
-
