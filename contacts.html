@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Formulaire Supabase</title>
 
-  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
 
-  <!-- Mise en colonnes compacte du formulaire (spécifique à cette page) -->
   <style>
     .form-wrap{ max-width:980px; margin:0 auto 16px; }
     .form-grid{
@@ -18,31 +16,61 @@
       gap:12px 16px;
       align-items:start;
     }
-    .form-grid label{
-      display:flex; flex-direction:column;
-      font-size:14px; gap:6px;
-    }
+    .form-grid label{ display:flex; flex-direction:column; font-size:14px; gap:6px; }
     .form-grid input, .form-grid textarea{
       padding:8px 10px; font-size:14px;
       border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
-      background:var(--card, #111827); color:var(--ink, #e5e7eb);
-      outline:none;
+      background:var(--card, #111827); color:var(--ink, #e5e7eb); outline:none;
     }
     .form-grid input:focus, .form-grid textarea:focus{
       border-color:var(--focus, #60a5fa);
       box-shadow:0 0 0 3px color-mix(in srgb, var(--focus, #60a5fa) 25%, transparent);
     }
     .form-grid textarea{ min-height:110px; resize:vertical; }
-    .full{ grid-column:1 / -1; } /* occupe toute la largeur */
-    .form-actions{
-      grid-column:1 / -1; display:flex; gap:10px; flex-wrap:wrap;
-    }
+    .full{ grid-column:1 / -1; }
+    .form-actions{ grid-column:1 / -1; display:flex; gap:10px; flex-wrap:wrap; }
     .form-actions button{
       padding:9px 14px; border-radius:10px; border:1px solid var(--stroke, rgba(255,255,255,.12));
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
     .form-actions #submitBtn{ border-color:var(--accent, #22c55e); }
     .form-actions #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
+
+    /* AJOUT — rétrécir et centrer la zone recherche + résultats */
+    .results-wrap{ max-width:1100px; margin:24px auto 40px; padding:0 12px; }
+    .results-wrap h2, .results-wrap h3{ text-align:center; margin:14px 0; }
+
+    /* AJOUT — barre d’outils centrée */
+    .results-toolbar{
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center;
+      margin:8px auto 16px;
+    }
+    #nomSearch{ width:340px; max-width:90%; padding:8px 10px; border-radius:8px;
+      border:1px solid var(--stroke, rgba(255,255,255,.12));
+      background:var(--card,#111827); color:var(--ink,#e5e7eb);
+    }
+    #resetBtn{
+      padding:8px 12px; border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
+      background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
+    }
+
+    /* AJOUT — table compacte + centrée dans son wrap */
+    #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
+    #results th, #results td{
+      padding:8px 10px; font-size:14px; border:1px solid rgba(255,255,255,.12);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* AJOUT — survol + sélection */
+    #results tbody tr:hover{
+      background:color-mix(in srgb, var(--focus,#60a5fa) 18%, transparent);
+      cursor:pointer;
+    }
+    #results tbody tr.selected{
+      background:color-mix(in srgb, var(--focus,#60a5fa) 26%, transparent);
+      outline:2px solid var(--focus,#60a5fa);
+      outline-offset:-2px;
+    }
   </style>
 </head>
 <body>
@@ -51,28 +79,22 @@
 
   <form id="contactForm" class="form-wrap" autocomplete="off">
     <input type="hidden" name="id" id="rowId">
-
     <div class="form-grid">
       <label>Nom
         <input name="nom" required>
       </label>
-
       <label>Prénom
         <input name="prenom">
       </label>
-
       <label>Email
         <input type="email" name="email">
       </label>
-
       <label>Téléphone
         <input name="telephone" inputmode="tel" autocomplete="tel" placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
       </label>
-
       <label class="full">Message
         <textarea name="message"></textarea>
       </label>
-
       <div class="form-actions">
         <button id="submitBtn" type="submit">Envoyer</button>
         <button id="cancelEditBtn" type="button" hidden>Annuler</button>
@@ -84,25 +106,32 @@
 
   <hr>
 
-  <h2>Recherche par nom</h2>
-  <label for="nomSearch">Nom (texte) :</label>
-  <input id="nomSearch" type="text" placeholder="Tape un nom ou une partie du nom…" autocomplete="off">
-  <button id="resetBtn" type="button">Réinitialiser</button>
+  <!-- AJOUT — wrap centré -->
+  <div class="results-wrap">
+    <h2>Recherche par nom</h2>
 
-  <h3>Résultats</h3>
-  <table id="results" border="1" cellpadding="6">
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Prénom</th>
-        <th>Email</th>
-        <th>Téléphone</th>
-        <th>Message</th>
-        <th>Créé le</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <!-- AJOUT — barre centrée -->
+    <div class="results-toolbar">
+      <label for="nomSearch">Nom (texte) :</label>
+      <input id="nomSearch" type="text" placeholder="Tape un nom ou une partie du nom…" autocomplete="off">
+      <button id="resetBtn" type="button">Réinitialiser</button>
+    </div>
+
+    <h3>Résultats</h3>
+    <table id="results">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Message</th>
+          <th>Créé le</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <pre id="log" style="white-space:pre-wrap;"></pre>
 
@@ -174,81 +203,76 @@
           <td>${escapeHtml(r.message ?? "")}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
         `;
-        tr.addEventListener('click', () => enterEditMode(r));
+
+        // AJOUT — gérer la sélection visuelle
+        tr.addEventListener('click', () => {
+          document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
+          tr.classList.add('selected');
+          enterEditMode(r);
+        });
+
         tbody.appendChild(tr);
-         }
-    log.textContent = `✅ ${data.length} résultat(s). Cliquez une ligne pour éditer.`;
-  }
-
-  // 3) Debounce pour la recherche live
-  function debounce(fn, delay = 300) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), delay);
-    };
-  }
-
-  const onSearchInput = debounce(() => {
-    const term = nomSearch.value;
-    searchByNom(term);
-  }, 300);
-
-  // 4) Évènements recherche
-  nomSearch.addEventListener('input', onSearchInput);
-  nomSearch.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      searchByNom(nomSearch.value);
+      }
+      log.textContent = `✅ ${data.length} résultat(s). Cliquez une ligne pour éditer.`;
     }
-  });
 
-  resetBtn.addEventListener('click', () => {
-    nomSearch.value = "";
-    searchByNom(null);
-    nomSearch.focus();
-  });
+    function debounce(fn, delay = 300) {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+    }
+    const onSearchInput = debounce(() => searchByNom(nomSearch.value), 300);
 
-  // 5) Mode édition : entrer / sortir
-  function enterEditMode(row) {
-    editingId = row.id;
-    rowIdInput.value = row.id;
-    form.nom.value = row.nom ?? "";
-    form.prenom.value = row.prenom ?? "";
-    form.email.value = row.email ?? "";
-    form.telephone.value = row.telephone ?? "";
-    form.message.value = row.message ?? "";
+    nomSearch.addEventListener('input', onSearchInput);
+    nomSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); searchByNom(nomSearch.value); }
+    });
 
-    submitBtn.textContent = "Mettre à jour";
-    cancelEditBtn.hidden = false;
-    out.textContent = `✏️ Édition de l’entrée #${row.id}`;
-  }
+    resetBtn.addEventListener('click', () => {
+      nomSearch.value = "";
+      searchByNom(null);
+      nomSearch.focus();
+    });
 
-  function exitEditMode() {
-    editingId = null;
-    rowIdInput.value = "";
-    form.reset();
-    submitBtn.textContent = "Envoyer";
-    cancelEditBtn.hidden = true;
-  }
+    function enterEditMode(row) {
+      editingId = row.id;
+      rowIdInput.value = row.id;
+      form.nom.value = row.nom ?? "";
+      form.prenom.value = row.prenom ?? "";
+      form.email.value = row.email ?? "";
+      form.telephone.value = row.telephone ?? "";
+      form.message.value = row.message ?? "";
 
-  cancelEditBtn.addEventListener('click', () => {
-    exitEditMode();
-    out.textContent = "ℹ️ Mode création.";
-  });
+      submitBtn.textContent = "Mettre à jour";
+      cancelEditBtn.hidden = false;
+      out.textContent = `✏️ Édition de l’entrée #${row.id}`;
+    }
 
-  // 6) util anti-XSS
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+    function exitEditMode() {
+      editingId = null;
+      rowIdInput.value = "";
+      form.reset();
+      submitBtn.textContent = "Envoyer";
+      cancelEditBtn.hidden = true;
 
-  // Au chargement : affiche tout
-  await searchByNom(null);
-</script>
+      // AJOUT — retirer la sélection visuelle quand on sort du mode édition
+      document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
+    }
+
+    cancelEditBtn.addEventListener('click', () => {
+      exitEditMode();
+      out.textContent = "ℹ️ Mode création.";
+    });
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    await searchByNom(null);
+  </script>
+</body>
 </html>
-
