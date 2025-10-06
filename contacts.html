@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Formulaire Supabase</title>
 
-  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
 
@@ -36,8 +35,9 @@
     }
     .form-actions #submitBtn{ border-color:var(--accent, #22c55e); }
     .form-actions #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
+    .form-actions #deleteBtn{ border-color:var(--alert, #ef4444); }
+    .form-actions #deleteBtn:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 20%, transparent); }
 
-    /* Zone résultats centrée et compacte */
     .results-wrap{ max-width:1100px; margin:24px auto 40px; padding:0 12px; }
     .results-wrap h2, .results-wrap h3{ text-align:center; margin:14px 0; }
 
@@ -54,7 +54,6 @@
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
 
-    /* Tableau compact + surbrillance */
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
     #results th, #results td{
       padding:8px 10px; font-size:14px; border:1px solid rgba(255,255,255,.12);
@@ -96,6 +95,7 @@
       <div class="form-actions">
         <button id="submitBtn" type="submit">Envoyer</button>
         <button id="cancelEditBtn" type="button" hidden>Annuler</button>
+        <button id="deleteBtn" type="button" hidden>Supprimer</button>
       </div>
     </div>
   </form>
@@ -144,12 +144,12 @@
     const resetBtn      = document.getElementById('resetBtn');
     const submitBtn     = document.getElementById('submitBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const deleteBtn     = document.getElementById('deleteBtn');
     const rowIdInput    = document.getElementById('rowId');
 
     let editingId = null;
-    let allRows = []; // cache local pour filtrage multi-colonnes fiable
+    let allRows = [];
 
-    // Chargement complet (puis filtre côté client)
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
@@ -218,25 +218,21 @@
       }
 
       exitEditMode();
-      await loadAll();                 // recharge la base
-      searchByTerm(nomSearch.value);   // applique le filtre en cours
+      await loadAll();
+      searchByTerm(nomSearch.value);
     });
 
-    function debounce(fn, delay = 300) {
-      let t;
-      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-    }
-    const onSearchInput = debounce(() => searchByTerm(nomSearch.value), 250);
+    deleteBtn.addEventListener('click', async () => {
+      if (!editingId) return;
+      if (!confirm("⚠️ Confirmez-vous la suppression de cette entrée ?")) return;
 
-    nomSearch.addEventListener('input', onSearchInput);
-    nomSearch.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); searchByTerm(nomSearch.value); }
-    });
+      out.textContent = "⌛ Suppression en cours...";
+      const { error } = await supabase.from('contacts').delete().eq('id', editingId);
+      out.textContent = error ? "❌ Erreur (suppression) : " + error.message : "🗑️ Contact supprimé.";
 
-    resetBtn.addEventListener('click', async () => {
-      nomSearch.value = "";
-      searchByTerm("");
-      nomSearch.focus();
+      exitEditMode();
+      await loadAll();
+      searchByTerm(nomSearch.value);
     });
 
     function enterEditMode(row) {
@@ -250,6 +246,7 @@
 
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
+      deleteBtn.hidden = false;
       out.textContent = `✏️ Édition de l’entrée #${row.id}`;
     }
 
@@ -259,6 +256,7 @@
       form.reset();
       submitBtn.textContent = "Envoyer";
       cancelEditBtn.hidden = true;
+      deleteBtn.hidden = true;
       document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
     }
 
@@ -276,7 +274,6 @@
         .replaceAll("'", "&#039;");
     }
 
-    // Démarrage
     await loadAll();
     searchByTerm(null);
   </script>
