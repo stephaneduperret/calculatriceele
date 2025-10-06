@@ -257,13 +257,13 @@
 
     // Suppression via bouton du formulaire
     deleteBtn.addEventListener('click', async () => {
-      if (!editingId) return;
+      if ('id', editingId) return;
       await handleDelete(editingId);
     });
 
     // Suppression centralisée (tableau ou formulaire)
     async function handleDelete(id) {
-      if (!id) { out.textContent = "Aucun ID sélectionné."; return; }
+      if (('id', editingId) { out.textContent = "Aucun ID sélectionné."; return; }
       if (!confirm("⚠️ Confirmez-vous la suppression de cette entrée ?")) return;
 
       out.textContent = "⌛ Suppression en cours...";
@@ -362,5 +362,6 @@
   </script>
 </body>
 </html>
+
 
 
