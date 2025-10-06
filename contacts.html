@@ -165,7 +165,7 @@
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, nom, prenom, email, telephone, message, created_at')
+        .select('id::text as id, nom, prenom, email, telephone, message, created_at')
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -271,7 +271,7 @@
       const { data: delData, error: delError } = await supabase
         .from('contacts')
         .delete()
-        .eq('id', id)
+        .eq('id', editingId)
         .select();
 
       if (delError) {
@@ -362,3 +362,4 @@
   </script>
 </body>
 </html>
+
