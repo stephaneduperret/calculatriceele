@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Formulaire Supabase - CRUD complet</title>
+  <title>Contacts — Supabase</title>
 
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
@@ -13,18 +13,17 @@
     .form-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-      gap:12px 16px;
-      align-items:start;
+      gap:12px 16px; align-items:start;
     }
     .form-grid label{ display:flex; flex-direction:column; font-size:14px; gap:6px; }
-    .form-grid input, .form-grid textarea{
-      padding:8px 10px; font-size:14px;
-      border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
-      background:var(--card, #111827); color:var(--ink, #e5e7eb); outline:none;
+    .form-grid input,.form-grid textarea{
+      padding:8px 10px; font-size:14px; border-radius:8px;
+      border:1px solid var(--stroke, rgba(255,255,255,.12));
+      background:var(--card,#111827); color:var(--ink,#e5e7eb); outline:none;
     }
-    .form-grid input:focus, .form-grid textarea:focus{
-      border-color:var(--focus, #60a5fa);
-      box-shadow:0 0 0 3px color-mix(in srgb, var(--focus, #60a5fa) 25%, transparent);
+    .form-grid input:focus,.form-grid textarea:focus{
+      border-color:var(--focus,#60a5fa);
+      box-shadow:0 0 0 3px color-mix(in srgb, var(--focus,#60a5fa) 25%, transparent);
     }
     .form-grid textarea{ min-height:110px; resize:vertical; }
     .full{ grid-column:1 / -1; }
@@ -33,29 +32,30 @@
       padding:9px 14px; border-radius:10px; border:1px solid var(--stroke, rgba(255,255,255,.12));
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
-    .form-actions #submitBtn{ border-color:var(--accent, #22c55e); }
+    .form-actions #submitBtn{ border-color:var(--accent,#22c55e); }
     .form-actions #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
-    .form-actions #deleteBtn{ border-color:var(--alert, #ef4444); }
+    .form-actions #deleteBtn{ border-color:var(--alert,#ef4444); }
     .form-actions #deleteBtn:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 20%, transparent); }
 
     .results-wrap{ max-width:1100px; margin:24px auto 40px; padding:0 12px; }
-    .results-wrap h2, .results-wrap h3{ text-align:center; margin:14px 0; }
+    .results-wrap h2,.results-wrap h3{ text-align:center; margin:14px 0; }
 
     .results-toolbar{
       display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center;
       margin:8px auto 16px;
     }
-    #nomSearch{ width:340px; max-width:90%; padding:8px 10px; border-radius:8px;
+    #nomSearch{
+      width:340px; max-width:90%; padding:8px 10px; border-radius:8px;
       border:1px solid var(--stroke, rgba(255,255,255,.12));
       background:var(--card,#111827); color:var(--ink,#e5e7eb);
     }
-    #resetBtn{
+    #resetBtn,#reloadBtn{
       padding:8px 12px; border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
 
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
-    #results th, #results td{
+    #results th,#results td{
       padding:8px 10px; font-size:14px; border:1px solid rgba(255,255,255,.12);
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
@@ -65,9 +65,12 @@
     }
     #results tbody tr.selected{
       background:color-mix(in srgb, var(--focus,#60a5fa) 26%, transparent);
-      outline:2px solid var(--focus,#60a5fa);
-      outline-offset:-2px;
+      outline:2px solid var(--focus,#60a5fa); outline-offset:-2px;
     }
+
+    .notice{ font-size:13px; opacity:.9; }
+    .error{ color:#ff6b6b; white-space:pre-wrap; }
+    .ok{ color:#34d399; }
   </style>
 </head>
 <body>
@@ -77,21 +80,14 @@
   <form id="contactForm" class="form-wrap" autocomplete="off">
     <input type="hidden" name="id" id="rowId">
     <div class="form-grid">
-      <label>Nom
-        <input name="nom" required>
-      </label>
-      <label>Prénom
-        <input name="prenom">
-      </label>
-      <label>Email
-        <input type="email" name="email">
-      </label>
+      <label>Nom <input name="nom" required></label>
+      <label>Prénom <input name="prenom"></label>
+      <label>Email <input type="email" name="email"></label>
       <label>Téléphone
-        <input name="telephone" inputmode="tel" autocomplete="tel" placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
+        <input name="telephone" inputmode="tel" autocomplete="tel"
+               placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
       </label>
-      <label class="full">Message
-        <textarea name="message"></textarea>
-      </label>
+      <label class="full">Message <textarea name="message"></textarea></label>
       <div class="form-actions">
         <button id="submitBtn" type="submit">Envoyer</button>
         <button id="cancelEditBtn" type="button" hidden>Annuler</button>
@@ -100,7 +96,7 @@
     </div>
   </form>
 
-  <pre id="out"></pre>
+  <pre id="out" class="notice"></pre>
   <hr>
 
   <div class="results-wrap">
@@ -109,6 +105,7 @@
       <label for="nomSearch">Texte :</label>
       <input id="nomSearch" type="text" placeholder="Tape un nom, prénom, email ou téléphone…" autocomplete="off">
       <button id="resetBtn" type="button">Réinitialiser</button>
+      <button id="reloadBtn" type="button" title="Recharger depuis la base">Recharger</button>
     </div>
 
     <h3>Résultats</h3>
@@ -125,9 +122,11 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <p id="hint" class="notice"></p>
   </div>
 
-  <pre id="log" style="white-space:pre-wrap;"></pre>
+  <pre id="log" class="notice"></pre>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -137,11 +136,13 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const form = document.getElementById('contactForm');
-    const out = document.getElementById('out');
-    const tbody = document.querySelector('#results tbody');
-    const log = document.getElementById('log');
+    const out  = document.getElementById('out');
+    const tbody= document.querySelector('#results tbody');
+    const log  = document.getElementById('log');
+    const hint = document.getElementById('hint');
     const nomSearch = document.getElementById('nomSearch');
-    const resetBtn = document.getElementById('resetBtn');
+    const resetBtn  = document.getElementById('resetBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
     const submitBtn = document.getElementById('submitBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const deleteBtn = document.getElementById('deleteBtn');
@@ -150,8 +151,9 @@
     let editingId = null;
     let allRows = [];
 
-    // Chargement complet avec cast en texte de l'ID ✅
+    // Charge toutes les lignes (cast de l'id en texte pour éviter les soucis BIGINT)
     async function loadAll() {
+      log.textContent = "Chargement…";
       const { data, error } = await supabase
         .from('contacts')
         .select('id::text as id, nom, prenom, email, telephone, message, created_at')
@@ -159,10 +161,14 @@
         .limit(1000);
 
       if (error) {
-        log.textContent = "❌ Erreur (chargement) : " + error.message;
+        log.innerHTML =
+          "❌ Erreur SELECT : " + error.message +
+          "\n→ Vérifie la policy RLS SELECT (voir SQL plus haut).";
+        log.classList.add('error');
         allRows = [];
         return;
       }
+      log.classList.remove('error');
       allRows = data || [];
     }
 
@@ -177,7 +183,7 @@
           <td>${escapeHtml(r.email ?? "")}</td>
           <td>${escapeHtml(r.telephone ?? "")}</td>
           <td>${escapeHtml(r.message ?? "")}</td>
-          <td>${new Date(r.created_at).toLocaleString()}</td>
+          <td>${formatDate(r.created_at)}</td>
         `;
         tr.addEventListener('click', () => {
           document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
@@ -186,14 +192,19 @@
         });
         tbody.appendChild(tr);
       }
-      log.textContent = `✅ ${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
+      const n = rows.length;
+      hint.textContent = `${n} résultat(s). Cliquez une ligne pour éditer.`;
+      if (n === 0) {
+        hint.textContent +=
+          " Si vous vous attendiez à voir des données, vérifiez les policies RLS (SELECT) dans Supabase.";
+      }
     }
 
     function searchByTerm(term) {
       if (!term || term.trim() === "") { renderRows(allRows); return; }
       const t = term.trim().toLowerCase();
       const rows = allRows.filter(r =>
-        [r.nom, r.prenom, r.email, r.telephone].some(v => String(v ?? "").toLowerCase().includes(t))
+        [r.nom, r.prenom, r.email, r.telephone, r.message].some(v => String(v ?? "").toLowerCase().includes(t))
       );
       renderRows(rows);
     }
@@ -204,7 +215,6 @@
       const { id, ...payload } = data;
 
       out.textContent = "⌛ Traitement en cours...";
-
       if (editingId) {
         const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
         out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour.";
@@ -212,7 +222,6 @@
         const { error } = await supabase.from('contacts').insert([payload]);
         out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé.";
       }
-
       exitEditMode();
       await loadAll();
       searchByTerm(nomSearch.value);
@@ -221,24 +230,21 @@
     deleteBtn.addEventListener('click', async () => {
       if (!editingId) return;
       if (!confirm("⚠️ Confirmez-vous la suppression de cette entrée ?")) return;
-
       out.textContent = "⌛ Suppression en cours...";
       const { data: delData, error: delError } = await supabase
         .from('contacts')
         .delete()
         .eq('id', editingId)
-        .select();
+        .select(); // pour vérifier qu'une ligne a bien été supprimée
 
       if (delError) {
-        out.textContent = "❌ Erreur (suppression) : " + delError.message;
+        out.textContent = "❌ Erreur (suppression) : " + delError.message +
+          "\n→ Vérifie la policy RLS DELETE.";
         return;
       }
-      if (!delData || delData.length === 0) {
-        out.textContent = "ℹ️ Aucune ligne supprimée : ID introuvable ou non autorisé.";
-      } else {
-        out.textContent = "🗑️ Contact supprimé.";
-      }
-
+      out.textContent = (!delData || delData.length === 0)
+        ? "ℹ️ Aucune ligne supprimée (ID introuvable ou non autorisé RLS)."
+        : "🗑️ Contact supprimé.";
       exitEditMode();
       await loadAll();
       searchByTerm(nomSearch.value);
@@ -268,20 +274,30 @@
       document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
     }
 
-    cancelEditBtn.addEventListener('click', () => {
-      exitEditMode();
-      out.textContent = "ℹ️ Mode création.";
+    resetBtn.addEventListener('click', () => {
+      nomSearch.value = "";
+      searchByTerm("");
+      nomSearch.focus();
+    });
+    reloadBtn.addEventListener('click', async () => {
+      await loadAll();
+      searchByTerm(nomSearch.value);
     });
 
+    // helpers
     function escapeHtml(s) {
       return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+    function formatDate(d) {
+      try { return new Date(d).toLocaleString(); } catch { return ""; }
     }
 
+    // Démarrage
     await loadAll();
     searchByTerm(null);
   </script>
