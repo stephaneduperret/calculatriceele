@@ -36,9 +36,8 @@
     }
     .form-actions #submitBtn{ border-color:var(--accent, #22c55e); }
     .form-actions #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
-    .form-actions #deleteBtn{ border-color:var(--alert, #ef4444); }
-    .form-actions #deleteBtn:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 20%, transparent); }
 
+    /* Zone résultats centrée et compacte */
     .results-wrap{ max-width:1100px; margin:24px auto 40px; padding:0 12px; }
     .results-wrap h2, .results-wrap h3{ text-align:center; margin:14px 0; }
 
@@ -55,6 +54,7 @@
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
 
+    /* Tableau compact + surbrillance */
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
     #results th, #results td{
       padding:8px 10px; font-size:14px; border:1px solid rgba(255,255,255,.12);
@@ -69,15 +69,6 @@
       outline:2px solid var(--focus,#60a5fa);
       outline-offset:-2px;
     }
-
-    /* Actions dans le tableau */
-    .actions{ display:flex; gap:6px; }
-    .btn-sm{
-      padding:4px 8px; font-size:12px; border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
-      background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
-    }
-    .btn-danger{ border-color:var(--alert,#ef4444); }
-    .btn-danger:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 20%, transparent); }
   </style>
 </head>
 <body>
@@ -105,7 +96,6 @@
       <div class="form-actions">
         <button id="submitBtn" type="submit">Envoyer</button>
         <button id="cancelEditBtn" type="button" hidden>Annuler</button>
-        <button id="deleteBtn" type="button" hidden>Supprimer</button>
       </div>
     </div>
   </form>
@@ -131,7 +121,6 @@
           <th>Téléphone</th>
           <th>Message</th>
           <th>Créé le</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -155,29 +144,27 @@
     const resetBtn      = document.getElementById('resetBtn');
     const submitBtn     = document.getElementById('submitBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
-    const deleteBtn     = document.getElementById('deleteBtn');
     const rowIdInput    = document.getElementById('rowId');
 
     let editingId = null;
-    let allRows = []; // cache local
+    let allRows = []; // cache local pour filtrage multi-colonnes fiable
 
-    // Chargement
+    // Chargement complet (puis filtre côté client)
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id::text, nom, prenom, email, telephone, message, created_at')
+        .select('id, nom, prenom, email, telephone, message, created_at')
         .order('created_at', { ascending: false })
         .limit(1000);
 
       if (error) {
-        log.textContent = "Erreur (chargement) : " + error.message;
+        log.textContent = "❌ Erreur (chargement) : " + error.message;
         allRows = [];
         return;
       }
       allRows = data || [];
     }
 
-    // Rendu
     function renderRows(rows) {
       tbody.innerHTML = "";
       for (const r of rows) {
@@ -190,51 +177,31 @@
           <td>${escapeHtml(r.telephone ?? "")}</td>
           <td>${escapeHtml(r.message ?? "")}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
-          <td>
-            <div class="actions">
-              <button class="btn-sm edit">Éditer</button>
-              <button class="btn-sm btn-danger delete">Supprimer</button>
-            </div>
-          </td>
         `;
-
-        // Sélection pour éditer
         tr.addEventListener('click', () => {
           document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
           tr.classList.add('selected');
           enterEditMode(r);
         });
-
-        // Bouton "Éditer"
-        tr.querySelector('.edit').addEventListener('click', (e) => {
-          e.stopPropagation();
-          document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
-          tr.classList.add('selected');
-          enterEditMode(r);
-        });
-
-        // Bouton "Supprimer"
-        tr.querySelector('.delete').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          await handleDelete(r.id);
-        });
-
         tbody.appendChild(tr);
       }
-      log.textContent = `✅ ${rows.length} résultat(s). Cliquez une ligne pour éditer ou utilisez les boutons.`;
+      log.textContent = `✅ ${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
     }
 
-    // Filtre client
     function searchByTerm(term) {
-      if (!term || term.trim() === "") { renderRows(allRows); return; }
+      if (!term || term.trim() === "") {
+        renderRows(allRows);
+        return;
+      }
       const t = term.trim().toLowerCase();
-      const rows = allRows.filter(r =>
-        [r.nom, r.prenom, r.email, r.telephone].some(v => String(v ?? "").toLowerCase().includes(t))
-      );
+      const rows = allRows.filter(r => {
+        return [
+          r.nom, r.prenom, r.email, r.telephone
+        ].some(v => String(v ?? "").toLowerCase().includes(t));
+      });
       renderRows(rows);
     }
 
-    // Create/Update
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(form));
@@ -244,51 +211,33 @@
 
       if (editingId) {
         const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
-        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour.";
+        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour !";
       } else {
         const { error } = await supabase.from('contacts').insert([payload]);
-        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé.";
+        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé !";
       }
 
       exitEditMode();
-      await loadAll();
-      searchByTerm(nomSearch.value);
+      await loadAll();                 // recharge la base
+      searchByTerm(nomSearch.value);   // applique le filtre en cours
     });
 
-    // Suppression via bouton du formulaire
-    deleteBtn.addEventListener('click', async () => {
-      if ('id', editingId) return;
-      await handleDelete(editingId);
-    });
-
-    // Suppression centralisée (tableau ou formulaire)
-    async function handleDelete(id) {
-      if ('id') { out.textContent = "Aucun ID sélectionné."; return; }
-      if (!confirm("⚠️ Confirmez-vous la suppression de cette entrée ?")) return;
-
-      out.textContent = "⌛ Suppression en cours...";
-      // important: .select() pour récupérer la ligne supprimée et vérifier
-      const { data: delData, error: delError } = await supabase
-        .from('contacts')
-        .delete()
-        .eq('id', editingId)
-        .select();
-
-      if (delError) {
-        out.textContent = "❌ Erreur (suppression) : " + delError.message +
-          "\nSi le message mentionne 'policy' ou 'RLS', active/ajoute la policy DELETE (voir commentaire dans le code).";
-        return;
-      }
-      if (!delData || delData.length === 0) {
-        out.textContent = "ℹ️ Aucune ligne supprimée (ID introuvable ou non autorisé).";
-      } else {
-        out.textContent = "🗑️ Contact supprimé.";
-      }
-
-      exitEditMode();
-      await loadAll();
-      searchByTerm(nomSearch.value);
+    function debounce(fn, delay = 300) {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
     }
+    const onSearchInput = debounce(() => searchByTerm(nomSearch.value), 250);
+
+    nomSearch.addEventListener('input', onSearchInput);
+    nomSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); searchByTerm(nomSearch.value); }
+    });
+
+    resetBtn.addEventListener('click', async () => {
+      nomSearch.value = "";
+      searchByTerm("");
+      nomSearch.focus();
+    });
 
     function enterEditMode(row) {
       editingId = row.id;
@@ -301,7 +250,6 @@
 
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
-      deleteBtn.hidden = false;
       out.textContent = `✏️ Édition de l’entrée #${row.id}`;
     }
 
@@ -311,7 +259,6 @@
       form.reset();
       submitBtn.textContent = "Envoyer";
       cancelEditBtn.hidden = true;
-      deleteBtn.hidden = true;
       document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
     }
 
@@ -332,43 +279,6 @@
     // Démarrage
     await loadAll();
     searchByTerm(null);
-
-    /*
-    ────────────────────────────────────────────────────────────────────────────
-    Si la suppression échoue avec un message lié aux policies/RLS :
-    1) Activer RLS (si ce n'est pas déjà fait) et créer une policy DELETE.
-       À exécuter dans le SQL Editor Supabase :
-
-       alter table public.contacts enable row level security;
-
-       -- Autoriser l'utilisateur "anon" (clé publique) à supprimer
-       create policy "anon can delete contacts"
-       on public.contacts
-       for delete
-       to anon
-       using (true);
-
-       -- (Optionnel) idem pour "authenticated" si tu utilises des sessions
-       -- create policy "authenticated can delete contacts"
-       -- on public.contacts
-       -- for delete
-       -- to authenticated
-       -- using (true);
-
-    2) Vérifie aussi que les policies SELECT/INSERT/UPDATE existent déjà,
-       sinon crée-les sur le même modèle (for select/insert/update).
-    ────────────────────────────────────────────────────────────────────────────
-    */
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
