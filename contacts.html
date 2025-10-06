@@ -3,9 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Formulaire Supabase</title>
+  <title>Formulaire Supabase - CRUD complet</title>
 
-  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
 
@@ -36,8 +35,9 @@
     }
     .form-actions #submitBtn{ border-color:var(--accent, #22c55e); }
     .form-actions #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
+    .form-actions #deleteBtn{ border-color:var(--alert, #ef4444); }
+    .form-actions #deleteBtn:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 20%, transparent); }
 
-    /* Zone résultats centrée et compacte */
     .results-wrap{ max-width:1100px; margin:24px auto 40px; padding:0 12px; }
     .results-wrap h2, .results-wrap h3{ text-align:center; margin:14px 0; }
 
@@ -54,7 +54,6 @@
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
 
-    /* Tableau compact + surbrillance */
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
     #results th, #results td{
       padding:8px 10px; font-size:14px; border:1px solid rgba(255,255,255,.12);
@@ -96,6 +95,7 @@
       <div class="form-actions">
         <button id="submitBtn" type="submit">Envoyer</button>
         <button id="cancelEditBtn" type="button" hidden>Annuler</button>
+        <button id="deleteBtn" type="button" hidden>Supprimer</button>
       </div>
     </div>
   </form>
@@ -136,24 +136,25 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXVvaHdpdHp1bmpmd3diZm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjY3NzAsImV4cCI6MjA3NDk0Mjc3MH0.-wzyYIzOBFFClVYheIcIlt8YEQU4_IY1xTFQxiNUnf4";
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const form          = document.getElementById('contactForm');
-    const out           = document.getElementById('out');
-    const tbody         = document.querySelector('#results tbody');
-    const log           = document.getElementById('log');
-    const nomSearch     = document.getElementById('nomSearch');
-    const resetBtn      = document.getElementById('resetBtn');
-    const submitBtn     = document.getElementById('submitBtn');
+    const form = document.getElementById('contactForm');
+    const out = document.getElementById('out');
+    const tbody = document.querySelector('#results tbody');
+    const log = document.getElementById('log');
+    const nomSearch = document.getElementById('nomSearch');
+    const resetBtn = document.getElementById('resetBtn');
+    const submitBtn = document.getElementById('submitBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
-    const rowIdInput    = document.getElementById('rowId');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const rowIdInput = document.getElementById('rowId');
 
     let editingId = null;
-    let allRows = []; // cache local pour filtrage multi-colonnes fiable
+    let allRows = [];
 
-    // Chargement complet (puis filtre côté client)
+    // Chargement complet avec cast en texte de l'ID ✅
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, nom, prenom, email, telephone, message, created_at')
+        .select('id::text as id, nom, prenom, email, telephone, message, created_at')
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -189,16 +190,11 @@
     }
 
     function searchByTerm(term) {
-      if (!term || term.trim() === "") {
-        renderRows(allRows);
-        return;
-      }
+      if (!term || term.trim() === "") { renderRows(allRows); return; }
       const t = term.trim().toLowerCase();
-      const rows = allRows.filter(r => {
-        return [
-          r.nom, r.prenom, r.email, r.telephone
-        ].some(v => String(v ?? "").toLowerCase().includes(t));
-      });
+      const rows = allRows.filter(r =>
+        [r.nom, r.prenom, r.email, r.telephone].some(v => String(v ?? "").toLowerCase().includes(t))
+      );
       renderRows(rows);
     }
 
@@ -211,32 +207,41 @@
 
       if (editingId) {
         const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
-        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour !";
+        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour.";
       } else {
         const { error } = await supabase.from('contacts').insert([payload]);
-        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé !";
+        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé.";
       }
 
       exitEditMode();
-      await loadAll();                 // recharge la base
-      searchByTerm(nomSearch.value);   // applique le filtre en cours
+      await loadAll();
+      searchByTerm(nomSearch.value);
     });
 
-    function debounce(fn, delay = 300) {
-      let t;
-      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-    }
-    const onSearchInput = debounce(() => searchByTerm(nomSearch.value), 250);
+    deleteBtn.addEventListener('click', async () => {
+      if (!editingId) return;
+      if (!confirm("⚠️ Confirmez-vous la suppression de cette entrée ?")) return;
 
-    nomSearch.addEventListener('input', onSearchInput);
-    nomSearch.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); searchByTerm(nomSearch.value); }
-    });
+      out.textContent = "⌛ Suppression en cours...";
+      const { data: delData, error: delError } = await supabase
+        .from('contacts')
+        .delete()
+        .eq('id', editingId)
+        .select();
 
-    resetBtn.addEventListener('click', async () => {
-      nomSearch.value = "";
-      searchByTerm("");
-      nomSearch.focus();
+      if (delError) {
+        out.textContent = "❌ Erreur (suppression) : " + delError.message;
+        return;
+      }
+      if (!delData || delData.length === 0) {
+        out.textContent = "ℹ️ Aucune ligne supprimée : ID introuvable ou non autorisé.";
+      } else {
+        out.textContent = "🗑️ Contact supprimé.";
+      }
+
+      exitEditMode();
+      await loadAll();
+      searchByTerm(nomSearch.value);
     });
 
     function enterEditMode(row) {
@@ -247,9 +252,9 @@
       form.email.value = row.email ?? "";
       form.telephone.value = row.telephone ?? "";
       form.message.value = row.message ?? "";
-
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
+      deleteBtn.hidden = false;
       out.textContent = `✏️ Édition de l’entrée #${row.id}`;
     }
 
@@ -259,6 +264,7 @@
       form.reset();
       submitBtn.textContent = "Envoyer";
       cancelEditBtn.hidden = true;
+      deleteBtn.hidden = true;
       document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
     }
 
@@ -276,7 +282,6 @@
         .replaceAll("'", "&#039;");
     }
 
-    // Démarrage
     await loadAll();
     searchByTerm(null);
   </script>
