@@ -155,10 +155,10 @@
     async function loadAll() {
       log.textContent = "Chargement…";
       const { data, error } = await supabase
-        .from('contacts')
-        .select('id::text as id, nom, prenom, email, telephone, message, created_at')
-        .order('created_at', { ascending: false })
-        .limit(1000);
+  .from('contacts')
+  .select('id::text as id, nom, prenom, email, telephone, message, created_at')
+  .order('created_at', { ascending: false })
+  .limit(1000);
 
       if (error) {
         log.innerHTML =
@@ -303,5 +303,6 @@
   </script>
 </body>
 </html>
+
 
 
