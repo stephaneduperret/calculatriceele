@@ -271,7 +271,7 @@
       const { data: delData, error: delError } = await supabase
         .from('contacts')
         .delete()
-        .eq('id', editingId)
+        .eq('id', id)
         .select();
 
       if (delError) {
@@ -362,6 +362,7 @@
   </script>
 </body>
 </html>
+
 
 
 
