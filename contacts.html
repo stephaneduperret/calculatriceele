@@ -11,8 +11,7 @@
   <style>
     .form-wrap{ max-width:980px; margin:0 auto 16px; }
     .form-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
       gap:12px 16px; align-items:start;
     }
     .form-grid label{ display:flex; flex-direction:column; font-size:14px; gap:6px; }
@@ -68,9 +67,16 @@
       outline:2px solid var(--focus,#60a5fa); outline-offset:-2px;
     }
 
+    .actions{ display:flex; gap:6px; }
+    .btn-sm{
+      padding:4px 8px; font-size:12px; border-radius:8px;
+      border:1px solid var(--stroke, rgba(255,255,255,.12));
+      background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
+    }
+    .btn-danger{ border-color:var(--alert,#ef4444); }
+    .btn-danger:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 20%, transparent); }
+
     .notice{ font-size:13px; opacity:.9; }
-    .error{ color:#ff6b6b; white-space:pre-wrap; }
-    .ok{ color:#34d399; }
   </style>
 </head>
 <body>
@@ -103,9 +109,9 @@
     <h2>Recherche</h2>
     <div class="results-toolbar">
       <label for="nomSearch">Texte :</label>
-      <input id="nomSearch" type="text" placeholder="Tape un nom, prénom, email ou téléphone…" autocomplete="off">
+      <input id="nomSearch" type="text" placeholder="Tape un nom, prénom, email, téléphone ou message…" autocomplete="off">
       <button id="resetBtn" type="button">Réinitialiser</button>
-      <button id="reloadBtn" type="button" title="Recharger depuis la base">Recharger</button>
+      <button id="reloadBtn" type="button">Recharger</button>
     </div>
 
     <h3>Résultats</h3>
@@ -118,12 +124,11 @@
           <th>Téléphone</th>
           <th>Message</th>
           <th>Créé le</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
-
-    <p id="hint" class="notice"></p>
   </div>
 
   <pre id="log" class="notice"></pre>
@@ -139,7 +144,6 @@
     const out  = document.getElementById('out');
     const tbody= document.querySelector('#results tbody');
     const log  = document.getElementById('log');
-    const hint = document.getElementById('hint');
     const nomSearch = document.getElementById('nomSearch');
     const resetBtn  = document.getElementById('resetBtn');
     const reloadBtn = document.getElementById('reloadBtn');
@@ -151,25 +155,26 @@
     let editingId = null;
     let allRows = [];
 
-    // Charge toutes les lignes (cast de l'id en texte pour éviter les soucis BIGINT)
+    // Charge toutes les lignes (id casté en texte pour éviter BIGINT JS)
     async function loadAll() {
       log.textContent = "Chargement…";
       const { data, error } = await supabase
-  .from('contacts')
-  .select('id::text as id, nom, prenom, email, telephone, message, created_at')
-  .order('created_at', { ascending: false })
-  .limit(1000);
+        .from('contacts')
+        .select('id::text as id, nom, prenom, email, telephone, message, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
       if (error) {
-        log.innerHTML =
-          "❌ Erreur SELECT : " + error.message +
-          "\n→ Vérifie la policy RLS SELECT (voir SQL plus haut).";
-        log.classList.add('error');
+        log.textContent =
+          "Erreur SELECT : " + error.message +
+          "\nAstuce: vérifie l’espace dans 'as id' et la policy RLS SELECT.";
         allRows = [];
+        renderRows(allRows);
         return;
       }
-      log.classList.remove('error');
       allRows = data || [];
+      log.textContent = `Base chargée (${allRows.length} ligne(s)).`;
+      renderRows(allRows);
     }
 
     function renderRows(rows) {
@@ -184,20 +189,37 @@
           <td>${escapeHtml(r.telephone ?? "")}</td>
           <td>${escapeHtml(r.message ?? "")}</td>
           <td>${formatDate(r.created_at)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-sm edit">Éditer</button>
+              <button class="btn-sm btn-danger del">Supprimer</button>
+            </div>
+          </td>
         `;
-        tr.addEventListener('click', () => {
-          document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
-          tr.classList.add('selected');
+
+        tr.querySelector('.edit').addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectRow(tr);
           enterEditMode(r);
         });
+        tr.querySelector('.del').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await handleDelete(r.id);
+        });
+
+        tr.addEventListener('click', () => { selectRow(tr); enterEditMode(r); });
         tbody.appendChild(tr);
       }
-      const n = rows.length;
-      hint.textContent = `${n} résultat(s). Cliquez une ligne pour éditer.`;
-      if (n === 0) {
-        hint.textContent +=
-          " Si vous vous attendiez à voir des données, vérifiez les policies RLS (SELECT) dans Supabase.";
+      if (rows.length === 0) {
+        out.textContent = "0 résultat(s). Recharge ou vérifie RLS SELECT.";
+      } else {
+        out.textContent = `${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
       }
+    }
+
+    function selectRow(tr) {
+      document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
+      tr.classList.add('selected');
     }
 
     function searchByTerm(term) {
@@ -214,13 +236,13 @@
       const data = Object.fromEntries(new FormData(form));
       const { id, ...payload } = data;
 
-      out.textContent = "⌛ Traitement en cours...";
+      out.textContent = "Traitement en cours…";
       if (editingId) {
         const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
-        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour.";
+        out.textContent = error ? "Erreur (mise à jour) : " + error.message : "Contact mis à jour.";
       } else {
         const { error } = await supabase.from('contacts').insert([payload]);
-        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé.";
+        out.textContent = error ? "Erreur (création) : " + error.message : "Contact créé.";
       }
       exitEditMode();
       await loadAll();
@@ -229,26 +251,32 @@
 
     deleteBtn.addEventListener('click', async () => {
       if (!editingId) return;
-      if (!confirm("⚠️ Confirmez-vous la suppression de cette entrée ?")) return;
-      out.textContent = "⌛ Suppression en cours...";
+      await handleDelete(editingId);
+    });
+
+    async function handleDelete(id) {
+      if (!id) { out.textContent = "Aucun ID sélectionné."; return; }
+      if (!confirm("Confirmez-vous la suppression de cette entrée ?")) return;
+
+      out.textContent = "Suppression en cours…";
       const { data: delData, error: delError } = await supabase
         .from('contacts')
         .delete()
-        .eq('id', editingId)
-        .select(); // pour vérifier qu'une ligne a bien été supprimée
+        .eq('id', id)
+        .select();
 
       if (delError) {
-        out.textContent = "❌ Erreur (suppression) : " + delError.message +
-          "\n→ Vérifie la policy RLS DELETE.";
+        out.textContent = "Erreur (suppression) : " + delError.message +
+          "\nAstuce: vérifie la policy RLS DELETE.";
         return;
       }
       out.textContent = (!delData || delData.length === 0)
-        ? "ℹ️ Aucune ligne supprimée (ID introuvable ou non autorisé RLS)."
-        : "🗑️ Contact supprimé.";
+        ? "Aucune ligne supprimée (ID introuvable ou non autorisé RLS)."
+        : "Contact supprimé.";
       exitEditMode();
       await loadAll();
       searchByTerm(nomSearch.value);
-    });
+    }
 
     function enterEditMode(row) {
       editingId = row.id;
@@ -261,7 +289,7 @@
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
       deleteBtn.hidden = false;
-      out.textContent = `✏️ Édition de l’entrée #${row.id}`;
+      out.textContent = `Édition de l’entrée #${row.id}`;
     }
 
     function exitEditMode() {
@@ -284,7 +312,6 @@
       searchByTerm(nomSearch.value);
     });
 
-    // helpers
     function escapeHtml(s) {
       return String(s)
         .replaceAll("&","&amp;")
@@ -293,9 +320,7 @@
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
     }
-    function formatDate(d) {
-      try { return new Date(d).toLocaleString(); } catch { return ""; }
-    }
+    function formatDate(d) { try { return new Date(d).toLocaleString(); } catch { return ""; } }
 
     // Démarrage
     await loadAll();
@@ -303,6 +328,3 @@
   </script>
 </body>
 </html>
-
-
-
