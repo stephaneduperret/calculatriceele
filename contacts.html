@@ -165,7 +165,7 @@
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id::text as id, nom, prenom, email, telephone, message, created_at')
+        .select('id, nom, prenom, email, telephone, message, created_at')
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -362,4 +362,5 @@
   </script>
 </body>
 </html>
+
 
