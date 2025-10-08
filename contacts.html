@@ -96,12 +96,32 @@
         <input name="adresse" placeholder="Rue, n°">
       </label>
 
+      <!-- Déjà présent si tu l’as ajouté précédemment -->
       <label>Type de contrat
-        <select name="type_contrat" id="type_contrat" required>
-          <option value="" disabled selected>Choisir…</option>
+        <select name="type_contrat" id="type_contrat">
+          <option value="" selected>—</option>
           <option value="RCP">RCP</option>
           <option value="CA">CA</option>
           <option value="CEL">CEL</option>
+        </select>
+      </label>
+
+      <!-- NOUVEAU : Type installation -->
+      <label>Type installation
+        <select name="type_installation" id="type_installation" required>
+          <option value="" disabled selected>Choisir…</option>
+          <option value="PV">PV</option>
+          <option value="BR">BR</option>
+          <option value="AE">AE</option>
+          <option value="PAC">PAC</option>
+          <option value="PV+BR">PV+BR</option>
+          <option value="PV+AE">PV+AE</option>
+          <option value="PV+PAC">PV+PAC</option>
+          <option value="BR+PAC">BR+PAC</option>
+          <option value="PV+BR+PAC">PV+BR+PAC</option>
+          <option value="PV+BR+AE">PV+BR+AE</option>
+          <option value="PV+PAC+AE">PV+PAC+AE</option>
+          <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
         </select>
       </label>
 
@@ -138,6 +158,7 @@
           <th>Téléphone</th>
           <th>Adresse + numéro</th>
           <th>Type contrat</th>
+          <th>Type installation</th>
           <th>Message</th>
           <th>Créé le</th>
         </tr>
@@ -158,6 +179,7 @@
     const form          = document.getElementById('contactForm');
     const out           = document.getElementById('out');
     const tbody         = document.querySelector('#results tbody');
+    thead
     const log           = document.getElementById('log');
     const nomSearch     = document.getElementById('nomSearch');
     const resetBtn      = document.getElementById('resetBtn');
@@ -169,15 +191,16 @@
     let editingId = null;
     let allRows = [];
 
+    // Chargement complet
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, nom, prenom, email, telephone, adresse, message, type_contrat, created_at')
+        .select('id, nom, prenom, email, telephone, adresse, message, type_contrat, type_installation, created_at')
         .order('created_at', { ascending: false })
         .limit(1000);
 
       if (error) {
-        log.textContent = "Erreur (chargement) : " + error.message;
+        log.textContent = "❌ Erreur (chargement) : " + error.message;
         allRows = [];
         return;
       }
@@ -196,6 +219,7 @@
           <td>${escapeHtml(r.telephone ?? "")}</td>
           <td>${escapeHtml(r.adresse ?? "")}</td>
           <td>${escapeHtml(r.type_contrat ?? "")}</td>
+          <td>${escapeHtml(r.type_installation ?? "")}</td>
           <td>${escapeHtml(r.message ?? "")}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
         `;
@@ -206,7 +230,7 @@
         });
         tbody.appendChild(tr);
       }
-      log.textContent = `${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
+      log.textContent = `✅ ${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
     }
 
     function searchByTerm(term) {
@@ -217,7 +241,7 @@
       const t = term.trim().toLowerCase();
       const rows = allRows.filter(r => {
         return [
-          r.nom, r.prenom, r.email, r.telephone, r.adresse, r.message, r.type_contrat
+          r.nom, r.prenom, r.email, r.telephone, r.adresse, r.message, r.type_contrat, r.type_installation
         ].some(v => String(v ?? "").toLowerCase().includes(t));
       });
       renderRows(rows);
@@ -228,14 +252,14 @@
       const data = Object.fromEntries(new FormData(form));
       const { id, ...payload } = data;
 
-      out.textContent = "Traitement…";
+      out.textContent = "⌛ Traitement en cours...";
 
       if (editingId) {
         const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
-        out.textContent = error ? "Erreur (mise à jour) : " + error.message : "Contact mis à jour.";
+        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour !";
       } else {
         const { error } = await supabase.from('contacts').insert([payload]);
-        out.textContent = error ? "Erreur (création) : " + error.message : "Contact créé.";
+        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé !";
       }
 
       exitEditMode();
@@ -245,19 +269,19 @@
 
     deleteBtn.addEventListener('click', async () => {
       if (!editingId) {
-        out.textContent = "Sélectionne d’abord une ligne à supprimer.";
+        out.textContent = "ℹ️ Sélectionne d’abord une ligne à supprimer.";
         return;
       }
       const ok = confirm("Confirmer la suppression de l’entrée sélectionnée ?");
       if (!ok) return;
 
-      out.textContent = "Suppression…";
+      out.textContent = "⌛ Suppression en cours...";
       const { error } = await supabase.from('contacts').delete().eq('id', editingId);
       if (error) {
-        out.textContent = "Erreur (suppression) : " + error.message;
+        out.textContent = "❌ Erreur (suppression) : " + error.message;
         return;
       }
-      out.textContent = "Entrée supprimée.";
+      out.textContent = "✅ Entrée supprimée.";
       exitEditMode();
       await loadAll();
       searchByTerm(nomSearch.value);
@@ -297,12 +321,13 @@
       form.telephone.value = r.telephone ?? "";
       form.adresse.value = r.adresse ?? "";
       form.type_contrat.value = r.type_contrat ?? "";
+      form.type_installation.value = r.type_installation ?? "";
       form.message.value = r.message ?? "";
 
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
       deleteBtn.hidden = false;
-      out.textContent = `Édition de l’entrée #${r.id}`;
+      out.textContent = `✏️ Édition de l’entrée #${r.id}`;
     }
 
     function exitEditMode() {
@@ -315,11 +340,6 @@
       document.querySelectorAll('#results tbody tr.selected').forEach(el => el.classList.remove('selected'));
     }
 
-    cancelEditBtn.addEventListener('click', () => {
-      exitEditMode();
-      out.textContent = "Mode création.";
-    });
-
     function escapeHtml(s) {
       return String(s)
         .replaceAll("&", "&amp;")
@@ -329,6 +349,7 @@
         .replaceAll("'", "&#039;");
     }
 
+    // Démarrage
     await loadAll();
     searchByTerm(null);
   </script>
