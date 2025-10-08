@@ -86,7 +86,40 @@
       padding:8px 12px; border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
+/* Tableau global */
+.form-actions-global {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
 
+.form-actions-global button {
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke, rgba(255,255,255,.12));
+  background: var(--card,#111827);
+  color: var(--ink,#e5e7eb);
+  cursor: pointer;
+}
+
+.form-actions-global #submitBtn {
+  border-color: var(--accent, #22c55e);
+}
+
+.form-actions-global #submitBtn:hover {
+  background: color-mix(in srgb, var(--accent,#22c55e) 20%, transparent);
+}
+
+.form-actions-global .danger {
+  border-color: var(--alert, #ef4444);
+}
+
+.form-actions-global .danger:hover {
+  background: color-mix(in srgb, var(--alert,#ef4444) 18%, transparent);
+}
+
+    
     /* Tableau */
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
     #results th, #results td{
@@ -119,90 +152,91 @@
 
   <h1 class="wrap">Contacts</h1>
 
-  <form id="contactForm" class="form-wrap" autocomplete="off">
-    <input type="hidden" name="id" id="rowId">
+ <form id="contactForm" class="form-wrap" autocomplete="off">
+  <input type="hidden" name="id" id="rowId">
 
-    <div class="form-two">
-      <!-- Panneau gauche : Informations client -->
-      <section class="panel">
-        <h2>Informations client</h2>
-        <div class="grid-client">
-          <label>Nom
-            <input name="nom" required>
-          </label>
-          <label>Prénom
-            <input name="prenom">
-          </label>
+  <div class="form-two">
+    <!-- Panneau gauche : Informations client -->
+    <section class="panel">
+      <h2>Informations client</h2>
+      <div class="grid-client">
+        <label>Nom
+          <input name="nom" required>
+        </label>
+        <label>Prénom
+          <input name="prenom">
+        </label>
 
-          <label>Adresse + numéro
-            <input name="adresse" placeholder="Rue, n°">
-          </label>
-          <label>Communes
-            <select name="commune" id="commune" required>
-              <option value="" disabled selected>Choisir...</option>
-              <option value="Ballaigues">Ballaigues</option>
-              <option value="Orbe">Orbe</option>
-              <option value="Montcherand">Montcherand</option>
-              <option value="Vallorbe">Vallorbe</option>
-              <option value="Vaulion">Vaulion</option>
-            </select>
-          </label>
+        <label>Adresse + numéro
+          <input name="adresse" placeholder="Rue, n°">
+        </label>
+        <label>Communes
+          <select name="commune" id="commune" required>
+            <option value="" disabled selected>Choisir...</option>
+            <option value="Ballaigues">Ballaigues</option>
+            <option value="Orbe">Orbe</option>
+            <option value="Montcherand">Montcherand</option>
+            <option value="Vallorbe">Vallorbe</option>
+            <option value="Vaulion">Vaulion</option>
+          </select>
+        </label>
 
-          <label>Email
-            <input type="email" name="email">
-          </label>
-          <label>Téléphone
-            <input name="telephone" inputmode="tel" autocomplete="tel" placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
-          </label>
-        </div>
+        <label>Email
+          <input type="email" name="email">
+        </label>
+        <label>Téléphone
+          <input name="telephone" inputmode="tel" autocomplete="tel" placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
+        </label>
+      </div>
+    </section>
 
-        <div class="form-actions">
-          <button id="submitBtn" type="submit">Enregistrer</button>
-          <button id="cancelEditBtn" type="button" hidden>Annuler</button>
-          <button id="deleteBtn" type="button" class="danger" hidden>Supprimer</button>
-        </div>
-      </section>
+    <!-- Diviseur vertical -->
+    <div class="divider" aria-hidden="true"></div>
 
-      <!-- Diviseur vertical -->
-      <div class="divider" aria-hidden="true"></div>
+    <!-- Panneau droit : Informations installation -->
+    <section class="panel">
+      <h2>Informations installation</h2>
+      <div class="grid-install">
+        <label>Type installation
+          <select name="type_installation" id="type_installation" required>
+            <option value="" disabled selected>Choisir...</option>
+            <option value="PV">PV</option>
+            <option value="BR">BR</option>
+            <option value="AE">AE</option>
+            <option value="PAC">PAC</option>
+            <option value="PV+BR">PV+BR</option>
+            <option value="PV+AE">PV+AE</option>
+            <option value="PV+PAC">PV+PAC</option>
+            <option value="BR+PAC">BR+PAC</option>
+            <option value="PV+BR+PAC">PV+BR+PAC</option>
+            <option value="PV+BR+AE">PV+BR+AE</option>
+            <option value="PV+PAC+AE">PV+PAC+AE</option>
+            <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
+          </select>
+        </label>
+        <label>Type de contrat
+          <select name="type_contrat" id="type_contrat">
+            <option value="" selected>—</option>
+            <option value="RCP">RCP</option>
+            <option value="CA">CA</option>
+            <option value="CEL">CEL</option>
+          </select>
+        </label>
 
-      <!-- Panneau droit : Informations installation -->
-      <section class="panel">
-        <h2>Informations installation</h2>
-        <div class="grid-install">
-          <label>Type installation
-            <select name="type_installation" id="type_installation" required>
-              <option value="" disabled selected>Choisir...</option>
-              <option value="PV">PV</option>
-              <option value="BR">BR</option>
-              <option value="AE">AE</option>
-              <option value="PAC">PAC</option>
-              <option value="PV+BR">PV+BR</option>
-              <option value="PV+AE">PV+AE</option>
-              <option value="PV+PAC">PV+PAC</option>
-              <option value="BR+PAC">BR+PAC</option>
-              <option value="PV+BR+PAC">PV+BR+PAC</option>
-              <option value="PV+BR+AE">PV+BR+AE</option>
-              <option value="PV+PAC+AE">PV+PAC+AE</option>
-              <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
-            </select>
-          </label>
-          <label>Type de contrat
-            <select name="type_contrat" id="type_contrat">
-              <option value="" selected>—</option>
-              <option value="RCP">RCP</option>
-              <option value="CA">CA</option>
-              <option value="CEL">CEL</option>
-            </select>
-          </label>
+        <label class="full">Message
+          <textarea name="message"></textarea>
+        </label>
+      </div>
+    </section>
+  </div>
 
-          <label class="full">Message
-            <textarea name="message"></textarea>
-          </label>
-        </div>
-      </section>
-    </div>
-  </form>
+  <!-- ✅ Nouvelle zone boutons centrée sous les 2 panneaux -->
+  <div class="form-actions-global">
+    <button id="submitBtn" type="submit">Enregistrer</button>
+    <button id="cancelEditBtn" type="button" hidden>Annuler</button>
+    <button id="deleteBtn" type="button" class="danger" hidden>Supprimer</button>
+  </div>
+</form>
 
   <pre id="out"></pre>
   <hr class="wrap">
@@ -423,3 +457,4 @@
   </script>
 </body>
 </html>
+
