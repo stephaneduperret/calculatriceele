@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Formulaire Supabase</title>
 
-  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
 
@@ -96,7 +95,6 @@
         <input name="adresse" placeholder="Rue, n°">
       </label>
 
-      <!-- Déjà présent si tu l’as ajouté précédemment -->
       <label>Type de contrat
         <select name="type_contrat" id="type_contrat">
           <option value="" selected>—</option>
@@ -106,12 +104,13 @@
         </select>
       </label>
 
-      <!-- NOUVEAU : Type installation -->
       <label>Type installation
         <select name="type_installation" id="type_installation" required>
           <option value="" disabled selected>Choisir…</option>
           <option value="PV">PV</option>
           <option value="BR">BR</option>
+          <option value="CF">CF</option>
+          <option value="CP">CP</option>
           <option value="AE">AE</option>
           <option value="PAC">PAC</option>
           <option value="PV+BR">PV+BR</option>
@@ -179,7 +178,6 @@
     const form          = document.getElementById('contactForm');
     const out           = document.getElementById('out');
     const tbody         = document.querySelector('#results tbody');
-    thead
     const log           = document.getElementById('log');
     const nomSearch     = document.getElementById('nomSearch');
     const resetBtn      = document.getElementById('resetBtn');
@@ -191,7 +189,6 @@
     let editingId = null;
     let allRows = [];
 
-    // Chargement complet
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
@@ -200,7 +197,7 @@
         .limit(1000);
 
       if (error) {
-        log.textContent = "❌ Erreur (chargement) : " + error.message;
+        log.textContent = "Erreur (chargement) : " + error.message;
         allRows = [];
         return;
       }
@@ -230,7 +227,7 @@
         });
         tbody.appendChild(tr);
       }
-      log.textContent = `✅ ${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
+      log.textContent = `${rows.length} résultat(s). Cliquez une ligne pour éditer.`;
     }
 
     function searchByTerm(term) {
@@ -252,14 +249,14 @@
       const data = Object.fromEntries(new FormData(form));
       const { id, ...payload } = data;
 
-      out.textContent = "⌛ Traitement en cours...";
+      out.textContent = "Traitement…";
 
       if (editingId) {
         const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
-        out.textContent = error ? "❌ Erreur (mise à jour) : " + error.message : "✅ Contact mis à jour !";
+        out.textContent = error ? "Erreur (mise à jour) : " + error.message : "Contact mis à jour.";
       } else {
         const { error } = await supabase.from('contacts').insert([payload]);
-        out.textContent = error ? "❌ Erreur (création) : " + error.message : "✅ Contact créé !";
+        out.textContent = error ? "Erreur (création) : " + error.message : "Contact créé.";
       }
 
       exitEditMode();
@@ -269,19 +266,19 @@
 
     deleteBtn.addEventListener('click', async () => {
       if (!editingId) {
-        out.textContent = "ℹ️ Sélectionne d’abord une ligne à supprimer.";
+        out.textContent = "Sélectionne d’abord une ligne à supprimer.";
         return;
       }
       const ok = confirm("Confirmer la suppression de l’entrée sélectionnée ?");
       if (!ok) return;
 
-      out.textContent = "⌛ Suppression en cours...";
+      out.textContent = "Suppression…";
       const { error } = await supabase.from('contacts').delete().eq('id', editingId);
       if (error) {
-        out.textContent = "❌ Erreur (suppression) : " + error.message;
+        out.textContent = "Erreur (suppression) : " + error.message;
         return;
       }
-      out.textContent = "✅ Entrée supprimée.";
+      out.textContent = "Entrée supprimée.";
       exitEditMode();
       await loadAll();
       searchByTerm(nomSearch.value);
@@ -327,7 +324,7 @@
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
       deleteBtn.hidden = false;
-      out.textContent = `✏️ Édition de l’entrée #${r.id}`;
+      out.textContent = `Édition de l’entrée #${r.id}`;
     }
 
     function exitEditMode() {
@@ -349,7 +346,6 @@
         .replaceAll("'", "&#039;");
     }
 
-    // Démarrage
     await loadAll();
     searchByTerm(null);
   </script>
