@@ -101,9 +101,6 @@
           <option value="RCP">RCP</option>
           <option value="CA">CA</option>
           <option value="CEL">CEL</option>
-          <option value="CEL">RCPv</option>
-          <option value="CEL">CAv</option>
-          <option value="CEL">CELv</option>
         </select>
       </label>
 
@@ -122,6 +119,18 @@
           <option value="PV+BR+AE">PV+BR+AE</option>
           <option value="PV+PAC+AE">PV+PAC+AE</option>
           <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
+        </select>
+      </label>
+
+      <!-- NOUVEAU : Communes -->
+      <label>Communes
+        <select name="commune" id="commune" required>
+          <option value="" disabled selected>Choisir…</option>
+          <option value="Ballaigues">Ballaigues</option>
+          <option value="Orbe">Orbe</option>
+          <option value="Montcherand">Montcherand</option>
+          <option value="Vallorbe">Vallorbe</option>
+          <option value="Vaulion">Vaulion</option>
         </select>
       </label>
 
@@ -159,6 +168,7 @@
           <th>Adresse + numéro</th>
           <th>Type contrat</th>
           <th>Type installation</th>
+          <th>Commune</th>
           <th>Message</th>
           <th>Créé le</th>
         </tr>
@@ -193,7 +203,7 @@
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, nom, prenom, email, telephone, adresse, message, type_contrat, type_installation, created_at')
+        .select('id, nom, prenom, email, telephone, adresse, message, type_contrat, type_installation, commune, created_at')
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -218,6 +228,7 @@
           <td>${escapeHtml(r.adresse ?? "")}</td>
           <td>${escapeHtml(r.type_contrat ?? "")}</td>
           <td>${escapeHtml(r.type_installation ?? "")}</td>
+          <td>${escapeHtml(r.commune ?? "")}</td>
           <td>${escapeHtml(r.message ?? "")}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
         `;
@@ -239,7 +250,8 @@
       const t = term.trim().toLowerCase();
       const rows = allRows.filter(r => {
         return [
-          r.nom, r.prenom, r.email, r.telephone, r.adresse, r.message, r.type_contrat, r.type_installation
+          r.nom, r.prenom, r.email, r.telephone, r.adresse, r.message,
+          r.type_contrat, r.type_installation, r.commune
         ].some(v => String(v ?? "").toLowerCase().includes(t));
       });
       renderRows(rows);
@@ -320,6 +332,7 @@
       form.adresse.value = r.adresse ?? "";
       form.type_contrat.value = r.type_contrat ?? "";
       form.type_installation.value = r.type_installation ?? "";
+      form.commune.value = r.commune ?? "";
       form.message.value = r.message ?? "";
 
       submitBtn.textContent = "Mettre à jour";
@@ -352,4 +365,3 @@
   </script>
 </body>
 </html>
-
