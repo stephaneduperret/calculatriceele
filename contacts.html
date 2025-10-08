@@ -95,6 +95,18 @@
         <input name="adresse" placeholder="Rue, n°">
       </label>
 
+        <!-- NOUVEAU : Communes -->
+      <label>Communes
+        <select name="commune" id="commune" required>
+          <option value="" disabled selected>Choisir…</option>
+          <option value="Ballaigues">Ballaigues</option>
+          <option value="Orbe">Orbe</option>
+          <option value="Montcherand">Montcherand</option>
+          <option value="Vallorbe">Vallorbe</option>
+          <option value="Vaulion">Vaulion</option>
+        </select>
+      </label>
+
       <label>Type de contrat
         <select name="type_contrat" id="type_contrat">
           <option value="" selected>—</option>
@@ -125,18 +137,7 @@
         </select>
       </label>
 
-      <!-- NOUVEAU : Communes -->
-      <label>Communes
-        <select name="commune" id="commune" required>
-          <option value="" disabled selected>Choisir…</option>
-          <option value="Ballaigues">Ballaigues</option>
-          <option value="Orbe">Orbe</option>
-          <option value="Montcherand">Montcherand</option>
-          <option value="Vallorbe">Vallorbe</option>
-          <option value="Vaulion">Vaulion</option>
-        </select>
-      </label>
-
+    
       <label class="full">Message
         <textarea name="message"></textarea>
       </label>
@@ -368,5 +369,6 @@
   </script>
 </body>
 </html>
+
 
 
