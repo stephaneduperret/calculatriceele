@@ -54,20 +54,23 @@
     }
     .panel textarea{ min-height:140px; resize:vertical; grid-column:1 / -1; }
 
-    /* Ligne Email / Téléphone */
-    .span-2{ grid-column:span 1; }
-    .full{ grid-column:1 / -1; }
-
-    /* Zone actions (dans le panneau gauche, sous les champs) */
-    .form-actions{
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;
+    /* Boutons globaux */
+    .form-actions-global {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
     }
-    .form-actions button{
-      padding:9px 14px; border-radius:10px; border:1px solid var(--stroke, rgba(255,255,255,.12));
-      background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
+    .form-actions-global button {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--stroke, rgba(255,255,255,.12));
+      background: var(--card,#111827);
+      color: var(--ink,#e5e7eb);
+      cursor: pointer;
     }
-    #submitBtn{ border-color:var(--accent, #22c55e); }
-    #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
+    #submitBtn { border-color: var(--accent, #22c55e); }
+    #submitBtn:hover { background: color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
     .danger{ border-color:var(--alert, #ef4444); }
     .danger:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 18%, transparent); }
 
@@ -86,40 +89,7 @@
       padding:8px 12px; border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
-/* Tableau global */
-.form-actions-global {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 16px;
-}
 
-.form-actions-global button {
-  padding: 9px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--stroke, rgba(255,255,255,.12));
-  background: var(--card,#111827);
-  color: var(--ink,#e5e7eb);
-  cursor: pointer;
-}
-
-.form-actions-global #submitBtn {
-  border-color: var(--accent, #22c55e);
-}
-
-.form-actions-global #submitBtn:hover {
-  background: color-mix(in srgb, var(--accent,#22c55e) 20%, transparent);
-}
-
-.form-actions-global .danger {
-  border-color: var(--alert, #ef4444);
-}
-
-.form-actions-global .danger:hover {
-  background: color-mix(in srgb, var(--alert,#ef4444) 18%, transparent);
-}
-
-    
     /* Tableau */
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
     #results th, #results td{
@@ -136,15 +106,11 @@
       outline-offset:-2px;
     }
 
-    /* Responsive: empile les panneaux et masque le divider */
+    /* Responsive */
     @media (max-width: 900px){
-      .form-two{
-        grid-template-columns:1fr;
-      }
+      .form-two{ grid-template-columns:1fr; }
       .divider{ display:none; }
-      .grid-client, .grid-install{
-        grid-template-columns:1fr;
-      }
+      .grid-client, .grid-install{ grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -152,91 +118,110 @@
 
   <h1 class="wrap">Contacts</h1>
 
- <form id="contactForm" class="form-wrap" autocomplete="off">
-  <input type="hidden" name="id" id="rowId">
+  <form id="contactForm" class="form-wrap" autocomplete="off">
+    <input type="hidden" name="id" id="rowId">
 
-  <div class="form-two">
-    <!-- Panneau gauche : Informations client -->
-    <section class="panel">
-      <h2>Informations client</h2>
-      <div class="grid-client">
-        <label>Nom
-          <input name="nom" required>
-        </label>
-        <label>Prénom
-          <input name="prenom">
-        </label>
+    <div class="form-two">
+      <!-- Panneau gauche : Informations client -->
+      <section class="panel">
+        <h2>Informations client</h2>
+        <div class="grid-client">
+          <label>Nom
+            <input name="nom" required>
+          </label>
+          <label>Prénom
+            <input name="prenom">
+          </label>
 
-        <label>Adresse + numéro
-          <input name="adresse" placeholder="Rue, n°">
-        </label>
-        <label>Communes
-          <select name="commune" id="commune" required>
-            <option value="" disabled selected>Choisir...</option>
-            <option value="Ballaigues">Ballaigues</option>
-            <option value="Orbe">Orbe</option>
-            <option value="Montcherand">Montcherand</option>
-            <option value="Vallorbe">Vallorbe</option>
-            <option value="Vaulion">Vaulion</option>
-          </select>
-        </label>
+          <label>Adresse + numéro
+            <input name="adresse" placeholder="Rue, n°">
+          </label>
+          <label>Communes
+            <select name="commune" id="commune" required>
+              <option value="" disabled selected>Choisir...</option>
+              <option value="Ballaigues">Ballaigues</option>
+              <option value="Orbe">Orbe</option>
+              <option value="Montcherand">Montcherand</option>
+              <option value="Vallorbe">Vallorbe</option>
+              <option value="Vaulion">Vaulion</option>
+            </select>
+          </label>
 
-        <label>Email
-          <input type="email" name="email">
-        </label>
-        <label>Téléphone
-          <input name="telephone" inputmode="tel" autocomplete="tel" placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
-        </label>
-      </div>
-    </section>
+          <label>Email
+            <input type="email" name="email">
+          </label>
+          <label>Téléphone
+            <input name="telephone" inputmode="tel" autocomplete="tel" placeholder="+41 79 123 45 67" pattern="^\+?[0-9\s().-]{6,20}$">
+          </label>
+        </div>
+      </section>
 
-    <!-- Diviseur vertical -->
-    <div class="divider" aria-hidden="true"></div>
+      <!-- Diviseur vertical -->
+      <div class="divider" aria-hidden="true"></div>
 
-    <!-- Panneau droit : Informations installation -->
-    <section class="panel">
-      <h2>Informations installation</h2>
-      <div class="grid-install">
-        <label>Type installation
-          <select name="type_installation" id="type_installation" required>
-            <option value="" disabled selected>Choisir...</option>
-            <option value="PV">PV</option>
-            <option value="BR">BR</option>
-            <option value="AE">AE</option>
-            <option value="PAC">PAC</option>
-            <option value="PV+BR">PV+BR</option>
-            <option value="PV+AE">PV+AE</option>
-            <option value="PV+PAC">PV+PAC</option>
-            <option value="BR+PAC">BR+PAC</option>
-            <option value="PV+BR+PAC">PV+BR+PAC</option>
-            <option value="PV+BR+AE">PV+BR+AE</option>
-            <option value="PV+PAC+AE">PV+PAC+AE</option>
-            <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
-          </select>
-        </label>
-        <label>Type de contrat
-          <select name="type_contrat" id="type_contrat">
-            <option value="" selected>—</option>
-            <option value="RCP">RCP</option>
-            <option value="CA">CA</option>
-            <option value="CEL">CEL</option>
-          </select>
-        </label>
+      <!-- Panneau droit : Informations installation -->
+      <section class="panel">
+        <h2>Informations installation</h2>
+        <div class="grid-install">
+          <label>Type installation
+            <select name="type_installation" id="type_installation" required>
+              <option value="" disabled selected>Choisir...</option>
+              <option value="PV">PV</option>
+              <option value="BR">BR</option>
+              <option value="AE">AE</option>
+              <option value="PAC">PAC</option>
+              <option value="PV+BR">PV+BR</option>
+              <option value="PV+AE">PV+AE</option>
+              <option value="PV+PAC">PV+PAC</option>
+              <option value="BR+PAC">BR+PAC</option>
+              <option value="PV+BR+PAC">PV+BR+PAC</option>
+              <option value="PV+BR+AE">PV+BR+AE</option>
+              <option value="PV+PAC+AE">PV+PAC+AE</option>
+              <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
+            </select>
+          </label>
+          <label>Type de contrat
+            <select name="type_contrat" id="type_contrat">
+              <option value="" selected>—</option>
+              <option value="RCP">RCP</option>
+              <option value="CA">CA</option>
+              <option value="CEL">CEL</option>
+            </select>
+          </label>
 
-        <label class="full">Message
-          <textarea name="message"></textarea>
-        </label>
-      </div>
-    </section>
-  </div>
+          <!-- Nouveaux champs -->
+          <label>N° Pronovo
+            <input name="pronovo_no" placeholder="ex : PR-123456">
+          </label>
+          <label>Année de la demande
+            <input name="annee_demande" inputmode="numeric" pattern="^\d{4}$" placeholder="ex : 2025" title="Année sur 4 chiffres">
+          </label>
 
-  <!-- ✅ Nouvelle zone boutons centrée sous les 2 panneaux -->
-  <div class="form-actions-global">
-    <button id="submitBtn" type="submit">Enregistrer</button>
-    <button id="cancelEditBtn" type="button" hidden>Annuler</button>
-    <button id="deleteBtn" type="button" class="danger" hidden>Supprimer</button>
-  </div>
-</form>
+          <label>Puissance de l'installation
+            <input name="puissance_installation_kw" inputmode="decimal" placeholder="ex : 12.50 (kW)">
+          </label>
+          <label>N° de compteur
+            <input name="compteur_no" placeholder="Numéro du compteur">
+          </label>
+
+          <label class="full">N° du COF
+            <input name="cof_no" placeholder="Numéro du COF">
+          </label>
+
+          <label class="full">Message
+            <textarea name="message"></textarea>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <!-- Boutons centrés sous les deux panneaux -->
+    <div class="form-actions-global">
+      <button id="submitBtn" type="submit">Enregistrer</button>
+      <button id="cancelEditBtn" type="button" hidden>Annuler</button>
+      <button id="deleteBtn" type="button" class="danger" hidden>Supprimer</button>
+    </div>
+  </form>
 
   <pre id="out"></pre>
   <hr class="wrap">
@@ -295,7 +280,12 @@
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, nom, prenom, email, telephone, adresse, commune, type_installation, type_contrat, message, created_at')
+        .select(`
+          id, nom, prenom, email, telephone, adresse, commune,
+          type_installation, type_contrat, message,
+          pronovo_no, annee_demande, puissance_installation_kw, compteur_no, cof_no,
+          created_at
+        `)
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -335,15 +325,13 @@
     }
 
     function searchByTerm(term) {
-      if (!term || term.trim() === "") {
-        renderRows(allRows);
-        return;
-      }
+      if (!term || term.trim() === "") { renderRows(allRows); return; }
       const t = term.trim().toLowerCase();
       const rows = allRows.filter(r => {
         return [
           r.nom, r.prenom, r.email, r.telephone, r.adresse, r.commune,
-          r.type_installation, r.type_contrat, r.message
+          r.type_installation, r.type_contrat, r.message,
+          r.pronovo_no, r.annee_demande, r.puissance_installation_kw, r.compteur_no, r.cof_no
         ].some(v => String(v ?? "").toLowerCase().includes(t));
       });
       renderRows(rows);
@@ -370,19 +358,13 @@
     });
 
     deleteBtn.addEventListener('click', async () => {
-      if (!editingId) {
-        out.textContent = "Sélectionne d’abord une ligne à supprimer.";
-        return;
-      }
+      if (!editingId) { out.textContent = "Sélectionne d’abord une ligne à supprimer."; return; }
       const ok = confirm("Confirmer la suppression de l’entrée sélectionnée ?");
       if (!ok) return;
 
       out.textContent = "Suppression…";
       const { error } = await supabase.from('contacts').delete().eq('id', editingId);
-      if (error) {
-        out.textContent = "Erreur (suppression) : " + error.message;
-        return;
-      }
+      if (error) { out.textContent = "Erreur (suppression) : " + error.message; return; }
       out.textContent = "Entrée supprimée.";
       exitEditMode();
       await loadAll();
@@ -398,8 +380,7 @@
     });
 
     function debounce(fn, delay = 300) {
-      let t;
-      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+      let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
     }
     const onSearchInput = debounce(() => searchByTerm(nomSearch.value), 250);
 
@@ -409,9 +390,7 @@
     });
 
     resetBtn.addEventListener('click', async () => {
-      nomSearch.value = "";
-      searchByTerm("");
-      nomSearch.focus();
+      nomSearch.value = ""; searchByTerm(""); nomSearch.focus();
     });
 
     function enterEditMode(r) {
@@ -426,6 +405,13 @@
       form.type_installation.value = r.type_installation ?? "";
       form.type_contrat.value = r.type_contrat ?? "";
       form.message.value = r.message ?? "";
+
+      // Nouveaux champs
+      form.pronovo_no.value = r.pronovo_no ?? "";
+      form.annee_demande.value = r.annee_demande ?? "";
+      form.puissance_installation_kw.value = r.puissance_installation_kw ?? "";
+      form.compteur_no.value = r.compteur_no ?? "";
+      form.cof_no.value = r.cof_no ?? "";
 
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
@@ -457,4 +443,3 @@
   </script>
 </body>
 </html>
-
