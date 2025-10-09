@@ -15,7 +15,7 @@
     .form-wrap{ max-width:1200px; margin:20px auto 16px; padding:0 12px; }
     .form-two{
       display:grid;
-      grid-template-columns:1fr minmax(8px, 8px) 1fr; /* gauche | divider | droite */
+      grid-template-columns:1fr minmax(8px, 8px) 1fr;
       gap:16px; align-items:start;
     }
     .divider{ width:2px; background:rgba(255,255,255,.16); margin:0 6px; border-radius:1px; }
@@ -149,7 +149,7 @@
       <section class="panel">
         <h2>Informations installation</h2>
         <div class="grid-install">
-          <!-- ✅ Remplacement par 4 cases à cocher -->
+          <!-- Cases à cocher -->
           <label class="full">Type installation
             <div class="checks">
               <label><input type="checkbox" name="inst_pv"  id="inst_pv"> PV</label>
@@ -250,39 +250,39 @@
     const submitBtn     = document.getElementById('submitBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const deleteBtn     = document.getElementById('deleteBtn');
-    const rowIdInput    = document.getElementById('rowId');
 
     let editingId = null;
     let allRows = [];
 
-    function typeInstallString(r){
+    const typeInstallString = (r) => {
       const parts = [];
       if (r.inst_pv)  parts.push('PV');
       if (r.inst_br)  parts.push('BR');
       if (r.inst_ae)  parts.push('AE');
       if (r.inst_pac) parts.push('PAC');
       return parts.length ? parts.join('+') : '—';
-    }
+    };
 
     async function loadAll() {
-      const { data, error } = await supabase
-        .from('contacts')
-        .select(`
-          id, nom, prenom, email, telephone, adresse, commune,
-          inst_pv, inst_br, inst_ae, inst_pac,
-          type_contrat, message,
-          pronovo_no, annee_demande, puissance_installation_kw, compteur_no, cof_no,
-          created_at
-        `)
-        .order('created_at', { ascending: false })
-        .limit(1000);
+      try{
+        const { data, error } = await supabase
+          .from('contacts')
+          .select(`
+            id, nom, prenom, email, telephone, adresse, commune,
+            inst_pv, inst_br, inst_ae, inst_pac,
+            type_contrat, message,
+            pronovo_no, annee_demande, puissance_installation_kw, compteur_no, cof_no,
+            created_at
+          `)
+          .order('created_at', { ascending: false })
+          .limit(1000);
 
-      if (error) {
-        log.textContent = "Erreur (chargement) : " + error.message;
+        if (error) throw error;
+        allRows = data || [];
+      }catch(err){
+        log.textContent = "Erreur (chargement) : " + (err?.message || err);
         allRows = [];
-        return;
       }
-      allRows = data || [];
     }
 
     function renderRows(rows) {
@@ -328,8 +328,6 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      // Récupérer proprement toutes les valeurs (les checkboxes non cochées n’apparaissent pas dans FormData)
       const payload = {
         nom: form.nom.value,
         prenom: form.prenom.value,
@@ -339,14 +337,10 @@
         telephone: form.telephone.value,
         type_contrat: form.type_contrat.value || null,
         message: form.message.value,
-
-        // Cases à cocher
         inst_pv:  form.inst_pv.checked,
         inst_br:  form.inst_br.checked,
         inst_ae:  form.inst_ae.checked,
         inst_pac: form.inst_pac.checked,
-
-        // Champs installation
         pronovo_no: form.pronovo_no.value,
         annee_demande: form.annee_demande.value || null,
         puissance_installation_kw: form.puissance_installation_kw.value || null,
@@ -356,33 +350,50 @@
 
       out.textContent = "Traitement…";
 
-      if (editingId) {
-        const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
-        out.textContent = error ? "Erreur (mise à jour) : " + error.message : "Contact mis à jour.";
-      } else {
-        const { error } = await supabase.from('contacts').insert([payload]);
-        out.textContent = error ? "Erreur (création) : " + error.message : "Contact créé.";
+      try{
+        if (editingId) {
+          const { error } = await supabase.from('contacts').update(payload).eq('id', editingId);
+          if (error) throw error;
+          out.textContent = "Contact mis à jour.";
+        } else {
+          const { error } = await supabase.from('contacts').insert([payload]);
+          if (error) throw error;
+          out.textContent = "Contact créé.";
+        }
+        exitEditMode();
+        await loadAll();
+        searchByTerm(nomSearch.value);
+      }catch(err){
+        out.textContent = "Erreur : " + (err?.message || err);
       }
-
-      exitEditMode();
-      await loadAll();
-      searchByTerm(nomSearch.value);
     });
 
+    // Annuler
+    cancelEditBtn.addEventListener('click', () => {
+      exitEditMode();
+      out.textContent = "Mode création.";
+    });
+
+    // Supprimer
     deleteBtn.addEventListener('click', async () => {
       if (!editingId) { out.textContent = "Sélectionne d’abord une ligne à supprimer."; return; }
       const ok = confirm("Confirmer la suppression de l’entrée sélectionnée ?");
       if (!ok) return;
 
       out.textContent = "Suppression…";
-      const { error } = await supabase.from('contacts').delete().eq('id', editingId);
-      if (error) { out.textContent = "Erreur (suppression) : " + error.message; return; }
-      out.textContent = "Entrée supprimée.";
-      exitEditMode();
-      await loadAll();
-      searchByTerm(nomSearch.value);
+      try{
+        const { error } = await supabase.from('contacts').delete().eq('id', editingId);
+        if (error) throw error;
+        out.textContent = "Entrée supprimée.";
+        exitEditMode();
+        await loadAll();
+        searchByTerm(nomSearch.value);
+      }catch(err){
+        out.textContent = "Erreur (suppression) : " + (err?.message || err);
+      }
     });
 
+    // Raccourci clavier pour supprimer
     document.addEventListener('keydown', (e) => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && editingId) {
         const tag = document.activeElement?.tagName?.toLowerCase();
@@ -391,9 +402,9 @@
       }
     });
 
+    // Recherche
     function debounce(fn, delay = 300) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); }; }
     const onSearchInput = debounce(() => searchByTerm(nomSearch.value), 250);
-
     nomSearch.addEventListener('input', onSearchInput);
     nomSearch.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchByTerm(nomSearch.value); } });
     resetBtn.addEventListener('click', async () => { nomSearch.value = ""; searchByTerm(""); nomSearch.focus(); });
@@ -410,13 +421,11 @@
       form.type_contrat.value = r.type_contrat ?? "";
       form.message.value = r.message ?? "";
 
-      // Cases à cocher
       form.inst_pv.checked  = !!r.inst_pv;
       form.inst_br.checked  = !!r.inst_br;
       form.inst_ae.checked  = !!r.inst_ae;
       form.inst_pac.checked = !!r.inst_pac;
 
-      // Champs installation
       form.pronovo_no.value = r.pronovo_no ?? "";
       form.annee_demande.value = r.annee_demande ?? "";
       form.puissance_installation_kw.value = r.puissance_installation_kw ?? "";
@@ -426,7 +435,7 @@
       submitBtn.textContent = "Mettre à jour";
       cancelEditBtn.hidden = false;
       deleteBtn.hidden = false;
-      out.textContent = `Édition de l’entrée #${r.id}`;
+      log.textContent = `Édition de l’entrée #${r.id}`;
     }
 
     function exitEditMode() {
@@ -444,8 +453,16 @@
         .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     }
 
-    await loadAll();
-    searchByTerm(null);
+    // ✅ Initialisation sans top-level await
+    (async function init(){
+      await loadAll();
+      renderRows(allRows);
+    })();
+
+    // Affiche toute erreur JS imprévue
+    window.addEventListener('error', (e) => {
+      log.textContent = "Erreur JS : " + e.message;
+    });
   </script>
 </body>
 </html>
