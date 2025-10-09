@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Formulaire Supabase</title>
+  <title>Contacts</title>
 
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
@@ -15,15 +15,10 @@
     .form-wrap{ max-width:1200px; margin:20px auto 16px; padding:0 12px; }
     .form-two{
       display:grid;
-      grid-template-columns:1fr minmax(8px, 8px) 1fr; /* col gauche | divider | col droite */
-      gap:16px;
-      align-items:start;
+      grid-template-columns:1fr minmax(8px, 8px) 1fr; /* gauche | divider | droite */
+      gap:16px; align-items:start;
     }
-
-    .divider{
-      width:2px; background:rgba(255,255,255,.16);
-      margin:0 6px; border-radius:1px;
-    }
+    .divider{ width:2px; background:rgba(255,255,255,.16); margin:0 6px; border-radius:1px; }
 
     .panel{
       padding:16px;
@@ -33,15 +28,12 @@
     }
     .panel h2{ margin:0 0 12px 0; font-size:18px; opacity:.9; }
 
-    /* Grilles internes des panneaux */
     .grid-client, .grid-install{
       display:grid;
       grid-template-columns:repeat(2, minmax(220px, 1fr));
-      gap:12px 16px;
-      align-items:start;
+      gap:12px 16px; align-items:start;
     }
 
-    /* Champs */
     .panel label{ display:flex; flex-direction:column; font-size:14px; gap:6px; }
     .panel input, .panel textarea, .panel select{
       padding:8px 10px; font-size:14px;
@@ -54,32 +46,30 @@
     }
     .panel textarea{ min-height:140px; resize:vertical; grid-column:1 / -1; }
 
+    /* Cases à cocher installation */
+    .checks{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      padding:8px 10px; border-radius:8px; border:1px solid var(--stroke, rgba(255,255,255,.12));
+      background:var(--card, #111827);
+    }
+    .checks label{ flex-direction:row; align-items:center; gap:8px; margin:0; }
+
     /* Boutons globaux */
-    .form-actions-global {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 16px;
+    .form-actions-global{ display:flex; justify-content:center; gap:10px; margin-top:16px; }
+    .form-actions-global button{
+      padding:9px 14px; border-radius:10px; border:1px solid var(--stroke, rgba(255,255,255,.12));
+      background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
-    .form-actions-global button {
-      padding: 9px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--stroke, rgba(255,255,255,.12));
-      background: var(--card,#111827);
-      color: var(--ink,#e5e7eb);
-      cursor: pointer;
-    }
-    #submitBtn { border-color: var(--accent, #22c55e); }
-    #submitBtn:hover { background: color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
-    .danger{ border-color:var(--alert, #ef4444); }
+    #submitBtn{ border-color:var(--accent,#22c55e); }
+    #submitBtn:hover{ background:color-mix(in srgb, var(--accent,#22c55e) 20%, transparent); }
+    .danger{ border-color:var(--alert,#ef4444); }
     .danger:hover{ background:color-mix(in srgb, var(--alert,#ef4444) 18%, transparent); }
 
     /* Résultats */
     .results-wrap{ max-width:1200px; margin:24px auto 40px; padding:0 12px; }
     .results-wrap h2, .results-wrap h3{ text-align:center; margin:14px 0; }
     .results-toolbar{
-      display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center;
-      margin:8px auto 16px;
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center; margin:8px auto 16px;
     }
     #nomSearch{ width:420px; max-width:90%; padding:8px 10px; border-radius:8px;
       border:1px solid var(--stroke, rgba(255,255,255,.12));
@@ -90,7 +80,6 @@
       background:var(--card,#111827); color:var(--ink,#e5e7eb); cursor:pointer;
     }
 
-    /* Tableau */
     #results{ width:100%; border-collapse:collapse; table-layout:fixed; }
     #results th, #results td{
       padding:8px 10px; font-size:14px; border:1px solid rgba(255,255,255,.12);
@@ -102,12 +91,10 @@
     }
     #results tbody tr.selected{
       background:color-mix(in srgb, var(--focus,#60a5fa) 26%, transparent);
-      outline:2px solid var(--focus,#60a5fa);
-      outline-offset:-2px;
+      outline:2px solid var(--focus,#60a5fa); outline-offset:-2px;
     }
 
-    /* Responsive */
-    @media (max-width: 900px){
+    @media (max-width:900px){
       .form-two{ grid-template-columns:1fr; }
       .divider{ display:none; }
       .grid-client, .grid-install{ grid-template-columns:1fr; }
@@ -156,30 +143,22 @@
         </div>
       </section>
 
-      <!-- Diviseur vertical -->
       <div class="divider" aria-hidden="true"></div>
 
       <!-- Panneau droit : Informations installation -->
       <section class="panel">
         <h2>Informations installation</h2>
         <div class="grid-install">
-          <label>Type installation
-            <select name="type_installation" id="type_installation" required>
-              <option value="" disabled selected>Choisir...</option>
-              <option value="PV">PV</option>
-              <option value="BR">BR</option>
-              <option value="AE">AE</option>
-              <option value="PAC">PAC</option>
-              <option value="PV+BR">PV+BR</option>
-              <option value="PV+AE">PV+AE</option>
-              <option value="PV+PAC">PV+PAC</option>
-              <option value="BR+PAC">BR+PAC</option>
-              <option value="PV+BR+PAC">PV+BR+PAC</option>
-              <option value="PV+BR+AE">PV+BR+AE</option>
-              <option value="PV+PAC+AE">PV+PAC+AE</option>
-              <option value="PV+PAC+AE+BR">PV+PAC+AE+BR</option>
-            </select>
+          <!-- ✅ Remplacement par 4 cases à cocher -->
+          <label class="full">Type installation
+            <div class="checks">
+              <label><input type="checkbox" name="inst_pv"  id="inst_pv"> PV</label>
+              <label><input type="checkbox" name="inst_br"  id="inst_br"> BR</label>
+              <label><input type="checkbox" name="inst_ae"  id="inst_ae"> AE</label>
+              <label><input type="checkbox" name="inst_pac" id="inst_pac"> PAC</label>
+            </div>
           </label>
+
           <label>Type de contrat
             <select name="type_contrat" id="type_contrat">
               <option value="" selected>—</option>
@@ -189,7 +168,6 @@
             </select>
           </label>
 
-          <!-- Nouveaux champs -->
           <label>N° Pronovo
             <input name="pronovo_no" placeholder="ex : PR-123456">
           </label>
@@ -215,7 +193,7 @@
       </section>
     </div>
 
-    <!-- Boutons centrés sous les deux panneaux -->
+    <!-- Boutons -->
     <div class="form-actions-global">
       <button id="submitBtn" type="submit">Enregistrer</button>
       <button id="cancelEditBtn" type="button" hidden>Annuler</button>
@@ -244,7 +222,7 @@
           <th>Téléphone</th>
           <th>Adresse + numéro</th>
           <th>Commune</th>
-          <th>Type installation</th>
+          <th>Type install.</th>
           <th>Type contrat</th>
           <th>Message</th>
           <th>Créé le</th>
@@ -277,12 +255,22 @@
     let editingId = null;
     let allRows = [];
 
+    function typeInstallString(r){
+      const parts = [];
+      if (r.inst_pv)  parts.push('PV');
+      if (r.inst_br)  parts.push('BR');
+      if (r.inst_ae)  parts.push('AE');
+      if (r.inst_pac) parts.push('PAC');
+      return parts.length ? parts.join('+') : '—';
+    }
+
     async function loadAll() {
       const { data, error } = await supabase
         .from('contacts')
         .select(`
           id, nom, prenom, email, telephone, adresse, commune,
-          type_installation, type_contrat, message,
+          inst_pv, inst_br, inst_ae, inst_pac,
+          type_contrat, message,
           pronovo_no, annee_demande, puissance_installation_kw, compteur_no, cof_no,
           created_at
         `)
@@ -309,7 +297,7 @@
           <td>${escapeHtml(r.telephone ?? "")}</td>
           <td>${escapeHtml(r.adresse ?? "")}</td>
           <td>${escapeHtml(r.commune ?? "")}</td>
-          <td>${escapeHtml(r.type_installation ?? "")}</td>
+          <td>${escapeHtml(typeInstallString(r))}</td>
           <td>${escapeHtml(r.type_contrat ?? "")}</td>
           <td>${escapeHtml(r.message ?? "")}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
@@ -328,9 +316,10 @@
       if (!term || term.trim() === "") { renderRows(allRows); return; }
       const t = term.trim().toLowerCase();
       const rows = allRows.filter(r => {
+        const tags = typeInstallString(r);
         return [
           r.nom, r.prenom, r.email, r.telephone, r.adresse, r.commune,
-          r.type_installation, r.type_contrat, r.message,
+          r.type_contrat, r.message, tags,
           r.pronovo_no, r.annee_demande, r.puissance_installation_kw, r.compteur_no, r.cof_no
         ].some(v => String(v ?? "").toLowerCase().includes(t));
       });
@@ -339,8 +328,31 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
-      const { id, ...payload } = data;
+
+      // Récupérer proprement toutes les valeurs (les checkboxes non cochées n’apparaissent pas dans FormData)
+      const payload = {
+        nom: form.nom.value,
+        prenom: form.prenom.value,
+        adresse: form.adresse.value,
+        commune: form.commune.value || null,
+        email: form.email.value,
+        telephone: form.telephone.value,
+        type_contrat: form.type_contrat.value || null,
+        message: form.message.value,
+
+        // Cases à cocher
+        inst_pv:  form.inst_pv.checked,
+        inst_br:  form.inst_br.checked,
+        inst_ae:  form.inst_ae.checked,
+        inst_pac: form.inst_pac.checked,
+
+        // Champs installation
+        pronovo_no: form.pronovo_no.value,
+        annee_demande: form.annee_demande.value || null,
+        puissance_installation_kw: form.puissance_installation_kw.value || null,
+        compteur_no: form.compteur_no.value,
+        cof_no: form.cof_no.value
+      };
 
       out.textContent = "Traitement…";
 
@@ -379,34 +391,32 @@
       }
     });
 
-    function debounce(fn, delay = 300) {
-      let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-    }
+    function debounce(fn, delay = 300) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); }; }
     const onSearchInput = debounce(() => searchByTerm(nomSearch.value), 250);
 
     nomSearch.addEventListener('input', onSearchInput);
-    nomSearch.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); searchByTerm(nomSearch.value); }
-    });
-
-    resetBtn.addEventListener('click', async () => {
-      nomSearch.value = ""; searchByTerm(""); nomSearch.focus();
-    });
+    nomSearch.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchByTerm(nomSearch.value); } });
+    resetBtn.addEventListener('click', async () => { nomSearch.value = ""; searchByTerm(""); nomSearch.focus(); });
 
     function enterEditMode(r) {
       editingId = r.id;
-      rowIdInput.value = r.id;
+
       form.nom.value = r.nom ?? "";
       form.prenom.value = r.prenom ?? "";
-      form.email.value = r.email ?? "";
-      form.telephone.value = r.telephone ?? "";
       form.adresse.value = r.adresse ?? "";
       form.commune.value = r.commune ?? "";
-      form.type_installation.value = r.type_installation ?? "";
+      form.email.value = r.email ?? "";
+      form.telephone.value = r.telephone ?? "";
       form.type_contrat.value = r.type_contrat ?? "";
       form.message.value = r.message ?? "";
 
-      // Nouveaux champs
+      // Cases à cocher
+      form.inst_pv.checked  = !!r.inst_pv;
+      form.inst_br.checked  = !!r.inst_br;
+      form.inst_ae.checked  = !!r.inst_ae;
+      form.inst_pac.checked = !!r.inst_pac;
+
+      // Champs installation
       form.pronovo_no.value = r.pronovo_no ?? "";
       form.annee_demande.value = r.annee_demande ?? "";
       form.puissance_installation_kw.value = r.puissance_installation_kw ?? "";
@@ -421,7 +431,6 @@
 
     function exitEditMode() {
       editingId = null;
-      rowIdInput.value = "";
       form.reset();
       submitBtn.textContent = "Enregistrer";
       cancelEditBtn.hidden = true;
@@ -431,11 +440,8 @@
 
     function escapeHtml(s) {
       return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     }
 
     await loadAll();
