@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Outils solaires et choix de câbles</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Outils solaires & câbles</title>
 
   <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
@@ -11,186 +11,276 @@
 
   <style>
     :root{
-      --bg1:#0b1220; --bg2:#12233c;
-      --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --line:#1f2937;
-      --field:#0f172a;
-      --blue1:#3b82f6; --blue2:#2563eb;
-      --green1:#22c55e; --green2:#16a34a;
+      --bg:#0b1220;           /* fond global */
+      --card:#111827;         /* fond cartes */
+      --ink:#e5e7eb;          /* texte principal */
+      --muted:#94a3b8;        /* texte secondaire */
+      --line:rgba(148,163,184,.22);
+      --accent:#2563eb;       /* bouton primaire */
+      --accent-2:#4b5563;     /* bouton secondaire */
     }
-    *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:radial-gradient(1200px 700px at 10% -10%, #12233c 0%, transparent 60%),
+                 radial-gradient(1000px 600px at 110% 10%, #0f1e34 0%, transparent 55%),
+                 linear-gradient(120deg,#0b1220,#12233c);
       color:var(--ink);
-      background:linear-gradient(120deg,var(--bg1),var(--bg2));
     }
 
-    .wrap{max-width:1200px; margin:24px auto 100px; padding:0 20px}
+    .wrap{max-width:1100px; margin:28px auto; padding:24px}
 
-    h1{
-      margin:0 0 20px;
-      text-align:center;
-      font-weight:750; letter-spacing:.3px; line-height:1.2;
-    }
+    h1{font-size:1.9rem; margin:.2rem 0 1.1rem}
+    .muted{color:var(--muted)}
 
+    /* Cartes */
     .grid{
       display:grid;
-      grid-template-columns:repeat(3, minmax(280px, 1fr));
-      gap:18px;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:16px;
     }
-    @media (max-width: 1024px){ .grid{grid-template-columns:repeat(2, minmax(280px,1fr))} }
-    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
-
     .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)), var(--card);
+      background:rgba(17,24,39,.78);
       border:1px solid var(--line);
       border-radius:16px;
-      padding:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      padding:18px;
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
     }
+    .card h2{font-size:1.05rem; margin:.2rem 0 .8rem; color:#e2e8f0}
 
-    .card h2{margin:0 0 6px; font-size:1.05rem}
-    .hint{color:var(--muted); font-size:.95rem; margin:0 0 12px}
-
-    label{display:block; margin:10px 0 6px; color:var(--muted)}
-    input, select{
-      width:100%; font:inherit; color:var(--ink);
-      background:var(--field); border:1px solid #1e293b;
-      border-radius:12px; padding:12px 14px; outline:none;
-      transition: border .15s ease, box-shadow .15s ease;
+    /* Champs */
+    label{display:block; font-size:.95rem; color:var(--muted); margin:.55rem 0 .2rem}
+    input, select, button{
+      font:inherit;
     }
-    input::placeholder{color:#728198}
-    input:focus, select:focus{
-      border-color:#334155; box-shadow:0 0 0 3px rgba(59,130,246,.20);
-    }
-
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      border:none; border-radius:12px; cursor:pointer; font-weight:600;
-      padding:10px 14px; user-select:none; touch-action:manipulation;
-      transition:transform .06s ease, filter .2s ease, background .2s ease;
-      box-shadow:0 10px 26px rgba(34,197,94,.20);
-    }
-    .btn:active{transform:translateY(1px)}
-    .btn-primary{ background:linear-gradient(180deg,var(--blue1),var(--blue2)); color:#061021 }
-    .btn-secondary{ background:linear-gradient(180deg,var(--green1),var(--green2)); color:#052612 }
-    .btn-ghost{ background:#0b1628; color:var(--ink); border:1px solid #1f2a44; box-shadow:none }
-
-    .row-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
-    @media (max-width:600px){ .btn{ width:100% } input,select{ font-size:16px } }
-
-    .result{
-      margin-top:10px;
+    input[type="number"], select{
+      width:100%;
       padding:10px 12px;
-      border:1px dashed #263044;
-      border-radius:12px;
-      background:rgba(255,255,255,.02);
+      background:#0b1020;
       color:var(--ink);
+      border:1px solid rgba(148,163,184,.30);
+      border-radius:12px;
+      outline:none;
+    }
+    input:focus, select:focus{
+      border-color:#60a5fa;
+      box-shadow:0 0 0 3px rgba(96,165,250,.25);
     }
 
-    .page-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px }
-    .res-line{display:flex; justify-content:space-between; gap:8px}
+    /* Résultats */
+    .result-line{margin-top:.55rem; font-size:1.05rem; line-height:1.5}
+    .emph{color:#93c5fd}
+
+    /* Boutons */
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+    .btn{
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:10px 14px; border-radius:10px; cursor:pointer; border:1px solid transparent;
+    }
+    .btn-primary{background:var(--accent); color:#fff; border-color:var(--accent)}
+    .btn-secondary{background:var(--accent-2); color:#fff; border-color:var(--accent-2)}
+    .btn:hover{filter:brightness(1.05)}
+
+    /* Mise en page titre des sections pour cohérence */
+    .section h2{margin-top:0}
+
+    /* Container global des sections (cartes) */
+    .stack{display:grid; gap:16px}
+
+    /* Tableau de la carte ampérage par câble */
+    table{
+      width:100%; border-collapse:collapse; margin-top:12px; background:#0b1020; border-radius:12px; overflow:hidden;
+    }
+    th, td{padding:10px 12px; border-bottom:1px solid #233046; text-align:left; font-size:14px}
+    th{color:#b7c2d6}
+    tr:hover td{background:#111f33}
+
+    .calc-result{
+      margin-top:12px; padding:12px; border:1px dashed #2b3b59; border-radius:12px; background:#0b1020;
+      display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+    }
+    .bigA{font-size:26px}
+    .small{font-size:12px; color:var(--muted)}
   </style>
 </head>
 <body>
-  <main class="wrap">
+
+  <!-- Menu injecté par menu.js (navbar) -->
+  <div id="menu-container"></div>
+
+  <div class="wrap">
     <h1>Outils solaires et choix de câbles</h1>
 
+    <!-- Grille deux colonnes si large écran -->
     <div class="grid">
-      <!-- 1) Calculateur de puissance solaire -->
-      <section class="card">
+
+      <div class="card section">
         <h2>Calculateur de puissance solaire</h2>
-        <p class="hint">Entrez la surface du toit en m². Hypothèses: rendement 18.45 %, ensoleillement 1000 W/m².</p>
-
+        <p class="muted">Entrez la surface du toit en m² pour estimer la puissance disponible.</p>
         <label for="surface">Surface toiture en m²</label>
-        <input id="surface" type="number" step="0.01" min="0" inputmode="decimal" placeholder="20">
+        <input type="number" id="surface" step="0.01" min="0" placeholder="ex: 42.5">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="calculerPuissance()">Calculer</button>
+        </div>
+        <div id="resultatSolaire" class="result-line"></div>
+      </div>
 
-        <div class="result" id="resSurface">Puissance disponible : —</div>
-      </section>
-
-      <!-- 2) Conversion kVA → A -->
-      <section class="card">
+      <div class="card section">
         <h2>Conversion kVA → A</h2>
-        <p class="hint">Triphasé 400 V. I = S / (√3 × U).</p>
-
+        <p class="muted">Triphasé 400 V. Formule I = S / (√3 × U).</p>
         <label for="powerInput">Puissance apparente S en kVA</label>
-        <input id="powerInput" type="number" step="0.01" min="0" inputmode="decimal" placeholder="4">
+        <input type="number" id="powerInput" placeholder="ex: 15">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="convertToAmps()">Convertir</button>
+          <button class="btn btn-secondary" onclick="sendToImax()">Envoyer vers « Imax en A »</button>
+        </div>
+        <div id="conversionResult" class="result-line"></div>
+      </div>
 
-        <div class="result" id="resConvert">Résultat : — A</div>
-      </section>
-
-      <!-- 3) Type de câble selon Imax -->
-      <section class="card">
+      <div class="card section">
         <h2>Type de câble selon Imax</h2>
-
         <label for="imaxInput">Imax en A</label>
-        <input id="imaxInput" type="number" step="0.01" min="0" inputmode="decimal" placeholder="5.77">
+        <input type="number" id="imaxInput" placeholder="ex: 275">
 
         <label for="temperatureCable">Température de service</label>
         <select id="temperatureCable">
+          <option value="90">90°C</option>
           <option value="60">60°C</option>
-          <option value="90" selected>90°C</option>
         </select>
 
-        <div class="result" id="resCable">Type de câble : —</div>
-      </section>
-
-      <!-- 4) Calculateur de panneaux -->
-      <section class="card">
-        <h2>Calculateur de panneaux</h2>
-        <p class="hint">Puissance solaire visée en kVA (0.5 kVA par panneau).</p>
-
-        <label for="panelInput">kVA visés</label>
-        <input id="panelInput" type="number" step="0.5" min="0.5" inputmode="decimal" placeholder="4">
-
-        <div class="result" id="resPanels">Nombre de panneaux nécessaires : —</div>
-      </section>
-
-      <!-- 5) Intensité fusible COF et Point de connexion -->
-      <section class="card">
-        <h2>Intensité fusible COF et Point de connexion</h2>
-        <p class="hint">Calibres normalisés. Règle : on choisit toujours la valeur strictement supérieure.</p>
-
-        <div class="result" id="resFuses">
-          <div class="res-line"><span>Fusibles au coffret d'introduction</span><strong id="fuseCof">—</strong></div>
-          <div class="res-line"><span>Fusibles au point de connexion GRD</span><strong id="fuseGrd">—</strong></div>
+        <div class="btns">
+          <button class="btn btn-primary" onclick="findCable()">Rechercher</button>
         </div>
-      </section>
+        <div id="cableResult" class="result-line"></div>
+      </div>
+
+      <div class="card section">
+        <h2>Calculateur de panneaux</h2>
+        <label for="solarPower">Puissance solaire visée en kVA</label>
+        <input type="number" id="solarPower" placeholder="ex: 12">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="calculatePanels()">Calculer</button>
+        </div>
+        <div id="result" class="result-line"></div>
+      </div>
+
+      <!-- ─────────────────────────────────────────────────────────────
+           NOUVELLE DIV : Ampérage max selon type de câble (centrée via la grille)
+           ───────────────────────────────────────────────────────────── -->
+      <div class="card section" id="card-amp-cable">
+        <h2>Ampérage max selon le type de câble</h2>
+        <p class="muted">Choisissez le type, la section, le nombre de câbles et un facteur (si nécessaire). Les valeurs sont indicatives ; à valider selon tes tables internes (pose, T°, groupement…).</p>
+
+        <label for="icab_type">Type de câble</label>
+        <select id="icab_type"></select>
+
+        <label for="icab_sec">Section (mm²)</label>
+        <select id="icab_sec"></select>
+
+        <label for="icab_n">Nombre de câbles en parallèle</label>
+        <select id="icab_n">
+          <option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+        </select>
+
+        <label for="icab_k">Facteur de correction</label>
+        <input id="icab_k" type="number" step="0.01" value="1.00">
+
+        <div class="calc-result">
+          <div>
+            <div class="small">Ampérage maximal calculé</div>
+            <div class="bigA" id="icab_out">— A</div>
+          </div>
+          <div>
+            <div class="small">Détails</div>
+            <div class="small" id="icab_detail">—</div>
+          </div>
+        </div>
+
+        <table id="icab_tab">
+          <thead>
+            <tr>
+              <th>Section (mm²)</th>
+              <th>Ampérage (1 câble)</th>
+              <th>Ampérage (× n câbles)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="btns">
+          <button class="btn btn-secondary" onclick="sendToImaxFromCable()">Envoyer vers « Imax en A »</button>
+        </div>
+      </div>
+      <!-- fin nouvelle div -->
+
     </div>
 
-    <div class="page-actions">
-      <button class="btn btn-ghost" onclick="location.href='./index.html'">Retour à l'accueil</button>
+    <div class="btns" style="margin-top:22px">
+      <button class="btn btn-secondary" onclick="window.location.href='./index.html'">Retour à l'accueil</button>
       <button class="btn btn-secondary" onclick="window.print()">Imprimer</button>
     </div>
-  </main>
+  </div>
 
   <script>
-    // Constantes
-    const SQRT3 = Math.sqrt(3);
-    const U = 400;                 // Triphasé 400 V
-    const REND = 0.1845;           // Rendement moyen
-    const IRR = 1000;              // W/m²
-    const PANEL_KVA = 0.5;         // kVA par panneau (hypothèse)
-    const fmt = new Intl.NumberFormat('fr-CH', { maximumFractionDigits: 2 });
+    /* ----------------------- Carte 1 : Surface → kVA ----------------------- */
+    function calculerPuissance() {
+      const surface = parseFloat(document.getElementById('surface').value);
+      const rendement = 0.1845;  // ~18.45 %
+      const ensoleillement = 1000; // W/m²
 
-    // DOM
-    const $surface = document.getElementById('surface');
-    const $power   = document.getElementById('powerInput');
-    const $imax    = document.getElementById('imaxInput');
-    const $temp    = document.getElementById('temperatureCable');
-    const $panel   = document.getElementById('panelInput');
+      if (isNaN(surface) || surface <= 0) {
+        document.getElementById('resultatSolaire').textContent =
+          "Veuillez entrer une surface valide en m².";
+        return;
+      }
 
-    const $resSurface = document.getElementById('resSurface');
-    const $resConvert = document.getElementById('resConvert');
-    const $resCable   = document.getElementById('resCable');
-    const $resPanels  = document.getElementById('resPanels');
+      const puissanceW = surface * rendement * ensoleillement;
+      const puissanceKVA = puissanceW / 1000;
+      document.getElementById('resultatSolaire').innerHTML =
+        `Puissance disponible : <span class="emph">${puissanceKVA.toFixed(2)} kVA</span>`;
+    }
 
-    // Fuses DOM
-    const $fuseCof = document.getElementById('fuseCof');
-    const $fuseGrd = document.getElementById('fuseGrd');
+    /* ----------------------- Carte 2 : kVA → A ----------------------- */
+    function convertToAmps() {
+      const power = parseFloat(document.getElementById("powerInput").value);
+      if (isNaN(power) || power <= 0) {
+        document.getElementById("conversionResult").textContent =
+          "Veuillez entrer une puissance valide (supérieure à 0).";
+        return;
+      }
+      const voltage = 400;
+      const current = (power * 1000) / (Math.sqrt(3) * voltage);
+      document.getElementById("conversionResult").innerHTML =
+        `Résultat : <span class="emph">${current.toFixed(2)} A</span>`;
+      return current;
+    }
+    function sendToImax(){
+      const I = convertToAmps();
+      if (!isNaN(I) && isFinite(I) && I>0){
+        const imax = document.getElementById('imaxInput');
+        imax.value = I.toFixed(2);
+        imax.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    }
 
-    // Table câbles
+    /* ----------------------- Carte 3 : Imax → type de câble ----------------------- */
+    function findCable() {
+      const imax = parseFloat(document.getElementById("imaxInput").value);
+      const temperature = document.getElementById("temperatureCable").value;
+      if (isNaN(imax) || imax <= 0) {
+        document.getElementById("cableResult").textContent =
+          "Veuillez entrer une valeur d'Imax valide (supérieure à 0).";
+        return;
+      }
+      const suitableCable = cables[temperature].find(cable => imax <= cable.current);
+      document.getElementById("cableResult").innerHTML =
+        suitableCable ?
+          `Type de câble : <span class="emph">${suitableCable.cable}</span>` :
+          "Aucun câble trouvé.";
+    }
+
     const cables = {
       60: [
         { current: 80,  cable: "16 mm²" },
@@ -200,17 +290,17 @@
         { current: 275, cable: "150 mm²" },
         { current: 360, cable: "240 mm²" },
         { current: 430, cable: "300 mm²" },
-        { current: 720, cable: "2 × 240 mm²" },
-        { current: 860, cable: "2 × 300 mm²" },
-        { current: 1080, cable: "3 × 240 mm²" },
-        { current: 1290, cable: "3 × 300 mm²" },
-        { current: 1440, cable: "4 × 240 mm²" },
-        { current: 1720, cable: "4 × 300 mm²" },
-        { current: 1800, cable: "5 × 240 mm²" },
-        { current: 2160, cable: "5 × 300 mm²" },
-        { current: 2520, cable: "6 × 240 mm²" },
-        { current: 2880, cable: "6 × 300 mm²" },
-        { current: 3000, cable: "7 × 240 mm²" }
+        { current: 720, cable: "2 câbles de 240 mm²" },
+        { current: 860, cable: "2 câbles de 300 mm²" },
+        { current: 1080, cable: "3 câbles de 240 mm²" },
+        { current: 1290, cable: "3 câbles de 300 mm²" },
+        { current: 1440, cable: "4 câbles de 240 mm²" },
+        { current: 1720, cable: "4 câbles de 300 mm²" },
+        { current: 1800, cable: "5 câbles de 240 mm²" },
+        { current: 2160, cable: "5 câbles de 300 mm²" },
+        { current: 2520, cable: "6 câbles de 240 mm²" },
+        { current: 2880, cable: "6 câbles de 300 mm²" },
+        { current: 3000, cable: "7 câbles de 240 mm²" }
       ],
       90: [
         { current: 100, cable: "16 mm²" },
@@ -220,157 +310,128 @@
         { current: 360, cable: "150 mm²" },
         { current: 470, cable: "240 mm²" },
         { current: 560, cable: "300 mm²" },
-        { current: 900, cable: "2 × 240 mm²" },
-        { current: 1120, cable: "2 × 300 mm²" },
-        { current: 1400, cable: "3 × 240 mm²" },
-        { current: 1680, cable: "3 × 300 mm²" },
-        { current: 1800, cable: "4 × 240 mm²" },
-        { current: 2240, cable: "4 × 300 mm²" },
-        { current: 2520, cable: "5 × 240 mm²" },
-        { current: 3000, cable: "5 × 300 mm²" }
+        { current: 900, cable: "2 câbles de 240 mm²" },
+        { current: 1120, cable: "2 câbles de 300 mm²" },
+        { current: 1400, cable: "3 câbles de 240 mm²" },
+        { current: 1680, cable: "3 câbles de 300 mm²" },
+        { current: 1800, cable: "4 câbles de 240 mm²" },
+        { current: 2240, cable: "4 câbles de 300 mm²" },
+        { current: 2520, cable: "5 câbles de 240 mm²" },
+        { current: 3000, cable: "5 câbles de 300 mm²" }
       ]
     };
 
-    // Calibres fusibles (liste de l'image)
-    const fuseRatings = [6,10,16,20,25,32,40,50,63,80,100,125,160,200,224,250,315,355,400,500,630,800,900,1000,1250];
-
-    // Helpers fusibles
-    const nextFuseStrictAbove = (value) => {
-      for (const f of fuseRatings) {
-        if (f > value) return f;
+    /* ----------------------- Carte 4 : Panneaux ----------------------- */
+    function calculatePanels() {
+      const power = parseFloat(document.getElementById('solarPower').value);
+      const panelPower = 0.5; // kVA par panneau
+      if (isNaN(power) || power <= 0) {
+        document.getElementById('result').textContent =
+          "Veuillez entrer une valeur valide.";
+        return;
       }
-      return '—';
+      const panelsNeeded = Math.ceil(power / panelPower);
+      document.getElementById('result').innerHTML =
+        `Nombre de panneaux nécessaires : <span class="emph">${panelsNeeded}</span>`;
+    }
+
+    /* ----------------------- Nouvelle carte : Ampérage max par type de câble ----------------------- */
+    // Données indicatives à adapter selon tes tables internes (VOé/ESTI/IEC)
+    // Clé = "Type", valeur = { section_mm2: Amp pour 1 câble }
+    const AMP_DATA = {
+      "TT 0.4 kV Cu unipolaire enterré": {
+        "16":110, "25":150, "50":230,
+        "95":285, "150":360, "185":405, "240":470, "300":520
+      },
+      "TT-CLT Flex Cu 0.6/1 kV apparent": {
+        "16":100, "25":140, "50":210,
+        "95":260, "150":330, "185":370, "240":430, "300":480
+      },
+      "XKDT Al 0.6/1 kV enterré": {
+        "16":85, "25":115, "50":170,
+        "150":280, "185":315, "240":360, "300":400
+      },
+      "GKN Cu 0.6/1 kV multiconducteur enterré": {
+        "16":95, "25":130, "50":200,
+        "95":240, "150":305, "185":340, "240":390, "300":440
+      }
     };
 
-    // État et garde anti-boucle
-    let updating = false;
-    let lastKva = null;
-    let lastI = null;
+    const icab_type   = document.getElementById('icab_type');
+    const icab_sec    = document.getElementById('icab_sec');
+    const icab_n      = document.getElementById('icab_n');
+    const icab_k      = document.getElementById('icab_k');
+    const icab_out    = document.getElementById('icab_out');
+    const icab_detail = document.getElementById('icab_detail');
+    const icab_tbody  = document.querySelector('#icab_tab tbody');
 
-    function setValueExcept(el, source, value){
-      if (source !== el) el.value = value;
+    function icab_fillTypes(){
+      icab_type.innerHTML = '';
+      Object.keys(AMP_DATA).forEach(k=>{
+        const o=document.createElement('option'); o.value=k; o.textContent=k; icab_type.appendChild(o);
+      });
     }
-
-    function format(n, dec=2){
-      if (!isFinite(n)) return '';
-      return (Math.round(n * Math.pow(10, dec)) / Math.pow(10, dec)).toFixed(dec);
+    function icab_fillSections(){
+      const t = icab_type.value;
+      const secs = Object.keys(AMP_DATA[t]).map(Number).sort((a,b)=>a-b);
+      icab_sec.innerHTML = '';
+      secs.forEach(s=>{
+        const o=document.createElement('option'); o.value=s; o.textContent=s.toString(); icab_sec.appendChild(o);
+      });
     }
-
-    function updateFuses(){
-      if (!isFinite(lastI) || lastI <= 0){
-        $fuseCof.textContent = '—';
-        $fuseGrd.textContent = '—';
-        return;
+    function icab_clamp(x){
+      if (Number.isNaN(x) || !isFinite(x)) return 1;
+      return Math.max(0.1, Math.min(2.0, x));
+    }
+    function icab_updateTable(){
+      const t = icab_type.value;
+      const k = icab_clamp(parseFloat(icab_k.value));
+      const n = Math.max(1, parseInt(icab_n.value,10));
+      const rows = Object.entries(AMP_DATA[t]).map(([s,a])=>[Number(s), a]).sort((a,b)=>a[0]-b[0]);
+      icab_tbody.innerHTML = '';
+      rows.forEach(([s,a1])=>{
+        const tr=document.createElement('tr');
+        const tdS=document.createElement('td'); tdS.textContent=s;
+        const td1=document.createElement('td'); td1.textContent=Math.round(a1*k)+' A';
+        const tdN=document.createElement('td'); tdN.textContent=Math.round(a1*k*n)+' A';
+        tr.appendChild(tdS); tr.appendChild(td1); tr.appendChild(tdN);
+        icab_tbody.appendChild(tr);
+      });
+    }
+    function icab_compute(){
+      const t = icab_type.value;
+      const s = icab_sec.value;
+      const base = AMP_DATA[t]?.[s];
+      const k = icab_clamp(parseFloat(icab_k.value));
+      const n = Math.max(1, parseInt(icab_n.value,10));
+      if (base){
+        const val = Math.round(base * k * n);
+        icab_out.textContent = `${val} A`;
+        icab_detail.textContent = `Type: ${t} · Section: ${s} mm² · Câbles: ${n} · Facteur: ${k.toFixed(2)} · Base (1 câble): ${base} A`;
+        // mise en relation : alimente la carte "Imax → type de câble"
+        const imax = document.getElementById('imaxInput');
+        imax.value = val;
+      }else{
+        icab_out.textContent = '— A';
+        icab_detail.textContent = '—';
       }
-      const cof = nextFuseStrictAbove(lastI);        // au-dessus de Imax
-      const grd = typeof cof === 'number' ? nextFuseStrictAbove(cof) : '—'; // au-dessus du coffret
-      $fuseCof.textContent = (typeof cof === 'number') ? (cof + ' A') : '—';
-      $fuseGrd.textContent = (typeof grd === 'number') ? (grd + ' A') : '—';
+      icab_updateTable();
+    }
+    function sendToImaxFromCable(){
+      const card = document.getElementById('card-amp-cable');
+      document.getElementById('imaxInput').scrollIntoView({behavior:'smooth', block:'center'});
+      card.classList.remove('pulse');
     }
 
-    function applyFromKva(kva, sourceEl){
-      if (!isFinite(kva) || kva <= 0) {
-        lastKva = null;
-        lastI = null;
-        // Remise à l'état neutre des résultats
-        $resSurface.textContent = 'Puissance disponible : —';
-        $resConvert.textContent = 'Résultat : — A';
-        $resPanels.textContent  = 'Nombre de panneaux nécessaires : —';
-        $resCable.textContent   = 'Type de câble : —';
-        updateFuses();
-        return;
-      }
+    // init
+    icab_fillTypes();
+    icab_fillSections();
+    icab_compute();
 
-      lastKva = kva;
-
-      // Calculs liés
-      const I = (kva * 1000) / (Math.sqrt(3) * U);
-      lastI = I;
-      const surface = (kva * 1000) / (REND * IRR);
-      const nPanels = Math.max(1, Math.ceil(kva / PANEL_KVA));
-
-      // Met à jour les inputs (sauf celui édité)
-      setValueExcept($power,   sourceEl, format(kva));
-      setValueExcept($imax,    sourceEl, format(I));
-      setValueExcept($surface, sourceEl, format(surface));
-      setValueExcept($panel,   sourceEl, format(kva)); // champ = kVA visés
-
-      // Résultats
-      $resSurface.textContent = 'Puissance disponible : ' + fmt.format(kva) + ' kVA';
-      $resConvert.textContent = 'Résultat : ' + fmt.format(I) + ' A';
-      $resPanels.textContent  = 'Nombre de panneaux nécessaires : ' + nPanels;
-
-      // Câble recommandé
-      const t = Number($temp.value) || 90;
-      const table = cables[t] || cables[90];
-      const found = table.find(c => I <= c.current);
-      $resCable.textContent = 'Type de câble : ' + (found ? found.cable : '—');
-
-      // Fusibles (COF + GRD)
-      updateFuses();
-    }
-
-    function syncFromSurface(){
-      if (updating) return; updating = true;
-      const s = parseFloat($surface.value);
-      if (isFinite(s) && s > 0){
-        const kva = (s * REND * IRR) / 1000;
-        applyFromKva(kva, $surface);
-      } else {
-        applyFromKva(NaN, $surface);
-      }
-      updating = false;
-    }
-
-    function syncFromPower(){
-      if (updating) return; updating = true;
-      const kva = parseFloat($power.value);
-      if (isFinite(kva) && kva > 0){
-        applyFromKva(kva, $power);
-      } else {
-        applyFromKva(NaN, $power);
-      }
-      updating = false;
-    }
-
-    function syncFromImax(){
-      if (updating) return; updating = true;
-      const I = parseFloat($imax.value);
-      if (isFinite(I) && I > 0){
-        const kva = (I * Math.sqrt(3) * U) / 1000;
-        applyFromKva(kva, $imax);
-      } else {
-        applyFromKva(NaN, $imax);
-      }
-      updating = false;
-    }
-
-    function syncFromPanel(){
-      if (updating) return; updating = true;
-      const kva = parseFloat($panel.value);
-      if (isFinite(kva) && kva > 0){
-        applyFromKva(kva, $panel);
-      } else {
-        applyFromKva(NaN, $panel);
-      }
-      updating = false;
-    }
-
-    // Listeners temps réel
-    $surface.addEventListener('input', syncFromSurface);
-    $power  .addEventListener('input', syncFromPower);
-    $imax   .addEventListener('input', syncFromImax);
-    $panel  .addEventListener('input', syncFromPanel);
-
-    // Changement de température: recalcule uniquement le câble à partir du dernier kVA connu
-    $temp.addEventListener('change', () => { if (lastKva) applyFromKva(lastKva, null); });
-
-    // Pré-remplissage si un champ contient déjà une valeur (ordre de priorité)
-    if ($power.value) syncFromPower();
-    else if ($surface.value) syncFromSurface();
-    else if ($imax.value) syncFromImax();
-    else if ($panel.value) syncFromPanel();
+    icab_type.addEventListener('change', ()=>{ icab_fillSections(); icab_compute(); });
+    icab_sec.addEventListener('change', icab_compute);
+    icab_n.addEventListener('change', icab_compute);
+    icab_k.addEventListener('input', icab_compute);
   </script>
 </body>
 </html>
-
