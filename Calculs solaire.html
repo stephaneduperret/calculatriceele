@@ -87,6 +87,21 @@
 
     /* Container global des sections (cartes) */
     .stack{display:grid; gap:16px}
+
+    /* Tableau de la carte ampérage par câble */
+    table{
+      width:100%; border-collapse:collapse; margin-top:12px; background:#0b1020; border-radius:12px; overflow:hidden;
+    }
+    th, td{padding:10px 12px; border-bottom:1px solid #233046; text-align:left; font-size:14px}
+    th{color:#b7c2d6}
+    tr:hover td{background:#111f33}
+
+    .calc-result{
+      margin-top:12px; padding:12px; border:1px dashed #2b3b59; border-radius:12px; background:#0b1020;
+      display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+    }
+    .bigA{font-size:26px}
+    .small{font-size:12px; color:var(--muted)}
   </style>
 </head>
 <body>
@@ -118,6 +133,7 @@
         <input type="number" id="powerInput" placeholder="ex: 15">
         <div class="btns">
           <button class="btn btn-primary" onclick="convertToAmps()">Convertir</button>
+          <button class="btn btn-secondary" onclick="sendToImax()">Envoyer vers « Imax en A »</button>
         </div>
         <div id="conversionResult" class="result-line"></div>
       </div>
@@ -149,6 +165,56 @@
         <div id="result" class="result-line"></div>
       </div>
 
+      <!-- ─────────────────────────────────────────────────────────────
+           NOUVELLE DIV : Ampérage max selon type de câble (centrée via la grille)
+           ───────────────────────────────────────────────────────────── -->
+      <div class="card section" id="card-amp-cable">
+        <h2>Ampérage max selon le type de câble</h2>
+        <p class="muted">Choisissez le type, la section, le nombre de câbles et un facteur (si nécessaire). Les valeurs sont indicatives ; à valider selon tes tables internes (pose, T°, groupement…).</p>
+
+        <label for="icab_type">Type de câble</label>
+        <select id="icab_type"></select>
+
+        <label for="icab_sec">Section (mm²)</label>
+        <select id="icab_sec"></select>
+
+        <label for="icab_n">Nombre de câbles en parallèle</label>
+        <select id="icab_n">
+          <option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+        </select>
+
+        <label for="icab_k">Facteur de correction</label>
+        <input id="icab_k" type="number" step="0.01" value="1.00">
+
+        <div class="calc-result">
+          <div>
+            <div class="small">Ampérage maximal calculé</div>
+            <div class="bigA" id="icab_out">— A</div>
+          </div>
+          <div>
+            <div class="small">Détails</div>
+            <div class="small" id="icab_detail">—</div>
+          </div>
+        </div>
+
+        <table id="icab_tab">
+          <thead>
+            <tr>
+              <th>Section (mm²)</th>
+              <th>Ampérage (1 câble)</th>
+              <th>Ampérage (× n câbles)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="btns">
+          <button class="btn btn-secondary" onclick="sendToImaxFromCable()">Envoyer vers « Imax en A »</button>
+        </div>
+      </div>
+      <!-- fin nouvelle div -->
+
     </div>
 
     <div class="btns" style="margin-top:22px">
@@ -158,6 +224,7 @@
   </div>
 
   <script>
+    /* ----------------------- Carte 1 : Surface → kVA ----------------------- */
     function calculerPuissance() {
       const surface = parseFloat(document.getElementById('surface').value);
       const rendement = 0.1845;  // ~18.45 %
@@ -175,6 +242,7 @@
         `Puissance disponible : <span class="emph">${puissanceKVA.toFixed(2)} kVA</span>`;
     }
 
+    /* ----------------------- Carte 2 : kVA → A ----------------------- */
     function convertToAmps() {
       const power = parseFloat(document.getElementById("powerInput").value);
       if (isNaN(power) || power <= 0) {
@@ -186,8 +254,18 @@
       const current = (power * 1000) / (Math.sqrt(3) * voltage);
       document.getElementById("conversionResult").innerHTML =
         `Résultat : <span class="emph">${current.toFixed(2)} A</span>`;
+      return current;
+    }
+    function sendToImax(){
+      const I = convertToAmps();
+      if (!isNaN(I) && isFinite(I) && I>0){
+        const imax = document.getElementById('imaxInput');
+        imax.value = I.toFixed(2);
+        imax.scrollIntoView({behavior:'smooth', block:'center'});
+      }
     }
 
+    /* ----------------------- Carte 3 : Imax → type de câble ----------------------- */
     function findCable() {
       const imax = parseFloat(document.getElementById("imaxInput").value);
       const temperature = document.getElementById("temperatureCable").value;
@@ -243,6 +321,7 @@
       ]
     };
 
+    /* ----------------------- Carte 4 : Panneaux ----------------------- */
     function calculatePanels() {
       const power = parseFloat(document.getElementById('solarPower').value);
       const panelPower = 0.5; // kVA par panneau
@@ -255,6 +334,104 @@
       document.getElementById('result').innerHTML =
         `Nombre de panneaux nécessaires : <span class="emph">${panelsNeeded}</span>`;
     }
+
+    /* ----------------------- Nouvelle carte : Ampérage max par type de câble ----------------------- */
+    // Données indicatives à adapter selon tes tables internes (VOé/ESTI/IEC)
+    // Clé = "Type", valeur = { section_mm2: Amp pour 1 câble }
+    const AMP_DATA = {
+      "TT 0.4 kV Cu unipolaire enterré": {
+        "16":110, "25":150, "50":230,
+        "95":285, "150":360, "185":405, "240":470, "300":520
+      },
+      "TT-CLT Flex Cu 0.6/1 kV apparent": {
+        "16":100, "25":140, "50":210,
+        "95":260, "150":330, "185":370, "240":430, "300":480
+      },
+      "XKDT Al 0.6/1 kV enterré": {
+        "16":85, "25":115, "50":170,
+        "150":280, "185":315, "240":360, "300":400
+      },
+      "GKN Cu 0.6/1 kV multiconducteur enterré": {
+        "16":95, "25":130, "50":200,
+        "95":240, "150":305, "185":340, "240":390, "300":440
+      }
+    };
+
+    const icab_type   = document.getElementById('icab_type');
+    const icab_sec    = document.getElementById('icab_sec');
+    const icab_n      = document.getElementById('icab_n');
+    const icab_k      = document.getElementById('icab_k');
+    const icab_out    = document.getElementById('icab_out');
+    const icab_detail = document.getElementById('icab_detail');
+    const icab_tbody  = document.querySelector('#icab_tab tbody');
+
+    function icab_fillTypes(){
+      icab_type.innerHTML = '';
+      Object.keys(AMP_DATA).forEach(k=>{
+        const o=document.createElement('option'); o.value=k; o.textContent=k; icab_type.appendChild(o);
+      });
+    }
+    function icab_fillSections(){
+      const t = icab_type.value;
+      const secs = Object.keys(AMP_DATA[t]).map(Number).sort((a,b)=>a-b);
+      icab_sec.innerHTML = '';
+      secs.forEach(s=>{
+        const o=document.createElement('option'); o.value=s; o.textContent=s.toString(); icab_sec.appendChild(o);
+      });
+    }
+    function icab_clamp(x){
+      if (Number.isNaN(x) || !isFinite(x)) return 1;
+      return Math.max(0.1, Math.min(2.0, x));
+    }
+    function icab_updateTable(){
+      const t = icab_type.value;
+      const k = icab_clamp(parseFloat(icab_k.value));
+      const n = Math.max(1, parseInt(icab_n.value,10));
+      const rows = Object.entries(AMP_DATA[t]).map(([s,a])=>[Number(s), a]).sort((a,b)=>a[0]-b[0]);
+      icab_tbody.innerHTML = '';
+      rows.forEach(([s,a1])=>{
+        const tr=document.createElement('tr');
+        const tdS=document.createElement('td'); tdS.textContent=s;
+        const td1=document.createElement('td'); td1.textContent=Math.round(a1*k)+' A';
+        const tdN=document.createElement('td'); tdN.textContent=Math.round(a1*k*n)+' A';
+        tr.appendChild(tdS); tr.appendChild(td1); tr.appendChild(tdN);
+        icab_tbody.appendChild(tr);
+      });
+    }
+    function icab_compute(){
+      const t = icab_type.value;
+      const s = icab_sec.value;
+      const base = AMP_DATA[t]?.[s];
+      const k = icab_clamp(parseFloat(icab_k.value));
+      const n = Math.max(1, parseInt(icab_n.value,10));
+      if (base){
+        const val = Math.round(base * k * n);
+        icab_out.textContent = `${val} A`;
+        icab_detail.textContent = `Type: ${t} · Section: ${s} mm² · Câbles: ${n} · Facteur: ${k.toFixed(2)} · Base (1 câble): ${base} A`;
+        // mise en relation : alimente la carte "Imax → type de câble"
+        const imax = document.getElementById('imaxInput');
+        imax.value = val;
+      }else{
+        icab_out.textContent = '— A';
+        icab_detail.textContent = '—';
+      }
+      icab_updateTable();
+    }
+    function sendToImaxFromCable(){
+      const card = document.getElementById('card-amp-cable');
+      document.getElementById('imaxInput').scrollIntoView({behavior:'smooth', block:'center'});
+      card.classList.remove('pulse');
+    }
+
+    // init
+    icab_fillTypes();
+    icab_fillSections();
+    icab_compute();
+
+    icab_type.addEventListener('change', ()=>{ icab_fillSections(); icab_compute(); });
+    icab_sec.addEventListener('change', icab_compute);
+    icab_n.addEventListener('change', icab_compute);
+    icab_k.addEventListener('input', icab_compute);
   </script>
 </body>
 </html>
