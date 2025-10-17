@@ -36,12 +36,12 @@
       text-align: center;
     }
 
-    .menu-container {
+     .menu-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 16px;
-      max-width: 480px;
-      width: min(90%, 480px);
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      max-width: 400px;
+      width: min(90%, 400px);
       margin: 0 auto;
       justify-items: center;
     }
@@ -49,14 +49,14 @@
     .card {
       border: 2px solid #e5e7eb;
       border-radius: 12px;
-      padding: 12px;
+      padding: 8px;
       text-align: center;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(4px);
       transition: transform 0.2s ease, background 0.2s ease;
       cursor: pointer;
       width: 100%;
-      min-height: 120px;
+      min-height: 70px;
     }
 
     .card:hover {
@@ -79,18 +79,18 @@
       color: #fff;
     }
 
-    .card-title {
-      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-      font-weight: 600;
-      color: #60a5fa;
-      margin-bottom: 8px;
-    }
-
-    .card-desc {
-      font-size: clamp(0.75rem, 2vw, 0.9rem);
-      line-height: 1.4;
-      color: #d1d5db;
-    }
+    .card-title {␊
+      font-size: clamp(0.85rem, 2.2vw, 1rem);
+      font-weight: 600;␊
+      color: #60a5fa;␊
+      margin-bottom: 6px;
+    }␊
+␊
+    .card-desc {␊
+      font-size: clamp(0.68rem, 1.6vw, 0.8rem);
+      line-height: 1.35;
+      color: #d1d5db;␊
+    }␊
 
     footer {
       position: fixed;
@@ -181,5 +181,6 @@
 
 </body>
 </html>
+
 
 
