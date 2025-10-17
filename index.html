@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Calculatrice Privé sdu</title>
   <link rel="icon" type="image/png" href="./calculator.png">
-<!--  <link rel="stylesheet" href="./style.css"> -->
-<!--  <script src="./menu.js" defer></script> -->
   
   <style>
- .container {
+    .container {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,7 +20,7 @@
       background: linear-gradient(120deg, #0b1220, #12233c);
       color: #e5e7eb;
       display: flex;
-      flex-direction: column; /* pour placer le titre au-dessus du contenu */
+      flex-direction: column;
       justify-content: flex-start;
       align-items: center;
       min-height: 100vh;
@@ -36,27 +34,28 @@
       text-align: center;
     }
 
-   .menu-container {
+    .menu-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
-      max-width: 400px;
-      width: min(90%, 400px);
-      margin: 0 auto;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 28px; /* espace entre les cartes */
+      max-width: 500px;
+      width: min(90%, 500px);
+      margin: 40px auto; /* espace autour du bloc complet */
       justify-items: center;
     }
 
     .card {
       border: 2px solid #e5e7eb;
       border-radius: 12px;
-      padding: 8px;
+      padding: 12px;
       text-align: center;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(4px);
       transition: transform 0.2s ease, background 0.2s ease;
       cursor: pointer;
       width: 100%;
-      min-height: 70px;
+      min-height: 80px;
+      margin: 6px 0; /* petit espace vertical supplémentaire */
     }
 
     .card:hover {
@@ -79,7 +78,7 @@
       color: #fff;
     }
 
-   .card-title {
+    .card-title {
       font-size: 1.2rem;
       font-weight: 600;
       color: #60a5fa;
@@ -118,7 +117,7 @@
       <div class="card-desc">Conversion Ampère ↔ kVA</div>
     </a>
 
-    <a href="https://stephaneduperret.github.io/calculatriceele/Calculatrice%20puissance%20c%C3%A2ble%20et%20co%C3%BBt.html" class="card">
+    <a href="https://stephaneduperret.github.io/calculatriceele/Calculatrice%20puissance%20câble%20et%20coût.html" class="card">
       <div class="card-title">Divers</div>
       <div class="card-desc">Augmentation de puissance, tarifs des câbles</div>
     </a>
@@ -168,11 +167,10 @@
       <div class="card-desc">Calculs de courant de court-circuit</div>
     </a>
     
-<a href="https://stephaneduperret.github.io/calculatriceele/contacts.html" class="card contact-card">
+    <a href="https://stephaneduperret.github.io/calculatriceele/contacts.html" class="card contact-card">
       <div class="card-title">Contacts</div>
       <div class="card-desc">Test de la bdd</div>
     </a>
-    
   </div>
 
   <footer>
@@ -181,10 +179,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
