@@ -222,6 +222,26 @@
       <button class="btn btn-secondary" onclick="window.print()">Imprimer</button>
     </div>
   </div>
+   /* ----------------------- Carte 1 : kwh en kw ----------------------- */
+  <div class="converter-div">
+        <h2>Conversion Énergie ↔ Puissance</h2>
+
+        <div class="input-group">
+            <label for="kwh-yearly">Consommation annuelle (kWh/an) :</label>
+            <input type="number" id="kwh-yearly" placeholder="Entrez kWh/an" oninput="convertToKw()">
+        </div>
+
+        <div class="direction">
+            &#x21c4; </div>
+
+        <div class="input-group">
+            <label for="kw-hourly">Puissance moyenne (kW) sur 1h :</label>
+            <input type="number" id="kw-hourly" placeholder="Entrez kW" oninput="convertToKwh()">
+        </div>
+    <div class="info">
+            *Basé sur une utilisation constante pendant 365 jours (8760 heures).
+        </div>
+    </div>
 
   <script>
     /* ----------------------- Carte 1 : Surface → kVA ----------------------- */
@@ -432,6 +452,49 @@
     icab_sec.addEventListener('change', icab_compute);
     icab_n.addEventListener('change', icab_compute);
     icab_k.addEventListener('input', icab_compute);
+
+
+
+
+
+
+
+    // kwh en kw
+        const DAYS_IN_YEAR = 365;
+        const HOURS_IN_YEAR = DAYS_IN_YEAR * 24;
+
+        function convertToKw() {
+            const kwhInput = document.getElementById('kwh-yearly');
+            const kwOutput = document.getElementById('kw-hourly');
+            const kwhAnnual = parseFloat(kwhInput.value);
+
+            // Vérifie si l'entrée est valide
+            if (isNaN(kwhAnnual) || kwhAnnual < 0) {
+                kwOutput.value = '';
+                return;
+            }
+
+            // Formule : kW = kWh/an / (365 jours * 24 heures)
+            const kw = kwhAnnual / HOURS_IN_YEAR;
+            kwOutput.value = kw.toFixed(3); // Affiche avec 3 décimales
+        }
+
+        function convertToKwh() {
+            const kwInput = document.getElementById('kw-hourly');
+            const kwhOutput = document.getElementById('kwh-yearly');
+            const kw = parseFloat(kwInput.value);
+
+            // Vérifie si l'entrée est valide
+            if (isNaN(kw) || kw < 0) {
+                kwhOutput.value = '';
+                return;
+            }
+
+            // Formule : kWh/an = kW * (365 jours * 24 heures)
+            const kwhAnnual = kw * HOURS_IN_YEAR;
+            kwhOutput.value = Math.round(kwhAnnual); // Arrondi à l'entier
+        }
   </script>
 </body>
 </html>
+
