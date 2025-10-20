@@ -23,9 +23,19 @@
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
       color:var(--ink);
       background:linear-gradient(120deg,var(--bg1),var(--bg2));
+      /* Centre le contenu horizontalement */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .wrap{max-width:1200px; margin:24px auto 100px; padding:0 20px}
+    /* **TAILLE RÉDUITE ET CENTRÉE** */
+    .wrap{
+      max-width: 800px; /* Réduit la largeur max */
+      width: 100%;
+      margin: 24px auto 100px; 
+      padding: 0 20px;
+    }
 
     h1{
       margin:0 0 20px;
@@ -33,13 +43,18 @@
       font-weight:750; letter-spacing:.3px; line-height:1.2;
     }
 
+    /* **GRILLE ADAPTÉE POUR PLUS DE COMPACTITÉ** */
     .grid{
       display:grid;
-      grid-template-columns:repeat(3, minmax(280px, 1fr));
+      grid-template-columns: 1fr; /* Une seule colonne par défaut */
       gap:18px;
     }
-    @media (max-width: 1024px){ .grid{grid-template-columns:repeat(2, minmax(280px,1fr))} }
-    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
+    @media (min-width: 650px){ /* Deux colonnes à partir de 650px */
+      .grid{grid-template-columns:repeat(2, minmax(280px,1fr))}
+    }
+    @media (min-width: 900px){ /* Trois colonnes à partir de 900px */
+      .grid{grid-template-columns:repeat(3, minmax(200px, 1fr))}
+    }
 
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)), var(--card);
@@ -88,7 +103,14 @@
       color:var(--ink);
     }
 
-    .page-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px }
+    /* Centre les actions de la page */
+    .page-actions{ 
+      display:flex; 
+      gap:10px; 
+      flex-wrap:wrap; 
+      margin-top:18px;
+      justify-content: center;
+    }
     .res-line{display:flex; justify-content:space-between; gap:8px}
 
     /* Style ajouté pour le convertisseur kWh/an <-> kW */
