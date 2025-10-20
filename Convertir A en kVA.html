@@ -62,6 +62,24 @@
         </div>
         <div class="hint">Formule utilisée : S = I × √3 × U avec U = 400 V.</div>
       </div>
+
+      <!-- Carte 3 : kWh/an ↔ kW (puissance moyenne sur 1 h) -->
+      <div class="card">
+        <h2>Conversion kWh/an ↔ kW (1 h)</h2>
+        <label for="kwh_year">Énergie annuelle (kWh/an)</label>
+        <input type="number" id="kwh_year" inputmode="decimal" placeholder="Entrez l'énergie annuelle en kWh/an" />
+        <div class="out">
+          Puissance moyenne estimée : <span id="kw_from_year" class="figure">0.00</span> kW
+        </div>
+        <div class="hint">Formule : P(kW) = E(kWh/an) ÷ 8760.</div>
+
+        <label for="kw_instant" style="margin-top:10px;">Puissance (kW)</label>
+        <input type="number" id="kw_instant" inputmode="decimal" placeholder="Entrez la puissance en kW" />
+        <div class="out">
+          Énergie annuelle estimée : <span id="kwh_from_kw" class="figure">0.00</span> kWh/an
+        </div>
+        <div class="hint">Formule : E(kWh/an) = P(kW) × 8760.</div>
+      </div>
     </div>
 
     <div class="btns">
@@ -73,9 +91,10 @@
   </div>
 
   <script>
-    // Calcul instantané (comme dans votre code fourni)
+    // Formatage
     const fmt = (x)=> (isFinite(x)? Number(x).toFixed(2) : '0.00');
 
+    // Carte 1 & 2 (inchangé)
     const elKVA = document.getElementById('kva');
     const elA = document.getElementById('amp');
     const outI = document.getElementById('ampere');
@@ -84,17 +103,45 @@
     const U = 400; // V
     const RT3 = Math.sqrt(3);
 
-    elKVA.addEventListener('input', function(){
-      const kva = parseFloat(this.value) || 0;
-      const I = (kva * 1000) / (U * RT3);
-      outI.textContent = fmt(I);
-    });
+    if (elKVA) {
+      elKVA.addEventListener('input', function(){
+        const kva = parseFloat(this.value) || 0;
+        const I = (kva * 1000) / (U * RT3);
+        outI.textContent = fmt(I);
+      });
+    }
 
-    elA.addEventListener('input', function(){
-      const I = parseFloat(this.value) || 0;
-      const S_kVA = (I * U * RT3) / 1000;
-      outS.textContent = fmt(S_kVA);
-    });
+    if (elA) {
+      elA.addEventListener('input', function(){
+        const I = parseFloat(this.value) || 0;
+        const S_kVA = (I * U * RT3) / 1000;
+        outS.textContent = fmt(S_kVA);
+      });
+    }
+
+    // Carte 3 : kWh/an ↔ kW
+    const HOURS_PER_YEAR = 8760;
+
+    const elKwhYear = document.getElementById('kwh_year');
+    const elKwInstant = document.getElementById('kw_instant');
+    const outKwFromYear = document.getElementById('kw_from_year');
+    const outKwhFromKw = document.getElementById('kwh_from_kw');
+
+    if (elKwhYear) {
+      elKwhYear.addEventListener('input', function(){
+        const eYear = parseFloat(this.value) || 0;
+        const pKw = eYear / HOURS_PER_YEAR; // kW = kWh/an ÷ 8760
+        outKwFromYear.textContent = fmt(pKw);
+      });
+    }
+
+    if (elKwInstant) {
+      elKwInstant.addEventListener('input', function(){
+        const pKw = parseFloat(this.value) || 0;
+        const eYear = pKw * HOURS_PER_YEAR; // kWh/an = kW × 8760
+        outKwhFromKw.textContent = fmt(eYear);
+      });
+    }
   </script>
 </body>
 </html>
