@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><a href="./Calculs solaire test.html">Solaire</a></li>
         <li><a href="./Eligibilite.html">Eligibilite</a></li>
         <li><a href="./Calculs de dates.html">Date</a></li>
+         <li><a href="./Livraison.html">Livraison</a></li>
         <li><a href="./chutedetension.html">Chute de tension</a></li>
         <li><a href="./calculreseau.html">Calculs Réseau</a></li>
         <li><a href="./Transfo.html">Transformateur</a></li>
@@ -86,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastScrollY = current;
   }, { passive: true });
 });
+
 
 
 
