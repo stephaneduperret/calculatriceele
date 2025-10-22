@@ -11,16 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
 
       <ul id="menu" class="menu">
-      <li><a href="./Commande.html">Commande</a></li>
         <li><a href="./Convertir A en kVA.html">Convertir I-S</a></li>
-        <li><a href="./Calculatrice puissance câble et coût.html">Divers</a></li>  
+        <li><a href="./Calculatrice puissance câble et coût.html">Divers</a></li>
         <li><a href="./Calculs solaire test.html">Solaire</a></li>
         <li><a href="./Eligibilite.html">Eligibilite</a></li>
         <li><a href="./Calculs de dates.html">Date</a></li>
         <li><a href="./chutedetension.html">Chute de tension</a></li>
-        <li><a href="./Calcul achat tubes.html">Tarifs divers</a></li>
-        <li><a href="./Calcul Alim Armoire.html">Alim Armoire</a></li>
-         <li><a href="./calculreseau.html">Calculs Réseau</a></li>
+        <li><a href="./calculreseau.html">Calculs Réseau</a></li>
         <li><a href="./Transfo.html">Transformateur</a></li>
         <li><a href="./ICC.html">Icc</a></li>
         <li><a href="./contacts.html" style="color:red";>Contacts</a></li>
