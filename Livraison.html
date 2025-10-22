@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Livraison – Formulaire + Carte</title>
+  <style>
+    :root{ --bg:#0b1220; --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --accent:#e11d48; --line:#e11d48; }
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:linear-gradient(120deg,#0b1220,#12233c); color:var(--ink);
+      display:flex; justify-content:center; align-items:flex-start; padding:24px;
+    }
+    .page{ width:100%; max-width:1100px; min-height:calc(100vh - 48px); border:4px solid var(--line); border-radius:14px; padding:28px; box-sizing:border-box; }
+
+    /* FORMULAIRE */
+    .box{
+      border:4px solid var(--line); border-radius:12px; background:var(--card);
+      padding:18px; margin:22px auto; box-sizing:border-box;
+    }
+    #formBox{
+      width:70%;                /* Réduction de la largeur */
+      margin:auto;
+    }
+
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    label{ font-size:14px; color:var(--muted); display:block; margin-bottom:6px; }
+    input{
+      width:100%; background:#0e1726; color:var(--ink); border:1px solid #243244;
+      border-radius:10px; padding:10px 12px; font-size:15px; outline:none;
+    }
+    .row{ display:flex; gap:14px; flex-wrap:wrap; }
+    .btn{
+      display:inline-block; padding:10px 16px; border-radius:12px;
+      border:2px solid var(--line); background:#0e1726; color:var(--ink);
+      cursor:pointer; user-select:none; font-weight:600;
+    }
+    .btn:hover{ filter:brightness(1.1); }
+    .center{ display:flex; justify-content:center; }
+
+    /* MAP */
+    #map{ width:100%; height:520px; border-radius:10px; background:#0e1726; }
+    .hint{ font-size:13px; color:var(--muted); margin-top:8px; }
+
+    @media print{
+      .no-print{ display:none !important; }
+      body{ background:#fff; }
+      .page{ border:0; padding:0; }
+      .box{ border:1px solid #999; }
+      @page{ size:A4 portrait; margin:12mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- FORMULAIRE -->
+    <div class="box" id="formBox">
+      <div class="grid">
+        <div>
+          <label for="adresse">Adresse</label>
+          <input id="adresse" placeholder="Rue et numéro" autocomplete="off" />
+        </div>
+        <div>
+          <label for="entreprise">Nom entreprise</label>
+          <input id="entreprise" placeholder="Entreprise" />
+        </div>
+        <div>
+          <label for="localite">Localité</label>
+          <input id="localite" placeholder="NPA et ville" />
+        </div>
+        <div>
+          <label for="contremaitre">Nom du contremaître</label>
+          <input id="contremaitre" placeholder="Nom et prénom" />
+        </div>
+        <div>
+          <label for="telephone">Numéro de téléphone</label>
+          <input id="telephone" placeholder="+41 xx xxx xx xx" />
+        </div>
+        <div>
+          <label for="notes">Notes (optionnel)</label>
+          <input id="notes" placeholder="Infos complémentaires" />
+        </div>
+        <div>
+          <label for="lat">Latitude</label>
+          <input id="lat" placeholder="46.xxxxx" />
+        </div>
+        <div>
+          <label for="lng">Longitude</label>
+          <input id="lng" placeholder="6.xxxxx" />
+        </div>
+      </div>
+
+      <div class="row no-print" style="margin-top:12px">
+        <input id="search" placeholder="Rechercher une adresse sur la carte…" style="flex:1 1 420px" />
+        <button class="btn" id="copyToForm">Copier depuis la carte</button>
+      </div>
+      <div class="hint no-print">Astuce : clique sur la carte pour poser l’épingle, ou fais-la glisser pour ajuster au mètre près.</div>
+    </div>
+
+    <!-- CARTE -->
+    <div class="box">
+      <div id="map" aria-label="Google Map"></div>
+    </div>
+
+    <!-- BOUTON PDF -->
+    <div class="center no-print">
+      <button class="btn" onclick="window.print()">Enregistrer en PDF</button>
+    </div>
+  </div>
+
+  <script>
+    let map, marker, autocomplete, geocoder, selectedPlace = null;
+
+    function initMap(){
+      geocoder = new google.maps.Geocoder();
+
+      map = new google.maps.Map(document.getElementById("map"), {
+        center:{lat:46.7785,lng:6.6412}, zoom:13, mapTypeControl:false, streetViewControl:false
+      });
+
+      marker = new google.maps.Marker({
+        map, draggable:true, visible:false, title:"Point de livraison"
+      });
+
+      // Recherche d’adresse
+      autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById("search"),
+        { types:["geocode"], fields:["address_components","geometry","formatted_address","place_id"] }
+      );
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if(!place.geometry) return;
+        selectedPlace = place;
+        placeMarker(place.geometry.location);
+        fillFormFromPlace(place);
+      });
+
+      // Clic sur la carte pour poser l'épingle
+      map.addListener("click", (e) => {
+        placeMarker(e.latLng);
+        reverseGeocode(e.latLng);
+      });
+
+      // Déplacement de l'épingle
+      marker.addListener("dragend", () => {
+        const pos = marker.getPosition();
+        if(pos) {
+          setLatLngInputs(pos);
+          reverseGeocode(pos);
+        }
+      });
+
+      document.getElementById("copyToForm").addEventListener("click", () => {
+        if(selectedPlace) fillFormFromPlace(selectedPlace);
+      });
+    }
+
+    function placeMarker(latLng){
+      marker.setPosition(latLng);
+      marker.setVisible(true);
+      map.panTo(latLng);
+      map.setZoom(18);
+      setLatLngInputs(latLng);
+    }
+
+    function setLatLngInputs(latLng){
+      document.getElementById("lat").value = latLng.lat().toFixed(6);
+      document.getElementById("lng").value = latLng.lng().toFixed(6);
+    }
+
+    function reverseGeocode(latLng){
+      geocoder.geocode({location:latLng}, (results, status) => {
+        if(status === "OK" && results && results[0]){
+          selectedPlace = results[0];
+          document.getElementById("search").value = results[0].formatted_address;
+          fillFormFromPlace(results[0]);
+        }
+      });
+    }
+
+    function fillFormFromPlace(place){
+      const comps = (place.address_components || []).reduce((acc,c)=>{
+        c.types.forEach(t=>acc[t]=c.long_name);
+        return acc;
+      },{});
+      const street = [comps.route, comps.street_number].filter(Boolean).join(" ").trim();
+      const npa = comps.postal_code || "";
+      const city = comps.locality || comps.postal_town || comps.administrative_area_level_2 || "";
+
+      if(street || place.formatted_address) document.getElementById("adresse").value = street || place.formatted_address;
+      document.getElementById("localite").value = [npa, city].filter(Boolean).join(" ").trim();
+
+      if(place.geometry && place.geometry.location){
+        setLatLngInputs(place.geometry.location);
+      }
+    }
+
+    window.initMap = initMap;
+  </script>
+
+  <!-- Google Maps JS API -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA9sibNbezJAPjqp6NwQgWGH9nq4y0cvo&libraries=places&callback=initMap">
+  </script>
+</body>
+</html>
