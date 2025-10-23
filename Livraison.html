@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Livraison – Formulaire + Carte</title>
   <style>
-    :root{ --bg:#0b1220; --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --accent:#e11d48; --line:#e11d48; }
+    :root{ --bg:#0b1220; --card:#111827; --ink:#e5e7eb; --muted:#94a3b8; --accent:#e11d48; --line:#9ca3af; }
     html,body{height:100%}
     body{
       margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
@@ -20,11 +20,12 @@
       padding:18px; margin:22px auto; box-sizing:border-box;
     }
     #formBox{
-      width:100%;                /* Réduction de la largeur */
+      width:90%;
+      max-width:860px;
       margin:auto;
     }
 
-    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; }
     label{ font-size:14px; color:var(--muted); display:block; margin-bottom:6px; }
     input{
       width:100%; background:#0e1726; color:var(--ink); border:1px solid #243244;
@@ -40,7 +41,7 @@
     .center{ display:flex; justify-content:center; }
 
     /* MAP */
-    #map{ width:100%; height:520px; border-radius:10px; background:#0e1726; }
+    #map{ width:100%; height:640px; border-radius:10px; background:#0e1726; }
     .hint{ font-size:13px; color:var(--muted); margin-top:8px; }
 
     @media print{
@@ -93,7 +94,7 @@
       </div>
 
       <div class="row no-print" style="margin-top:12px">
-        <input id="search" placeholder="Rechercher une adresse sur la carte…" style="flex:1 1 420px" />
+        <input id="search" placeholder="Rechercher une adresse sur la carte…" style="flex:1 1 280px; min-width:220px" />
         <button class="btn" id="copyToForm">Copier depuis la carte</button>
       </div>
       <div class="hint no-print">Astuce : clique sur la carte pour poser l’épingle, ou fais-la glisser pour ajuster au mètre près.</div>
