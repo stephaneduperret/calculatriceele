@@ -15,15 +15,28 @@
     .page{ width:100%; max-width:1100px; min-height:calc(100vh - 48px); border:4px solid var(--line); border-radius:14px; padding:28px; box-sizing:border-box; }
 
     /* FORMULAIRE */
-    .box{
+    /*.box{
       border:4px solid var(--line); border-radius:12px; background:var(--card);
-      padding:18px; margin:22px auto; box-sizing:border-box;
+      padding:18px; margin:22px auto; box-sizing:border-box;*/
+    .box input,
+.box textarea,
+.box select {
+  width: 90%;               /* réduit la largeur à l’intérieur du cadre */
+  max-width: 350px;         /* empêche un champ trop long */
+  box-sizing: border-box;   /* garde les marges internes incluses */
+  padding: 6px 10px;
+  margin: 4px 0;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
     }
+    
     #formBox{
     /*  width:90%;
       max-width:860px;
       margin:auto; */
-      width: 90%;       /* largeur fixe pour tous les champs */
+      width: 100%;       /* largeur fixe pour tous les champs */
   box-sizing: border-box;
   padding: 6px 10px;
   border-radius: 6px;
@@ -125,7 +138,7 @@
       geocoder = new google.maps.Geocoder();
 
       map = new google.maps.Map(document.getElementById("map"), {
-        center:{lat:46.7241,lng:6.53117}, zoom:13, mapTypeControl:false, streetViewControl:false
+        center:{lat:46.7241,lng:6.53117}, zoom:26, mapTypeControl:false, streetViewControl:false
       });
 
       marker = new google.maps.Marker({
@@ -215,6 +228,7 @@
   </script>
 </body>
 </html>
+
 
 
 
