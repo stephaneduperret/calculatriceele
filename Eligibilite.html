@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Éligibilité RCP — Consommation / Production</title>
 
-  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
 </head>
@@ -34,9 +33,7 @@
             <th class="actions">Actions</th>
           </tr>
         </thead>
-        <tbody id="body">
-          <!-- Lignes dynamiques -->
-        </tbody>
+        <tbody id="body"></tbody>
         <tfoot>
           <tr>
             <td class="right total">Total :</td>
@@ -49,8 +46,8 @@
       </table>
 
       <p class="hint" id="hint">
-        Le pourcentage est calculé ainsi : Consommation totale ÷ Refoulement total × 100.
-        Les champs numériques acceptent les virgules ou les points.
+        Le pourcentage est calculé ainsi : (Refoulement total − Consommation totale) ÷ Refoulement total × 100.
+        Exemple : 10’000 et 10’000 donnent 0%. Les champs numériques acceptent les virgules ou les points.
       </p>
     </section>
   </div>
@@ -79,53 +76,69 @@
     return `<input type="text" inputmode="decimal" placeholder="0" value="${value}" />`;
   }
 
-  function addRow(addr='', cons='', prod=''){
+  function calcPct(cons, ref){
+    // % = (Refoulement - Consommation) / Refoulement * 100
+    if (ref <= 0) return 0;
+    return ((ref - cons) / ref) * 100;
+  }
+
+  function addRow(addr='', cons='', ref=''){
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="addr">${makeAddressCell(addr)}</td>
       <td class="right">${makeNumberCell(cons)}</td>
-      <td class="right">${makeNumberCell(prod)}</td>
+      <td class="right">${makeNumberCell(ref)}</td>
       <td class="val-pct"></td>
       <td class="actions"><button class="secondary del">Supprimer</button></td>
     `;
     body.appendChild(tr);
 
-    const [ , iCons, iProd ] = tr.querySelectorAll('input');
+    const inputs = tr.querySelectorAll('input');
+    const iCons = inputs[1];
+    const iRef  = inputs[2];
+
     const onInput = () => { updateRowPct(tr); updateTotals(); };
     iCons.addEventListener('input', onInput);
-    iProd.addEventListener('input', onInput);
-    tr.querySelector('.del').addEventListener('click', () => { tr.remove(); updateTotals(); });
+    iRef.addEventListener('input', onInput);
+
+    tr.querySelector('.del').addEventListener('click', () => {
+      tr.remove();
+      updateTotals();
+    });
 
     updateRowPct(tr);
     updateTotals();
   }
 
   function updateRowPct(tr){
-    const c = toNumber(tr.querySelectorAll('input')[1].value); // consommation
-    const p = toNumber(tr.querySelectorAll('input')[2].value); // refoulement
+    const inputs = tr.querySelectorAll('input');
+    const cons = toNumber(inputs[1].value);
+    const ref  = toNumber(inputs[2].value);
+
     const cell = tr.querySelector('.val-pct');
-    const percent = (p > 0) ? (c / p * 100) : 0;
-    cell.textContent = fmtPct.format(percent);
+    cell.textContent = fmtPct.format(calcPct(cons, ref));
   }
 
   function updateTotals(){
-    let cTot = 0, pTot = 0;
+    let consTot = 0, refTot = 0;
+
     [...body.querySelectorAll('tr')].forEach(tr => {
       const inputs = tr.querySelectorAll('input');
-      cTot += toNumber(inputs[1].value);
-      pTot += toNumber(inputs[2].value);
+      consTot += toNumber(inputs[1].value);
+      refTot  += toNumber(inputs[2].value);
     });
-    totCons.textContent = fmt.format(cTot);
-    totProd.textContent = fmt.format(pTot);
-    totPct.textContent = fmtPct.format(pTot > 0 ? (cTot / pTot * 100) : 0);
+
+    totCons.textContent = fmt.format(consTot);
+    totProd.textContent = fmt.format(refTot);
+    totPct.textContent  = fmtPct.format(calcPct(consTot, refTot));
   }
 
   addBtn.addEventListener('click', () => addRow());
   clearBtn.addEventListener('click', () => { body.innerHTML = ''; updateTotals(); });
 
-  // Exemples init
-  addRow('Adresse – Commune', '0', '10000');
-  addRow('Adresse – Commune', '5000', '0');
+  // Exemples init (modifiables)
+  addRow('Adresse – Commune', '5000', '10000'); // 50%
+  addRow('Adresse – Commune', '5000', '0');     // 0% (refoulement nul)
 </script>
 </body>
 </html>
