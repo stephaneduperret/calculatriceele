@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Éligibilité RCP — Consommation / Production</title>
 
-      <!-- Liens relatifs (GitHub Pages) -->
+  <!-- Liens relatifs (GitHub Pages) -->
   <link rel="stylesheet" href="./style.css">
   <script src="./menu.js" defer></script>
-
-  <!-- Si besoin de menu.js pour la navbar -->
-  <!-- <script src="./menu.js" defer></script> -->
 </head>
 <body>
   <div class="container">
@@ -52,7 +49,7 @@
       </table>
 
       <p class="hint" id="hint">
-        Le pourcentage est calculé ainsi : Production totale ÷ Consommation totale × 100.
+        Le pourcentage est calculé ainsi : Consommation totale ÷ Refoulement total × 100.
         Les champs numériques acceptent les virgules ou les points.
       </p>
     </section>
@@ -104,10 +101,10 @@
   }
 
   function updateRowPct(tr){
-    const c = toNumber(tr.querySelectorAll('input')[1].value);
-    const p = toNumber(tr.querySelectorAll('input')[2].value);
+    const c = toNumber(tr.querySelectorAll('input')[1].value); // consommation
+    const p = toNumber(tr.querySelectorAll('input')[2].value); // refoulement
     const cell = tr.querySelector('.val-pct');
-    const percent = (c > 0) ? (p / c * 100) : 0;
+    const percent = (p > 0) ? (c / p * 100) : 0;
     cell.textContent = fmtPct.format(percent);
   }
 
@@ -120,17 +117,15 @@
     });
     totCons.textContent = fmt.format(cTot);
     totProd.textContent = fmt.format(pTot);
-    totPct.textContent = fmtPct.format(cTot > 0 ? pTot / cTot * 100 : 0);
+    totPct.textContent = fmtPct.format(pTot > 0 ? (cTot / pTot * 100) : 0);
   }
 
   addBtn.addEventListener('click', () => addRow());
   clearBtn.addEventListener('click', () => { body.innerHTML = ''; updateTotals(); });
 
   // Exemples init
-  addRow('Adresse – Commune', '945', '7196');
-  addRow('Adresse – Commune', '8141', '');
+  addRow('Adresse – Commune', '0', '10000');
+  addRow('Adresse – Commune', '5000', '0');
 </script>
 </body>
 </html>
-
-
