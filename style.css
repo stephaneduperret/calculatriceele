@@ -206,10 +206,42 @@ th{background:rgba(50,95,219,.06); color:var(--ink); font-weight:700}
 a{ color:var(--accent) }
 a:hover{ color:var(--accent-hover) }
 
+/* Correctif de lisibilité – calculateur d’indemnités */
+.calc-page .calc-card,
+.calc-page .calc-card h2,
+.calc-page .calc-card h3,
+.calc-page .calc-card label,
+.calc-page .tube-row .tube-label,
+.calc-page .check label,
+.calc-page .note,
+.calc-page table th,
+.calc-page table td,
+.calc-page textarea{
+  color:#17212b !important;
+}
 
+.calc-page .hint,
+.calc-page .small,
+.calc-page .result span,
+.calc-page .source{
+  color:#42505d !important;
+}
 
+.calc-page .calc-card{
+  background:#ffffff !important;
+}
 
+.calc-page input[readonly]{
+  color:#17212b !important;
+  font-weight:600;
+}
 
+.calc-page input::placeholder,
+.calc-page textarea::placeholder{
+  color:#6b7785 !important;
+  opacity:1;
+}
 
-
-
+.calc-page .check input{
+  accent-color:#1769aa;
+}
