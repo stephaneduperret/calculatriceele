@@ -14,14 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><a href="./Convertir A en kVA.html">Convertir I-S</a></li>
         <li><a href="./Calculatrice puissance câble et coût.html">Divers</a></li>
         <li><a href="./Calculs solaire test.html">Solaire</a></li>
-        <li><a href="./Eligibilite.html">Eligibilite</a></li>
+        <li><a href="./Eligibilite.html">Éligibilité</a></li>
         <li><a href="./Calculs de dates.html">Date</a></li>
-         <li><a href="./Livraison.html">Livraison</a></li>
+        <li><a href="./Livraison.html">Livraison</a></li>
         <li><a href="./chutedetension.html">Chute de tension</a></li>
         <li><a href="./calculreseau.html">Calculs Réseau</a></li>
         <li><a href="./Transfo.html">Transformateur</a></li>
         <li><a href="./ICC.html">Icc</a></li>
-        <li><a href="./contacts.html" style="color:red";>Contacts</a></li>
+        <li><a href="./calculateur_indemnites_fouille.html">Indemnités</a></li>
+        <li><a href="./contacts.html" style="color:red;">Contacts</a></li>
         <li><a href="./index.html" style="color:blue;">Accueil</a></li>
       </ul>
     </header>
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const footer = `
     <footer>
       <div class="footer">
-        Dernière modification faite par Stéphane le 1er octobre 2025.
+        Dernière modification faite par Stéphane le 30 juillet 2026.
       </div>
     </footer>
   `;
@@ -50,17 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const next = typeof forceState === 'boolean' ? forceState : !open;
     btn.setAttribute('aria-expanded', String(next));
     menu.classList.toggle('open', next);
-    document.body.classList.toggle('no-scroll', next); // bloque le scroll derrière l’overlay
+    document.body.classList.toggle('no-scroll', next);
   }
 
   btn.addEventListener('click', () => toggleMenu());
 
-  // Fermer après clic sur un lien (UX mobile)
+  // Fermer après clic sur un lien
   menu.addEventListener('click', (e) => {
     if (e.target.matches('a')) toggleMenu(false);
   });
 
-  // Fermer si on repasse en desktop
+  // Fermer si on repasse en mode bureau
   let resizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -69,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 120);
   });
 
-  // Fermer à Échap (accessibilité)
+  // Fermer avec la touche Échap
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       toggleMenu(false);
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Option confort: fermer au scroll si le menu est ouvert (sur mobile)
+  // Fermer au défilement sur mobile
   let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => {
     const open = btn.getAttribute('aria-expanded') === 'true';
@@ -87,16 +88,3 @@ document.addEventListener('DOMContentLoaded', () => {
     lastScrollY = current;
   }, { passive: true });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
